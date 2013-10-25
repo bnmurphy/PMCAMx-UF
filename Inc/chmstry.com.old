@@ -1,0 +1,431 @@
+c-----CAMx v4.02 030709
+c  
+c     CHMSTRY.COM contains all chemistry variables 
+c                            
+c     Copyright 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+c     ENVIRON International Corporation
+c            
+c     Modifications:  
+c       4/4/00     Added aerosol deposition variables to /aerochm/
+c       1/9/02     Aerosol size cut points and density now a function of
+c                  species
+c       8/20/02    Added minimum CWC to define presence of clouds
+c      12/12/02    Expanded species list for Mechanism 4
+c       1/10/03    Added array for deposition output species names
+c 
+c-----------------------------------------------------------------------
+c     Parameters for some of the switches:
+c
+c     CDCMC  -- string for requesting the CMC (standard) chemistry solver
+c     CDIEH  -- string for requesting the IEH chemistry solver
+c     IDCMC  -- code for using the CMC (standard) chemistry solver
+c     IDIEH  -- code for using the IEH chemistry solver
+c-----------------------------------------------------------------------
+c
+      character*10 CDCMC
+      character*10 CDIEH
+      integer      IDCMC
+      integer      IDIEH
+c
+      parameter( CDCMC = "CMC       " )
+      parameter( CDIEH = "IEH       " )
+      parameter( IDCMC = 1 )
+      parameter( IDIEH = 2 )
+c 
+c-----------------------------------------------------------------------
+c    Variables for the number of species in input files:
+c
+c    ngas   --  number of gas species being modeled
+c    naero  --  number of aersol species being modeled
+c    nspec  --  total number of modeled species
+c    nrad   --  number of radical species being modeled
+c    nreact --  number of chemical reactions
+c    nspfst --  number of "fast" species -- handled by the fast solver
+c    iessrad--  number of radicals in steady state for IEH solver
+c    idmech --  the code which determines which chemical mechanism is used
+c    idsolv --  the code which determines which chemstry solver to use
+c    navspc --  number of species to write to output average file
+c    nicspc --  number of species in the initial conditions file
+c    nbcspc --  number of species in the boundary conditions file
+c    nptspc --  number of species in the point source emissions file
+c    narspc --  number of species in the surface emissions file
+c-----------------------------------------------------------------------
+c
+       integer   ngas
+       integer   naero
+       integer   nspec
+       integer   nrad
+       integer   nreact
+       integer   nspfst
+       integer   iessrad
+       integer   idmech
+       integer   idsolv
+       integer   navspc
+       integer   nicspc
+       integer   nbcspc
+       integer   nptspc
+       integer   narspc
+c
+      common /chm1/ ngas, naero, nspec, nrad, nreact, nspfst, iessrad,
+     &              idmech, idsolv, navspc, nicspc, nbcspc, nptspc, 
+     &              narspc
+c
+c-----------------------------------------------------------------------
+c     Variables for keeping track of where chmistry is being performed:
+c     NOTE:  Used for diagnostic and error messages.
+c
+c     igrdchm  --  grid number of current chemistry step
+c     ichm     --  column for the current chemistry step
+c     jchm     --  row for the current chemistry step
+c     kchm     --  layer for the current chemistry step
+c-----------------------------------------------------------------------
+c
+      integer   igrdchm
+      integer   ichm
+      integer   jchm
+      integer   kchm
+c
+      common /ijkgrd/ igrdchm, ichm, jchm, kchm
+c
+c-----------------------------------------------------------------------
+c     Variables for storing chemical reaction data:
+c
+c     rk     -- reaction rate constant (ppm/hr)
+c     ltdep  -- flag to determine if rate constant is temperature dependent
+c     lpdep  -- flag to determine if rate constant is pressure dependent
+c     bdnl   -- lower vound value for each modeled species (ppm)
+c     bdlrad -- lower bound value for each radical species (ppm)
+c-----------------------------------------------------------------------
+c
+      real    rk(MXRXN)
+      logical ltdep(MXRXN)
+      logical lpdep(MXRXN)
+      real    bdnl(MXSPEC)
+      real    bdlrad
+      real    nflag  ! turns hno3 production off at night (tmg,06/19/04)
+c
+      common /chmratep/ rk, nflag
+      common /chmrate/ ltdep, lpdep, bdnl, bdlrad
+c
+c-----------------------------------------------------------------------
+c     Variables for photolysis data:
+c
+c     nphot1   -- number of primary photolysis reactions
+c     nphot2   -- number of secondary (scaled) photolysis reactions
+c     idphot1  -- ID of primary photolysis reactions
+c     idphot2  -- ID of secondary (scaled) photolysis reactions 
+c     idphot3  -- ID of primary photolysis reaction to scale to obtain
+c                 the secondary photolysis reaction
+c     phtscl   -- photolysis reaction scaling factor
+c-----------------------------------------------------------------------
+c
+      integer   nphot1
+      integer   nphot2
+      integer   idphot1(MXPHT1)
+      integer   idphot2(MXPHT2)
+      integer   idphot3(MXPHT2)
+      real      phtscl(MXPHT2)
+c
+      common /photmap/ nphot1, nphot2, idphot1, idphot2, idphot3, phtscl
+c 
+c-----------------------------------------------------------------------
+c     Variables for species names:
+c
+c     spname  --  name of each modeled species
+c     spavg   --  name of each species to be written to the output file
+c     nmrad   --  name of each radical species
+c     depsp   --  name of each deposition species output to file
+c-----------------------------------------------------------------------
+c
+      character*10 spname(MXSPEC+1)
+      character*10 spavg(MXSPEC)
+      character*10 nmrad(MXRADCL+1)
+      character*10 depsp(4*MXSPEC)
+c
+      common /cname/ spname, spavg, nmrad, depsp
+c 
+c-----------------------------------------------------------------------
+c     Variables for mapping input species to internal model order:
+c
+c     krad     -- mapping of radical species to specific mechanism order
+c     kmap     -- mapping of species on chemistry parameters file to
+c                 internal order
+c     lbcmap   -- mapping of species in the boundary condition file
+c     lavmap   -- mapping of species written to average file
+c     lptmap   -- mapping of species in the point source emissions file
+c     lptrdmap -- mapping of species in the NetCDF point source file
+c     larmap   -- mapping of species in the surface emissions file
+c     licmap   -- mapping of species in the initial conditions file
+c     lbcmapn  -- mapping of species on north edge of NetCDF boundary file
+c     lbcmaps  -- mapping of species on south edge of NetCDF boundary file
+c     lbcmape  -- mapping of species on east edge of NetCDF boundary file
+c     lbcmapw  -- mapping of species on west edge of NetCDF boundary file
+c     lgenrmap -- mapping of species in NetCDF general area emission file
+c     lbiomap  -- mapping of species in NetCDF biogenic area emission file
+c     lmoblmap -- mapping of species in NetCDF mobile area emission file
+c     lspmap   -- mapping of species in NetCDF instant concentration file
+c     lavwrmap -- mapping of species in NetCDF average concentration file
+c-----------------------------------------------------------------------
+c
+      integer   krad(NRADNM)
+      integer   kmap(NSPNAM)
+      integer   lbcmap(MXSPEC)
+      integer   lavmap(MXSPEC)
+      integer   lptmap(MXSPEC)
+      integer   lptrdmap(MXSPEC)
+      integer   larmap(MXSPEC,MXGRID) 
+      integer   licmap(MXSPEC,MXGRID) 
+c
+      common /kname/ krad, kmap, lbcmap,
+     &               lavmap, lptmap, lptrdmap,
+     &               larmap, licmap,
+     &               lbcmapn(MXSPEC),lbcmaps(MXSPEC),lbcmape(MXSPEC),
+     &               lbcmapw(MXSPEC),lgenrmap(MXSPEC,MXGRID),
+     &               lbiomap(MXSPEC,MXGRID),lmoblmap(MXSPEC,MXGRID),
+     &               lspmap(MXSPEC,MXGRID),lavwrmap(MXSPEC,MXGRID)
+c
+      integer   kno   ,kno2  ,ko3  
+      integer   kpan  ,kcres ,kpan2
+      integer   kmpan ,kpbzn ,knphe
+      integer   krno3 ,kdcb2 ,kdcb3
+      integer   khno4 ,kacet ,kald2
+      integer   kalk1 ,kalk2 ,kalk3
+      integer   kalk4 ,kalk5 ,karo1
+      integer   karo2 ,kbacl ,kbald
+      integer   kbcl1 ,kbcl2 ,kbuta
+      integer   kccho ,kccrs ,kcg1 
+      integer   kcg2  ,kcg3  ,kcg4 
+      integer   kcl2  ,kco   ,kco2h
+      integer   kco3h ,kcooh ,kcprm
+      integer   kdcb1 ,keth  ,kethe
+      integer   ketoh ,kfcrs ,kfmcl
+      integer   kform ,kfprm ,kgly 
+      integer   kh2o2 ,khc2h ,khcho
+      integer   khcl  ,khono ,khno3
+      integer   kho2h ,khocl ,kicl1
+      integer   kicl2 ,kisop ,kispd
+      integer   kmek  ,kmeoh ,kmeth
+      integer   kmgly ,kmvk  ,kna  
+      integer   knh3  ,kntr  ,knxoy
+      integer   kole  ,kole1 ,kole2
+      integer   kopen ,kpar  ,kpcl 
+      integer   kpec  ,kphen ,kpna 
+      integer   kpnh4 ,kpno3 ,kpoa 
+      integer   kprod ,kpso4 ,krc2h
+      integer   krc3h ,krcho ,krooh
+      integer   kso2  ,ksoa1 ,ksoa2
+      integer   ksoa3 ,ksoa4 ,ksulf
+      integer   kterp ,ktol  ,kxn  
+      integer   kxyl     ,ksoa1_1  ,ksoa1_2
+      integer   ksoa1_3  ,ksoa1_4  ,ksoa1_5
+      integer   ksoa1_6  ,ksoa1_7  ,ksoa1_8
+      integer   ksoa1_9  ,ksoa1_10 ,ksoa2_1
+      integer   ksoa2_2  ,ksoa2_3  ,ksoa2_4
+      integer   ksoa2_5  ,ksoa2_6  ,ksoa2_7
+      integer   ksoa2_8  ,ksoa2_9  ,ksoa2_10
+      integer   ksoa3_1  ,ksoa3_2  ,ksoa3_3
+      integer   ksoa3_4  ,ksoa3_5  ,ksoa3_6
+      integer   ksoa3_7  ,ksoa3_8  ,ksoa3_9
+      integer   ksoa3_10 ,ksoa4_1  ,ksoa4_2
+      integer   ksoa4_3  ,ksoa4_4  ,ksoa4_5
+      integer   ksoa4_6  ,ksoa4_7  ,ksoa4_8
+      integer   ksoa4_9  ,ksoa4_10 ,kpoc_1
+      integer   kpoc_2   ,kpoc_3   ,kpoc_4
+      integer   kpoc_5   ,kpoc_6   ,kpoc_7
+      integer   kpoc_8   ,kpoc_9   ,kpoc_10
+      integer   kpec_1   ,kpec_2   ,kpec_3
+      integer   kpec_4   ,kpec_5   ,kpec_6
+      integer   kpec_7   ,kpec_8   ,kpec_9
+      integer   kpec_10  ,kcrust_1 ,kcrust_2
+      integer   kcrust_3 ,kcrust_4 ,kcrust_5
+      integer   kcrust_6 ,kcrust_7 ,kcrust_8
+      integer   kcrust_9 ,kcrust_10,kph2o_1
+      integer   kph2o_2  ,kph2o_3  ,kph2o_4
+      integer   kph2o_5  ,kph2o_6  ,kph2o_7
+      integer   kph2o_8  ,kph2o_9  ,kph2o_10
+      integer   kpcl_1   ,kpcl_2   ,kpcl_3
+      integer   kpcl_4   ,kpcl_5   ,kpcl_6
+      integer   kpcl_7   ,kpcl_8   ,kpcl_9
+      integer   kpcl_10  ,kna_1    ,kna_2
+      integer   kna_3    ,kna_4    ,kna_5
+      integer   kna_6    ,kna_7    ,kna_8
+      integer   kna_9    ,kna_10   ,kpnh4_1
+      integer   kpnh4_2  ,kpnh4_3  ,kpnh4_4
+      integer   kpnh4_5  ,kpnh4_6  ,kpnh4_7
+      integer   kpnh4_8  ,kpnh4_9  ,kpnh4_10
+      integer   kpno3_1  ,kpno3_2  ,kpno3_3
+      integer   kpno3_4  ,kpno3_5  ,kpno3_6
+      integer   kpno3_7  ,kpno3_8  ,kpno3_9
+      integer   kpno3_10 ,kpso4_1  ,kpso4_2
+      integer   kpso4_3  ,kpso4_4  ,kpso4_5
+      integer   kpso4_6  ,kpso4_7  ,kpso4_8
+      integer   kpso4_9  ,kpso4_10 ,kph2o
+c
+      equivalence (kmap(1), kno  ), (kmap(2), kno2 ), (kmap(3), ko3  ),
+     &            (kmap(4), kpan ), (kmap(5), kcres), (kmap(6), kpan2),
+     &            (kmap(7), kmpan), (kmap(8), kpbzn), (kmap(9), knphe),
+     &            (kmap(10),krno3), (kmap(11),kdcb2), (kmap(12),kdcb3),
+     &            (kmap(13),khno4), (kmap(14),kacet), (kmap(15),kald2),
+     &            (kmap(16),kalk1), (kmap(17),kalk2), (kmap(18),kalk3),
+     &            (kmap(19),kalk4), (kmap(20),kalk5), (kmap(21),karo1),
+     &            (kmap(22),karo2), (kmap(23),kbacl), (kmap(24),kbald),
+     &            (kmap(25),kbcl1), (kmap(26),kbcl2), (kmap(27),kbuta),
+     &            (kmap(28),kccho), (kmap(29),kccrs), (kmap(30),kcg1 ),
+     &            (kmap(31),kcg2 ), (kmap(32),kcg3 ), (kmap(33),kcg4 ),
+     &            (kmap(34),kcl2 ), (kmap(35),kco  ), (kmap(36),kco2h),
+     &            (kmap(37),kco3h), (kmap(38),kcooh), (kmap(39),kcprm),
+     &            (kmap(40),kdcb1), (kmap(41),keth ), (kmap(42),kethe),
+     &            (kmap(43),ketoh), (kmap(44),kfcrs), (kmap(45),kfmcl),
+     &            (kmap(46),kform), (kmap(47),kfprm), (kmap(48),kgly ),
+     &            (kmap(49),kh2o2), (kmap(50),khc2h), (kmap(51),khcho),
+     &            (kmap(52),khcl ), (kmap(53),khono), (kmap(54),khno3),
+     &            (kmap(55),kho2h), (kmap(56),khocl), (kmap(57),kicl1),
+     &            (kmap(58),kicl2), (kmap(59),kisop), (kmap(60),kispd),
+     &            (kmap(61),kmek ), (kmap(62),kmeoh), (kmap(63),kmeth),
+     &            (kmap(64),kmgly), (kmap(65),kmvk ), (kmap(66),kna  ),
+     &            (kmap(67),knh3 ), (kmap(68),kntr ), (kmap(69),knxoy),
+     &            (kmap(70),kole ), (kmap(71),kole1), (kmap(72),kole2),
+     &            (kmap(73),kopen), (kmap(74),kpar ), (kmap(75),kpcl ),
+     &            (kmap(76),kpec ), (kmap(77),kphen), (kmap(78),kpna ),
+     &            (kmap(79),kpnh4), (kmap(80),kpno3), (kmap(81),kpoa ),
+     &            (kmap(82),kprod), (kmap(83),kpso4), (kmap(84),krc2h),
+     &            (kmap(85),krc3h), (kmap(86),krcho), (kmap(87),krooh),
+     &            (kmap(88),kso2 ), (kmap(89),ksoa1), (kmap(90),ksoa2),
+     &            (kmap(91),ksoa3), (kmap(92),ksoa4), (kmap(93),ksulf),
+     &            (kmap(94),kterp), (kmap(95),ktol ), (kmap(96),kxn  ),
+     &     (kmap(97),kxyl ),(kmap( 98),ksoa1_1  ),(kmap( 99),ksoa1_2  ),
+     &(kmap(100),ksoa1_3  ),(kmap(101),ksoa1_4  ),(kmap(102),ksoa1_5  ),
+     &(kmap(103),ksoa1_6  ),(kmap(104),ksoa1_7  ),(kmap(105),ksoa1_8  ),
+     &(kmap(106),ksoa1_9  ),(kmap(107),ksoa1_10 ),(kmap(108),ksoa2_1  ),
+     &(kmap(109),ksoa2_2  ),(kmap(110),ksoa2_3  ),(kmap(111),ksoa2_4  ),
+     &(kmap(112),ksoa2_5  ),(kmap(113),ksoa2_6  ),(kmap(114),ksoa2_7  ),
+     &(kmap(115),ksoa2_8  ),(kmap(116),ksoa2_9  ),(kmap(117),ksoa2_10 ),
+     &(kmap(118),ksoa3_1  ),(kmap(119),ksoa3_2  ),(kmap(120),ksoa3_3  ),
+     &(kmap(121),ksoa3_4  ),(kmap(122),ksoa3_5  ),(kmap(123),ksoa3_6  ),
+     &(kmap(124),ksoa3_7  ),(kmap(125),ksoa3_8  ),(kmap(126),ksoa3_9  ),
+     &(kmap(127),ksoa3_10 ),(kmap(128),ksoa4_1  ),(kmap(129),ksoa4_2  ),
+     &(kmap(130),ksoa4_3  ),(kmap(131),ksoa4_4  ),(kmap(132),ksoa4_5  ),
+     &(kmap(133),ksoa4_6  ),(kmap(134),ksoa4_7  ),(kmap(135),ksoa4_8  ),
+     &(kmap(136),ksoa4_9  ),(kmap(137),ksoa4_10 ),(kmap(138),kpoc_1   ),
+     &(kmap(139),kpoc_2   ),(kmap(140),kpoc_3   ),(kmap(141),kpoc_4   ),
+     &(kmap(142),kpoc_5   ),(kmap(143),kpoc_6   ),(kmap(144),kpoc_7   ),
+     &(kmap(145),kpoc_8   ),(kmap(146),kpoc_9   ),(kmap(147),kpoc_10  ),
+     &(kmap(148),kpec_1   ),(kmap(149),kpec_2   ),(kmap(150),kpec_3   ),
+     &(kmap(151),kpec_4   ),(kmap(152),kpec_5   ),(kmap(153),kpec_6   ),
+     &(kmap(154),kpec_7   ),(kmap(155),kpec_8   ),(kmap(156),kpec_9   ),
+     &(kmap(157),kpec_10  ),(kmap(158),kcrust_1 ),(kmap(159),kcrust_2 ),
+     &(kmap(160),kcrust_3 ),(kmap(161),kcrust_4 ),(kmap(162),kcrust_5 ),
+     &(kmap(163),kcrust_6 ),(kmap(164),kcrust_7 ),(kmap(165),kcrust_8 ),
+     &(kmap(166),kcrust_9 ),(kmap(167),kcrust_10),(kmap(168),kph2o_1  ),
+     &(kmap(169),kph2o_2  ),(kmap(170),kph2o_3  ),(kmap(171),kph2o_4  ),
+     &(kmap(172),kph2o_5  ),(kmap(173),kph2o_6  ),(kmap(174),kph2o_7  ),
+     &(kmap(175),kph2o_8  ),(kmap(176),kph2o_9  ),(kmap(177),kph2o_10 ),
+     &(kmap(178),kpcl_1   ),(kmap(179),kpcl_2   ),(kmap(180),kpcl_3   ),
+     &(kmap(181),kpcl_4   ),(kmap(182),kpcl_5   ),(kmap(183),kpcl_6   ),
+     &(kmap(184),kpcl_7   ),(kmap(185),kpcl_8   ),(kmap(186),kpcl_9   ),
+     &(kmap(187),kpcl_10  ),(kmap(188),kna_1    ),(kmap(189),kna_2    ),
+     &(kmap(190),kna_3    ),(kmap(191),kna_4    ),(kmap(192),kna_5    ),
+     &(kmap(193),kna_6    ),(kmap(194),kna_7    ),(kmap(195),kna_8    ),
+     &(kmap(196),kna_9    ),(kmap(197),kna_10   ),(kmap(198),kpnh4_1  ),
+     &(kmap(199),kpnh4_2  ),(kmap(200),kpnh4_3  ),(kmap(201),kpnh4_4  ),
+     &(kmap(202),kpnh4_5  ),(kmap(203),kpnh4_6  ),(kmap(204),kpnh4_7  ),
+     &(kmap(205),kpnh4_8  ),(kmap(206),kpnh4_9  ),(kmap(207),kpnh4_10 ),
+     &(kmap(208),kpno3_1  ),(kmap(209),kpno3_2  ),(kmap(210),kpno3_3  ),
+     &(kmap(211),kpno3_4  ),(kmap(212),kpno3_5  ),(kmap(213),kpno3_6  ),
+     &(kmap(214),kpno3_7  ),(kmap(215),kpno3_8  ),(kmap(216),kpno3_9  ),
+     &(kmap(217),kpno3_10 ),(kmap(218),kpso4_1  ),(kmap(219),kpso4_2  ),
+     &(kmap(220),kpso4_3  ),(kmap(221),kpso4_4  ),(kmap(222),kpso4_5  ),
+     &(kmap(223),kpso4_6  ),(kmap(224),kpso4_7  ),(kmap(225),kpso4_8  ),
+     &(kmap(226),kpso4_9  ),(kmap(227),kpso4_10 ),(kmap(228),kph2o    )
+c
+      integer   ko1d  ,ko    ,kclo 
+      integer   kcl   ,kn2o5 ,kno3 
+      integer   koh   ,kho2  ,kc2o3
+      integer   kxo2  ,kxo2n ,kto2 
+      integer   kror  ,kcro  ,kro2r
+      integer   kr2o2 ,kro2n ,kcco3
+      integer   krco3 ,kmco3 ,kbzco
+      integer   kcxo2 ,khco3 ,ktbuo
+      integer   kbzo  ,kbzno
+c
+      equivalence (krad(1), ko1d ), (krad(2), ko   ), (krad(3), kclo ),
+     &            (krad(4), kcl  ), (krad(5), kn2o5), (krad(6), kno3 ),
+     &            (krad(7), koh  ), (krad(8), kho2 ), (krad(9), kc2o3),
+     &            (krad(10),kxo2 ), (krad(11),kxo2n), (krad(12),kto2 ),
+     &            (krad(13),kror ), (krad(14),kcro ), (krad(15),kro2r),
+     &            (krad(16),kr2o2), (krad(17),kro2n), (krad(18),kcco3),
+     &            (krad(19),krco3), (krad(20),kmco3), (krad(21),kbzco),
+     &            (krad(22),kcxo2), (krad(23),khco3), (krad(24),ktbuo),
+     &            (krad(25),kbzo ), (krad(26),kbzno)
+c
+c-----------------------------------------------------------------------
+c     Variables for chemistry lookup tables:
+c
+c     tempr  -- temperature table
+c     presr  -- pressure table
+c     rktbl  -- temperature/pressure-dependent rate constant table
+c     htint  -- height AGL table
+c     zenint -- zenith angle table
+c     prkn   -- reaction rate table
+c-----------------------------------------------------------------------
+c      
+      common /tables/ tempr(NTEMPR), presr(NPRESR),
+     &                rktbl(MXRXN,NTEMPR,NPRESR),
+     &                htint(NHGHT), zenint(NZEN),
+     &                prkn(NZEN,MXPHT1,NHGHT,NHAZE,NALB,NOZN)
+c
+c-----------------------------------------------------------------------
+c     Variables to define parameters for each chemical species:
+c
+c     henry0   -- Henry's Law constant at STP (molar/atm)
+c     tfact    -- Temperature dependence of Henry's Law constant (1/K)
+c     diffrat  -- Species diffusivity
+c     f0       -- Species reactivity parameter
+c     rscale   -- Species scaling factor for surface resistance
+c     henso20  -- Henry's Law constant at STP for SO2 (molar/atm)
+c     tfactso2 -- Temperature dependence of SO2 Henry's Law constant (1/K)
+c     nbin     -- Number of aerosol size bins
+c     roprt    -- Aerosol density (g/m3)
+c     dcut     -- Aerosol size bin cut points (um)
+c     cwmin    -- Minimum cloud water threshold (g/m3)
+c     tamin    -- Cloud water freezing threshold (K)
+c-----------------------------------------------------------------------
+c
+      real cwmin,tamin
+      common /depchm/ henry0(MXSPEC),tfact(MXSPEC),diffrat(MXSPEC),
+     &                f0(MXSPEC),rscale(MXSPEC),henso20,tfactso2,cwmin,
+     &                tamin
+      common /aerochm/ nbin,roprt(MXSPEC),dcut(MXSPEC,2)
+c
+c-----------------------------------------------------------------------
+c     Pointers used to lookup pig chemistry rate constants
+c
+c     ipigrxn  -- pointers to the nine reactions
+c                 (1)   NO2 + O3 -> NO3
+c                 (2)         O3 -> O(1D)
+c                 (3)      O(1D) -> O(3P)
+c                 (4)      O(1D) -> 2 OH
+c                 (5)  NO3 + NO2 -> NO + NO2
+c                 (6)  NO3 + NO2 -> N2O5
+c                 (7) N2O5 + H2O -> 2 HNO3
+c                 (8)       N2O5 -> NO3 + NO2
+c                 (9)    NO + NO -> 2 NO2
+c
+      common /pigrxn/ ipigrxn(9)
+c
+c----------------------------------------------------------------------
+c    Variables for controlling calls to aerosol routines 
+c    
+c     grd_time   -- time for calls to aerosol routines for each grid
+c     date_aer   -- Julian date of current grd_time for each grid
+c     dtaero     -- time interval between calls to aerosol routines
+c     aero_dt    -- time between calls to aerosol routines for each grid
+c     dt_aero    -- user input time interval between calls to aerosol routines
+c
+      real grd_time(MXGRID)
+      real aero_dt(MXGRID)
+      real dtaero
+      integer date_aer(MXGRID)
+c
+      common /aero_t/ grd_time,aero_dt,date_aer,dtaero,dt_aero
+

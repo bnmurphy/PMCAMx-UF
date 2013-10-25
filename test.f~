@@ -1,0 +1,9 @@
+      program test
+      character*10 teststring
+      logical testpar /true/
+      if (testpar) then
+         teststring = 'Hej'
+         write(*,*)teststring
+      endif
+      end
+

@@ -1,0 +1,248 @@
+***********************************************************************
+c
+c            'INCLUDE' FILE WITH AEROSOL PARAMETERS 
+c
+c                                            Last change:  JGJ 6/10/05
+c                                                       :  TMG 5/27/03
+c                                                       :  COS 4/24/02 
+c***********************************************************************
+c
+      integer nht, nsectbm, nsectm, nsecto, dres
+      integer nsect !  the number of aerosol section
+      integer ibins, icomp
+      integer itr ! iteration in nucleation
+      integer iexptest ! experimental test
+      integer ievaluation ! swith to decide whether it makes output file 
+      integer ngas,mgso2,mgsvi
+      integer keqna,inucl,icoag,idep,isalt,idnuc,
+     &        iseed,iactiv,ientr,
+     &        iemis,iemis2,icond,idif,iwknd,icoag_test,
+     &        icond_test
+      integer numdist
+      integer idiesel
+      integer kcount, kprint
+      integer srtso4,srtorg,srtnh3,srth2o 
+c                Flags of sulfate, OM, ammonium, water in aerosol phase
+c
+      parameter (ibins=41, icomp=4)
+      parameter (dres=1)
+      parameter (nht=1)          !number of cells in vertical grid WAS 10
+      parameter (nsectbm = 35*dres) ! number of sections below measurements
+      parameter (nsectm = 195) ! number of measured sections with measurements
+c      parameter (nsectm = 196) ! number of measured sections with measurements
+c      parameter (nsectm = 186) ! number of measured sections with measurements
+c                                for initial distribution
+c      parameter (nsectm = 149) ! Qi Zhang's data, should be improved
+      parameter (nsecto = nsectbm+nsectm)
+      parameter (nsect  = nsectbm+nsectm*dres)
+
+      real pi,pi6,dpmax,dpmin,
+     &     tuner,
+     &     anumb1,anumb2,anumb3,adiam1,adiam2,adiam3,
+     &     std1,std2,std3,
+     &     dnumb1, ddiam1, dstd1,
+     &     dnumb2, ddiam2, dstd2,
+     &     dnumb3, ddiam3, dstd3,
+     &     vso2,vsulf,
+     &     rncrit,pzero,hdif,pretun,
+     &     dtemp,pres,prss0
+      real dpmean(nsect)
+      real dpbound(nsect+1), grk(nsect), dpboundo(nsectm+1)
+      real diffus(nsect),c(nsect)
+      real temp, rh, wind, h2ogrowth(nht),h2ostd
+      real rad(nht)
+      real tcommon,itcommon
+      real nh3ppt
+      real lat,slo,tz
+      real vdep(nsect)
+      real cgfact1(nsect,nsect,nht),cgfact2(nsect,nsect,nht)
+      real nh3flux
+      real pm(nsect,icomp)
+      real molwt(icomp-1), gmw(icomp-1)
+      real boxmass
+c
+      double precision Mini(icomp) ! initial mass
+      double precision Mini_tot  ! total initial mass
+      double precision Mtot(icomp) ! total mass per species
+      double precision Nkd(ibins), Mkd(ibins,icomp), Gcd(icomp)
+c
+      parameter (pi  = 3.14159)
+      parameter (pi6 = pi/6.0)
+c------------------------------------------------------------------------------
+c     Variables to interface with the TOMAS algorithm     
+c     This will be integrated with previous values.
+c
+      real boxvol
+      real dp4xk(ibins+1), dpmean4xk(ibins) 
+        ! diamter of xk, and mean diameter of xk
+      double precision Nk(ibins),Mk(ibins,icomp),Gc(icomp)
+      double precision xk(ibins+1),xko(nsect)
+c
+c     diagnostic variables for mnfix
+c
+c     mnfixdiagn : number concentration change by mnfix subroutine
+c     mnfixdiagm : mass concentration change by mnfix subroutine
+c     conddiagn : number concentration change by condensation, tmconds
+c     conddiagm : mass concentration change by condesation, tmconds
+c     coagdiagn : number concentration change by coagulation, multicoag
+c     coagdiagm : mass concentration change by coagulation, multicoag
+c 
+      double precision mnfixdiagn(ibins), mnfixdiagm(ibins, icomp-1)
+      double precision conddiagn(ibins), conddiagm(ibins, icomp-1)
+      double precision coagdiagn(ibins), coagdiagm(ibins, icomp-1)
+c
+      parameter (srtso4=1, srtorg=2, srtnh3=3, srth2o=4)
+      parameter (boxvol = 3.0e20) ! arbitrary volume of box to implement TOMAS
+                                  ! coagulation and condensation subroutines.
+                                  ! (cm3)
+c
+      parameter (dpmax = 10.0)    ! (um) upper boundary of largest section 
+      parameter (dpmin = 0.0008)  ! (um) lower boundary of smallest section
+c
+c *** this must be customized to have the correct addresses ****
+c
+      parameter (ngas = 2)   ! number of active and buildup species in gas-phase array
+      parameter (mgso2 = 1)  ! sulfur dioxide
+      parameter (mgsvi = 2) ! gas-phase sulfate
+c COMMON STATEMENTS
+c
+c      common /diametros/ dpmean,dpbound, grk, dpboundo
+      common /diametros/ dpmean,dpbound, grk
+      common /meteorology/ temp, rh, wind,
+     &             h2ostd, rad, nh3ppt, dtemp,
+     &             pres, vdep, prss0
+      common /xronos/ tcommon, itcommon
+      common /diffandv/ diffus,c
+      common /coagterms/ cgfact1, cgfact2
+      common /peter/ Nk, Mk, Gc, xk
+      common /wetdiameter/ h2ogrowth
+      common /convert/ xko
+      common /init/ Mini,Mini_tot
+      common /total/ Mtot
+      common /pm/ pm
+      common /nh3flux/ nh3flux
+      common /nucl_itr/ itr   
+      common /flag/ icoag, icond, inucl, ievaluation, icond_test
+      common /mnfixdiag/ mnfixdiagn, mnfixdiagm, conddiagn, conddiagm,
+     &		      coagdiagn, coagdiagm
+      common /xk/ dp4xk, dpmean4xk
+      common /count/ kcount
+      common /sizecode/ Nkd, Mkd, Gcd
+c
+c NUMBER OF EQUATIONS FOR THE AEROSOL OPERATOR
+c
+      parameter (keqna = 4)         ! number of variables dealt in nucl_sub
+                                   ! pn(1), H2SO4, and NH3 are currently dealt
+                                   ! there. These will be 2 (nucleationrate +
+                                   ! the smallest bin increase) + ngas.
+c
+c THE FLAGS BELOW ARE USED TO TURN ON AND OFF PROCESSES IN THE MODEL
+c
+c      parameter (inucl = 1)              ! nucleation
+c      parameter (icoag = 1)              ! coagulation
+c      parameter (icond = 1)              ! condensation
+      parameter (idif  = 0)              ! vertical diffusion
+      parameter (idep  = 0)              ! deposition (gas/aerosol)
+      parameter (ientr = 0)              ! 0 no exchange with FT
+      parameter (isalt = 0)              ! NO sea-salt emission
+      parameter (iemis = 0)              ! diesel emission (internally mixed) 
+      parameter (iemis2= 0)              ! diesel emission (externally mixed)
+      parameter (iwknd = 0)              ! =0 weekday
+      parameter (idnuc = 0)              ! =1 calculate nuclei diam using parameterization 
+                                         ! =0 set fresh nuclei diam =dpmean(1)
+      parameter (icoag_test = 0)         ! =0 disable coag test 6/24/04 jgj
+      parameter (numdist=96)             ! number of continuous distributions
+      parameter (rncrit = 0.1)           ! critical diameter (um) for full washout
+      parameter (pzero = 0.0)            ! rain intensity in mm/hr
+      parameter (hdif = 0.0)             ! aerosol horiz. mixing fraction (4K/dx2) per day
+c
+      parameter (iseed = 7501)           ! seed for random numbers (34701)
+c       
+      parameter (pretun=10**6)              ! pretuner allows HP77 fortran to accept 10**10
+      parameter (tuner=pretun*10)           ! nucleation tuner
+c
+      parameter (iexptest = 0)    ! =1  Do experimental test requested by Spyros.
+c
+c INITIAL AEROSOL SIZE DISTRIBUTION
+ctmg  Initial aerosol distribution is now read in
+c      parameter (anumb1 = 909)             ! was 1000 and 4909
+c      parameter (anumb2 = 11401)              ! was 500 and 7401
+c      parameter (anumb3 = 4180)             ! was 5000
+c      parameter (adiam1 = 0.0035)
+c      parameter (adiam2 = 0.070)              ! was 0.05
+c      parameter (adiam3 = 0.0076)              ! was 0.05
+c      parameter (std1 = 1.21)
+c      parameter (std2 = 1.66)                 ! was 2.06
+c      parameter (std3 = 1.76)                 ! was 2.17
+c
+c DIESEL PARTICLE AEROSOL DISTRIBUTION AND CONCENTRATION
+c
+      parameter (dnumb1 = 0.)
+      parameter (ddiam1 = 0.015)
+      parameter (dstd1  = 1.3)
+c
+      parameter (dnumb2 = 0.)
+      parameter (ddiam2 = 0.05)
+      parameter (dstd2  = 1.5)
+c
+      parameter (dnumb3 = 0.)
+      parameter (ddiam3 = 0.13)
+      parameter (dstd3  = 1.5)
+c
+      parameter (idiesel = 1)  ! was 2         ! the cell where diesel emissions enter
+
+c
+c     GAS-PHASE DEPOSITION PARAMETERS
+c
+      parameter (vso2=0.5)               ! deposition velocity of SO2 (MSA and DMSO)
+      parameter (vsulf=1.0)              ! deposition velocity of H2SO4
+c
+c     PRINT VARIABLE
+c
+      parameter (kprint = 60)            ! PRINT FREQUENCY
+c
+c     Aerosol phase and gas phase molecular weights
+c
+      data molwt /96., 50., 18./
+      data gmw   /98., 50., 17./
+c
+c     Particle size distribution
+c
+c3d      data dpboundo /0.00299, 0.0031, 0.00322, 0.00334, 0.00346,
+c3d     &               0.00358, 0.00372, 0.00385, 0.00399, 0.00414,
+c3d     &               0.00429, 0.00445, 0.00461, 0.00478, 0.00496,
+c3d     &               0.00514, 0.00533, 0.00552,  0.00572, 0.00593,
+c3d     &               0.00615, 0.00637, 0.00661, 0.00685, 0.0071, 
+c3d     &               0.00736, 0.00763, 0.00791, 0.0082, 0.0085,
+c3d     &               0.00881, 0.00914, 0.00947, 0.00982, 0.01018, 
+c3d     &               0.01055, 0.01094, 0.01134, 0.01175, 0.01218, 
+c3d     &               0.01263, 0.01309, 0.01357, 0.01407, 0.01459,
+c3d     &               0.01512, 0.01567, 0.01625, 0.01684, 0.01746,
+c3d     &               0.0181, 0.01876, 0.01945, 0.02016, 0.0209, 
+c3d     &               0.02167, 0.02246, 0.02329, 0.02414, 0.02502,
+c3d     &               0.02594, 0.02689, 0.02788, 0.0289, 0.02996,
+c3d     &               0.03105, 0.03219, 0.03337, 0.03459, 0.03586,
+c3d     &               0.03717, 0.03854, 0.03995, 0.04141, 0.04293,
+c3d     &               0.0445, 0.04613, 0.04782, 0.04958, 0.05139,
+c3d     &               0.05327, 0.05523, 0.05725, 0.05935, 0.06152,
+c3d     &               0.06378, 0.06611, 0.06854, 0.07105, 0.07365,
+c3d     &               0.07635, 0.07915, 0.08205, 0.08505, 0.08817,
+c3d     &               0.0914, 0.09475, 0.09822, 0.10182, 0.10555,
+c3d     &               0.10942, 0.11343, 0.11758, 0.12189, 0.12636,
+c3d     &               0.13098, 0.13578, 0.14076, 0.14592, 0.15126,
+c3d     &               0.15681, 0.16255, 0.16851, 0.17468, 0.18108,
+c3d     &               0.18772, 0.19459, 0.20172, 0.20911, 0.21678,
+c3d     &               0.22472, 0.23295, 0.24149, 0.25034, 0.25951,
+c3d     &               0.26902, 0.27887, 0.28909, 0.29968, 0.31066,
+c3d     &               0.32205, 0.33385, 0.34608, 0.35876, 0.3719,
+c3d     &               0.38553, 0.39966, 0.4143, 0.42948, 0.44522,
+c3d     &               0.46153, 0.47844, 0.49597, 0.51414, 0.53298, 
+c3d     &               0.54243, 0.5829, 0.62639, 0.67313, 0.72335,
+c3d     &               0.77732, 0.83531, 0.89764, 0.96461, 1.0366,
+c3d     &               1.1139, 1.197, 1.2863, 1.3823, 1.4854, 1.5963,
+c3d     &               1.7154, 1.8434, 1.9809, 2.1287, 2.2875, 2.4582,
+c3d     &               2.6416, 2.8387, 3.0505, 3.278, 3.5226, 3.7855,
+c3d     &               4.0679, 4.3714, 4.6975, 5.048, 5.4246, 5.8294,
+c3d     &               6.2643, 6.7317, 7.234, 7.7737, 8.3537, 8.9769,
+c3d     &               9.6467, 10.366, 11.14, 11.971, 12.864, 13.824,
+c3d     &               14.855, 15.964, 17.155, 18.435, 19.81 /

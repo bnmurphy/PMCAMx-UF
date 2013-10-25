@@ -1,0 +1,68 @@
+c***********************************************************************
+c
+c DEVELOPEMENT HISTORY
+c
+c***********************************************************************
+c Pandis [1] devised this model for the first time in order to know the 
+c realtionship between DMS flux and CCN concentration in remote marine
+c boundary layer (MBL). However, this first approach is based on
+c steady state assumption, i.e. CCN concentration is not a function of
+c time.
+c
+c Russell [2] made the first model a dynamic one accounting variation of
+c OH and a cloud process (rainout). However, only two sections had been
+c used for microphysical processes and the model had not accounted both
+c horizontal and vertical advection, i.e. a zero dimensional box model
+c (a zero dimensional Ragrangian model)..
+c
+c Then Kevin Capaldo [3] accounted the vertical advection with 270 size
+c section (1D Ragrangian model). To do so, 10 size vertical cells were
+c used accounting from surface to 1 km. Cloud meteorologies (Cloud 
+c Processing and Wet Deposition) were developed significantly. However,
+c an oscillation of Aitken mode particles predicted required to develop 
+c a nucleation theory.
+c
+c Timothy Gaydos [4] modified the third version in order to explain new
+c particle formation event in Pittsburgh area. The fourth model focused 
+c on one day simulation and did not account advection and wet deposition
+c ; The details of meteorology which were incorporated in the previos 
+c version were missed in this version. The most important finding in 
+c this version is that ternary nucleation model can predict occurrences 
+c of nucleation events in Pittsburgh very accurately: Summer 100%, 
+c Winter 86%.
+c
+c The current version [5] tracks both number and mass concentrations at
+c the same time. So we can know both sides without sacrificing an exact 
+c distribution of one side. Another advantage of the fifth version is 
+c that aerosols are dealt as multicomponent particles by incoporating 
+c TwO Moment Aerosol Sectional (TOMAS) algorithm [6]. Sulfate, ammonium,
+c and organic matter (OM) are considered as components of aerosols. Like
+c fourth version, current model also neglect meteorological 
+c considerations, but it will be included in 3D model, CAMx.
+c
+c-----------------------------------------------------------------------
+c REFERRENCES
+c 
+c 1. Pandis et al., 1994. The relationship between DMS flux and CCN 
+c concentration in remote marine regions. Journal of Geophysical 
+c Research 99, 16945-16957.
+c
+c 2. Russell et al., 1994. Aerosol production and growth in the marine 
+c boundary layer. Journal of Geophysical Research 99, 20989-21003.
+c
+c 3. Capaldo et al., 1999. Is aerosol production within the remote 
+c marine boundary layer sufficient to maintain observed concentration? 
+c Journal of Geophysical Research 104, No. D3, 3483-3500, February 20.
+c
+c 4. Gaydos et al., 2005. Modeling of in-situ ultrafine atmospheric 
+c particle formation in the eastern United State. Journal of Geophysical
+c Research 110, D07S12.
+c
+c 5. Jung et al., in press. Simulating the size distribution and 
+c chemical composition of ultrafine particles during nucleation events. 
+c Atmospheric Environment, in press.
+c
+c 6. Adams et al., 2002. Predicting global aerosol size distributions in
+c general circulation models. Journal of Geophysical Research 107, No. 
+c D19, 4370.
+c***********************************************************************
