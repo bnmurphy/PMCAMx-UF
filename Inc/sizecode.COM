@@ -114,7 +114,7 @@ cjgj      data molwt/96.,58.45,18.,18./ ! The 2nd is NaCl
 
 C Flag for which nucleation parameterizations to use
       integer bin_nuc, tern_nuc   !flags for binary and ternary nuc
-      parameter(bin_nuc=0, tern_nuc=0) ! 1 = on
+      parameter(bin_nuc=1, tern_nuc=1) ! 1 = on
 
 cdbg	  double precision NH3ppt_o
 cdbg	  double precision h2so4_print

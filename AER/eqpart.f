@@ -69,17 +69,17 @@ cbk      real*8 qsav(ntotal), DQsav(nsp), accom(nsp)
 c
 c     STEP 1/3: CALCULATE NUCLEATION RATE FOR THE WHOLE STEP
 c
-       call nucl(q)
+cjgj       call nucl(q)
 c
 c     STEP 2/3: CALCULATE COAGULATION RATE FOR THE WHOLE STEP
 c
-       call coagul(q)
+cjgj       call coagul(q)
 
 cbk       call step(nsec,q) ! tmg (10/22/02)
       endif
       call step(nsecx2,q) ! bkoo (03/07/03)
       call wdiameter(q) ! bkoo (03/09/03)
-      call eqparto(t,q) ! bkoo (03/09/03)
+cjgj      call eqparto(t,q) ! bkoo (03/09/03)
 c
 C     STEP 1:  DETERMINE BULK EQUILIBRIUM
 c

@@ -237,7 +237,7 @@ c            call ezwatereqm(Mk2,Mnuc2)
 
 c            call getCondSink(Nk2,Mk2,Nnuc2,Mnuc2,srtso4,CStest,sinkfrac)  
 
-            call ezcond(Nk2,Mk2,mcond,srtso4,Nk3,Mk3)
+            call ezcond(Nk2,Mk2,mcond,srtso4,Nk3,Mk3,ichm,jchm,kchm)
             Gc3(srtnh4) = Gc1(srtnh4)
 cdynamic            call eznh3eqm(Gc3,Mk3) ! NH3 is calculated dynamically.-on
             call ezwatereqm(Mk3)

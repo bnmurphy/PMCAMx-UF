@@ -564,10 +564,12 @@ drydep.o 		: drydep.f                                             \
                         $(INC)/filunit.com $(INC)/section.inc
 
 CAMx2dman.o	        : CAMx2dman.f                                          \
-                        $(INC)/dynamic.inc $(INC)/aervaria.inc                 \
+                        $(INC)/dynamic.inc $(INC)/aervaria.inc                 
 
 CAMx2so4cond.o	        : CAMx2so4cond.f                                       \
-                        $(INC)/dynamic.inc $(INC)/aervaria.inc                 \
+                        $(INC)/dynamic.inc $(INC)/aerpar.inc                   \
+                        $(INC)/camx_aero.inc $(INC)/droppar.inc                \
+                        $(INC)/dropcom.inc
 
 emiss.o 		: emiss.f                                              \
                         $(INC)/camx.prm $(INC)/ptemiss.com $(INC)/bndary.com   \

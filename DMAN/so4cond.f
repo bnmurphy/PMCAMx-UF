@@ -367,7 +367,8 @@ C-----Calculate tau values for all species/bins
               sumataunh3=sumataunh3+atau(kk,srtnh4)
            enddo
            Gcknh3(k)=Gcf(srtnh4)*atau(kk,srtnh4)/sumataunh3
-           Mknh3max=0.375*Mkf(k,srtso4)+Gcknh3(k)
+           Mknh3max=Mkf(k,srtnh3)+Gcknh3(k)
+c           Mknh3max=0.375*Mkf(k,srtso4)+Gcknh3(k)
                                          ! maximally allowable NH4 mass
         else !Total ammonia rich condition
            Mknh3max=0.375*Mkf(k,srtso4) ! maximally allowable NH4 mass

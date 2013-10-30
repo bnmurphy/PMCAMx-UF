@@ -49,7 +49,7 @@ cdbg      SUBROUTINE so4cond(Nki,Mki,Gci,Nkf,Mkf,Gcf,dt,xkDMAN)
 cnogas      SUBROUTINE so4cond(Nki,Mki,Gci,Nkf,Mkf,Gcf,dt,moxid
 cnogas     &                  ,ichm,jchm,kchm)
       SUBROUTINE so4cond_oxd(Nki,Mki,Nkf,Mkf,dt,moxid,iact,ichm,jchm
-     &                      ,kchm)
+     &                      ,kchm,xkDMAN)
 
       IMPLICIT NONE
 
@@ -66,7 +66,7 @@ cnogas      double precision Nkf(ibins), Mkf(ibins, icomp), Gcf(icomp-1)
       double precision Nki(ibins), Mki(ibins, icomp)
       double precision Nkf(ibins), Mkf(ibins, icomp)
       real dt ! timestep
-cdbg      double precision xkDMAN(ibins+1) ! xk as inputs
+      double precision xkDMAN(ibins+1) ! xk as inputs
       real*4 moxid(ibins, icomp-1) 
                    ! sulfate produced by aqueous chemistry [=] ug/m3
       integer iact ! a starting activation bin
@@ -180,9 +180,13 @@ cnogas      enddo
       enddo
 
       !xk is provided
-cdbg      do k=1,ibins+1
-cdbg        xk(k)=xkDMAN(k)
-cdbg      enddo
+      do k=1,ibins+1
+        xk(k)=xkDMAN(k)
+      enddo
+
+cdbg        do k=1, ibins+1
+cdbg          print*,xk(k)
+cdbg        enddo
 
       !Converting gas unit from ppt to kg
 cdbg      if (icond_test .eq. 1) then
@@ -361,8 +365,8 @@ cnogas        endif
       !Update atau considering the amount added by aqueous chemistry
       do k=iact,ibins
          do j=1,icomp-1
-            Mko(k,j)=Mkf(k,j)+(moxid(k,j)*(1./Nk(k)))
-            atau(k,j)=1.5*((Mko(k,j)**1.5)-(Mkf(k,j)**1.5)) 
+            Mko(k,j)=Mkf(k,j)+(moxid(k,j)*(1./Nkf(k)))
+            atau(k,j)=1.5*((Mko(k,j)**tdt)-(Mkf(k,j)**tdt)) 
          enddo
       enddo
       do k=1,ibins
@@ -500,7 +504,7 @@ cdbg      endif
 C Call condensation subroutine to do mass transfer
 
       do j=1,icomp-1  !Loop over all aerosol components
-        if(Gcflag(j).eq.1) goto 40 ! If gas concentration is tiny, then skip 
+c        if(Gcflag(j).eq.1) goto 40 ! If gas concentration is tiny, then skip 
                                    ! condensation. 12/06/07 jgj
 c_include_inert        if(j.eq.srtorg) goto 40 ! OM does not have condensation process.
         
@@ -541,13 +545,6 @@ cdbg        print*,'boxvol=',boxvol
 cdbg        print*,'cdt=',cdt
 cdbg        print*,'xk=',xk
 cdbg        print*,'Nk='
-cdbg        do k=1, ibins
-cdbg          print*,Nkf(k)
-cdbg        enddo
-cdbg        print*,'Mk='
-cdbg        do k=1, ibins
-cdbg          print*,Mkf(k,srtso4)
-cdbg        enddo
 cdbg        pause
 
         call tmcond(tau,xk,Mkf,Nkf,Mko,Nko,j,moxd)
@@ -562,11 +559,9 @@ cdbg           write(*,*)'Nko='
 cdbg           do k=1,ibins
 cdbg              write(*,*)Nko(k)
 cdbg           enddo
-cdbg           do j=1,icomp
-cdbg              write(*,*)'j=',j
-cdbg              do k=1,ibins
-cdbg                 write(*,*)Mko(k,j)
-cdbg              enddo
+cdbg           write(*,*)'j=',j
+cdbg           do k=1,ibins
+cdbg              write(*,*)Mko(k,j)
 cdbg           enddo
 cdbg        endif
 

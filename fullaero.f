@@ -58,6 +58,7 @@ c
       real*4 t0_min
       real*4 prs,qwatr,rhumid
       real*4 gas(ngas_aq), aerosol(nsect,naers)   
+      real*4 arsl(nsect,naers)   
       real*8 t0,t1
       real*8 q(ntotal)
       real dsulfdt ! sulfuric acid production rate
@@ -65,6 +66,7 @@ c
       logical prevsp
 c
       integer modeaero
+      integer iaqflag
 c
 c     Variables for RADM
 c
@@ -113,6 +115,7 @@ cbk        countcell=countcell+1    ! tmg (12/05/02)
       endif
 c
       modeaero = 0
+      iaqflag = 0
 c
       ng = nsec*nsp
       temp=tempk
@@ -366,6 +369,17 @@ ckf
 	 nitbef = nitbef+(2*(cncrad(3)*prs*101325*108.011/8.314/tempk)
      & *14./108.01) 
 c
+        do knsec=1,nsect
+          arsl(knsec,naw) = aerosol(knsec,naw) ! water
+          arsl(knsec,naa) = aerosol(knsec,naa) ! ammonium
+          arsl(knsec,na4) = aerosol(knsec,na4) ! sulfate
+          arsl(knsec,nan) = aerosol(knsec,nan) ! nitrate
+          arsl(knsec,nas) = aerosol(knsec,nas) ! sodium
+          arsl(knsec,nac) = aerosol(knsec,nac) ! chloride
+          arsl(knsec,nae) = aerosol(knsec,nae) ! elemental carbon
+          arsl(knsec,nao) = aerosol(knsec,nao) ! primary organics
+          arsl(knsec,nar) = aerosol(knsec,nar) ! crustal
+        enddo
 c
          call aqchem(gas,aerosol,rhumid,prs,tempk,lwc_c,t0_min,t1_min,
      &            dt_min,ierr,kchm,height,chtype)
@@ -422,7 +436,7 @@ cdbg           enddo
 cdbg        endif
 
         do knsec=1,nsect
-          con(kph2o_c+(knsec-1)) = aerosol(knsec,naw)
+cjgj          con(kph2o_c+(knsec-1)) = aerosol(knsec,naw)
 cjgj          con(kpnh4_c+(knsec-1)) = aerosol(knsec,naa)
 cjgj          con(kpso4_c+(knsec-1)) = aerosol(knsec,na4)
 cjgj          con(kpno3_c+(knsec-1)) = aerosol(knsec,nan)
@@ -431,16 +445,17 @@ cjgj          con(kpcl_c+(knsec-1))  = aerosol(knsec,nac)
 cjgj          con(kpoc_c+(knsec-1))  = aerosol(knsec,nao)
 cjgj          con(kpec_c+(knsec-1))  = aerosol(knsec,nae)
 cjgj          con(kcrst_c+(knsec-1)) = aerosol(knsec,nar)
-          moxid0(knsec,kpnh4_c) = aerosol(knsec,naa)
-          moxid0(knsec,kpso4_c) = aerosol(knsec,na4)
-          moxid0(knsec,kpno3_c) = aerosol(knsec,nan)
-          moxid0(knsec,kna_c) = aerosol(knsec,nas)
-          moxid0(knsec,kpcl_c) = aerosol(knsec,nac)
-          moxid0(knsec,kpoc_c) = aerosol(knsec,nao)
-          moxid0(knsec,kpec_c) = aerosol(knsec,nae)
-          moxid0(knsec,kcrst_c) = aerosol(knsec,nar)
+          moxid0(knsec,kph2o_c) = aerosol(knsec,naw) - arsl(knsec,naw)
+          moxid0(knsec,kpnh4_c) = aerosol(knsec,naa) - arsl(knsec,naa)
+          moxid0(knsec,kpso4_c) = aerosol(knsec,na4) - arsl(knsec,na4)
+          moxid0(knsec,kpno3_c) = aerosol(knsec,nan) - arsl(knsec,nan)
+          moxid0(knsec,kna_c) = aerosol(knsec,nas) - arsl(knsec,nas)
+          moxid0(knsec,kpcl_c) = aerosol(knsec,nac) - arsl(knsec,nac)
+          moxid0(knsec,kpoc_c) = aerosol(knsec,nao) - arsl(knsec,nao)
+          moxid0(knsec,kpec_c) = aerosol(knsec,nae) - arsl(knsec,nae)
+          moxid0(knsec,kcrst_c) = aerosol(knsec,nar) - arsl(knsec,nar)
         enddo
-        call CAMx2so4cond(q,t0,t1,tempk,pressure,moxid0,ich,jch,kch) 
+       iaqflag = 1
        endif
        modeaero = 1
       endif
@@ -483,7 +498,11 @@ c
           q((knsec-1)*nsp+knum)=con(knum_c+(knsec-1))
                      ! Number concentration jgj 2/28/06
         enddo
-c
+
+        if (iaqflag.eq.1) then
+          call CAMx2so4cond(q,t0,t1,tempk,pressure,moxid0,ich,jch,kch) 
+        endif
+
 cbk   SOAP has been merged with inorganic aerosol module - bkoo (03/09/03)
 cbk        if (lsoap) then
 cbk   	  q(naer+icg1)    =0.d0
@@ -530,14 +549,10 @@ cjgj
 cjgj          call aerchem(chaero,q,t0,t1,lfrst,ierr)
         pressure=pres
 c
-cdbg          print*,'In fullaero'
-cdbg          print*,'pres=',pres
-cdbg          if ((ich.eq.31).and.(jch.eq.2).and.(kch.eq.1)) then!dbg
-cdbg            print*,'In fullaero, before CAMx2dman'
-cdbg            print*,'coordinate of (31,2,1)' !dbg
-cdbg            print*,'tempk,pressure,dsulfdt=',tempk,pressure,dsulfdt !dbg
-cdbg          endif !dbg
+cjgj
+          
           call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch) 
+
         endif
 c
 c     map q back to con 
