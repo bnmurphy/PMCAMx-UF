@@ -49,7 +49,6 @@ c
       integer   MXCOL10, MXROW10, MXLAY10 
 c
       parameter ( MXCOL1  =  97, MXROW1  =  90, MXLAY1  =14 )
-cJanuary      parameter ( MXCOL1  =  97, MXROW1  =  90, MXLAY1  =16 )
       parameter ( MXCOL2  =   0, MXROW2  =   0, MXLAY2  = 0 )
       parameter ( MXCOL3  =   0, MXROW3  =   0, MXLAY3  = 0 )
       parameter ( MXCOL4  =   0, MXROW4  =   0, MXLAY4  = 0 )
@@ -65,7 +64,6 @@ c
       integer   MXLAYA
 c
       parameter ( MXCOLA  = 97, MXROWA  = 90, MXLAYA  = 14)
-cJanuary      parameter ( MXCOLA  = 97, MXROWA  = 90, MXLAYA  = 16)
 c
       integer   MX1D
       integer   MXCHDRN
@@ -119,11 +117,9 @@ cjgj      parameter ( MXSPEC = 593 )
       parameter ( MXPHT2  =    10 )
       parameter ( NTEMPR  =   101 )
       parameter ( TEMPLO  = 220.0 )
-cJanuary      parameter ( TEMPLO  = 200.0 )
       parameter ( TEMPHI  = 320.0 )
       parameter ( NPRESR  =    10 )
       parameter ( PRESLO  = 326.0 )
-cJanuary      parameter ( PRESLO  = 100.0 )
       parameter ( PRESHI  = 1100. )
       parameter ( MXRXN   =   100 )
 cjgj      parameter ( NSPNAM  =   228 )

@@ -58,16 +58,13 @@ c
       real*4 t0_min
       real*4 prs,qwatr,rhumid
       real*4 gas(ngas_aq), aerosol(nsect,naers)   
-      real*4 arsl(nsect,naers)   
       real*8 t0,t1
       real*8 q(ntotal)
-      real*8 qins(ntotal)                                         !     cf
       real dsulfdt ! sulfuric acid production rate
       real*4 moxid0(nsect,naers) !mass produced by aqueous chemistry [=] ug/m3
       logical prevsp
 c
       integer modeaero
-      integer iaqflag
 c
 c     Variables for RADM
 c
@@ -116,7 +113,6 @@ cbk        countcell=countcell+1    ! tmg (12/05/02)
       endif
 c
       modeaero = 0
-      iaqflag = 0
 c
       ng = nsec*nsp
       temp=tempk
@@ -139,15 +135,6 @@ c
       tcom = t0                  ! common t (sec) for AEROCHEM
       t0_min = t1_min - dt_min   ! beginning time (min) for AQCHEM
 c
-c     added by LA
-c      write(*,*)
-c      write(*,*)'dtaer=',dtaer
-c      write(*,*)'t1_min=',t1_min
-c      write(*,*)'dt=',dt
-c      write(*,*)'t0=',t0
-c      write(*,*)'t1=',t1
-c     end added by LA
-c
 c  Calculate RH
 c
       qwatr = 1.e-6*water*18./28.8
@@ -156,14 +143,6 @@ c
       rhumid = amin1(0.99,ev/es)
       rh=rhumid
 c
-c     added by LA
-c      write(*,*)
-c      write(*,*)'lfrst=',lfrst
-c      write(*,*)'nsecp1=',nsecp1
-c      write(*,*)'dsec_c=',dsec_c
-c      write(*,*)'dsecf_c=',dsecf_c
-c     end added by LA
-
       if (lfrst) then
         do i=1,nsecp1
   	  dsec(i)=dsec_c(i)
@@ -350,24 +329,6 @@ c
         gas(ngch3oh)   = 1.0e-3              ! CH3OH(g) in ppm = 1 ppb
         gas(ngch3co3h) = 0.05*con(kh2o2_c)   ! CH3C(O)OOH(g) in ppm  = 0.05*H2O2
 c
-c     added by LA
-c        write(*,*)
-c        write(*,*)'knh3_c=',knh3_c
-c        write(*,*)'khno3_c=',khno3_c
-c        write(*,*)'khcl_c=',khcl_c
-c        write(*,*)'kso2_c=',kso2_c
-c        write(*,*)'kh2o2_c=',kh2o2_c
-c        write(*,*)'kform_c=',kform_c
-c        write(*,*)'khono_c=',khono_c
-c        write(*,*)'ko3_c=',ko3_c
-c        write(*,*)'koh_c=',koh_c
-c        write(*,*)'kho2_c=',kho2_c
-c        write(*,*)'kno3_c=',kno3_c
-c        write(*,*)'kno_c=',kno_c
-c        write(*,*)'kno2_c=',kno2_c
-c        write(*,*)'kpan_c=',kpan_c
-c        write(*,*)'kcl=',kcl
-c     end added by LA
         do knsec=1,nsect
           aerosol(knsec,naw)    = con(kph2o_c+(knsec-1))   ! water
           aerosol(knsec,naa)    = con(kpnh4_c+(knsec-1))   ! ammonium
@@ -380,10 +341,6 @@ c     end added by LA
           aerosol(knsec,nar)    = con(kcrst_c+(knsec-1))   ! crustal
           aerosol(knsec,nahso5) = 0.0
           aerosol(knsec,nahmsa) = 0.0
-c     added by LA
-c          write(*,*)
-c          write(*,*)'aerosol=',aerosol
-c     end added by LA
         enddo
 c
 ckf
@@ -392,10 +349,13 @@ c
 ckf
          n2o5nit = cncrad(3)*prs*101325*62./8.314/tempk
 	 cncrad(3) = 0.0
+ckf
+
 ckf        
  	 do knsec=1,nsect
 	   aerosol(knsec,nan)    = aerosol(knsec,nan)+fdist(knsec)*n2o5nit
 	 enddo
+	 
 ckf
          nitbef = 0.0
 	 do i =1, nsect
@@ -406,76 +366,6 @@ ckf
 	 nitbef = nitbef+(2*(cncrad(3)*prs*101325*108.011/8.314/tempk)
      & *14./108.01) 
 c
-
-        do knsec=1,nsect
-          arsl(knsec,naw) = aerosol(knsec,naw) ! water
-          arsl(knsec,naa) = aerosol(knsec,naa) ! ammonium
-          arsl(knsec,na4) = aerosol(knsec,na4) ! sulfate
-          arsl(knsec,nan) = aerosol(knsec,nan) ! nitrate
-          arsl(knsec,nas) = aerosol(knsec,nas) ! sodium
-          arsl(knsec,nac) = aerosol(knsec,nac) ! chloride
-          arsl(knsec,nae) = aerosol(knsec,nae) ! elemental carbon
-          arsl(knsec,nao) = aerosol(knsec,nao) ! primary organics
-          arsl(knsec,nar) = aerosol(knsec,nar) ! crustal
-        enddo
-c
-c     added by LA
-c        write(*,*)
-c        write(*,*)'naer=',naer
-c     end added by LA
-        qins(naer+ih2so4) = con(kh2so4_c)                                 ! cf
-        qins(naer+inh3)   = gas(nga)                                      !
-        qins(naer+ihno3)  = gas(ngn)                                      !
-        qins(naer+ihcl)   = 0.d0                                          !
-c                                                                         !
-        do knsec=1,nsec                                                   !
-c          qins((knsec-1)*nsp+kcl+1)=con(ksoa1_c+(knsec-1))               !
-c          qins((knsec-1)*nsp+kcl+2)=con(ksoa2_c+(knsec-1))               !
-c          qins((knsec-1)*nsp+kcl+3)=con(ksoa3_c+(knsec-1))               !
-c          qins((knsec-1)*nsp+kcl+4)=con(ksoa4_c+(knsec-1))               !
-          qins((knsec-1)*nsp+kso4)=aerosol(knsec,na4) / 96.  * 98.        !
-          qins((knsec-1)*nsp+kcl)=0.d0                                    !
-          qins((knsec-1)*nsp+kno3)=aerosol(knsec,nan) / 62.  * 63.        !
-          qins((knsec-1)*nsp+kna)=0.d0                                    !
-          qins((knsec-1)*nsp+knh4)=aerosol(knsec,naa) / 18.  * 17.        !
-          qins((knsec-1)*nsp+kh2o)=aerosol(knsec,naw)                     !
-c          qins((knsec-1)*nsp+kec)=aerosol(knsec,nae)                      !
-c          qins((knsec-1)*nsp+kpom)=aerosol(knsec,nao)                     !
-c          qins((knsec-1)*nsp+kcrus)=aerosol(knsec,nar)                    !
-c          qins((knsec-1)*nsp+knum)=con(knum_c+(knsec-1))                 !
-                     ! Number concentration jgj 2/28/06                   !
-        enddo                                                             !
-c                                                                         !
-c----------------------call isorropia here------------------------------  !
-c                                                                         !
-        call eqpart(t1,qins)                                              !
-c-----------------------------------------------------------------------  !
-                                                                          !
-        do knsec=1,nsect                                                  !
-c          aerosol(knsec,naw) =  qins((knsec-1)*nsp+kh2o) ! water          !
-          aerosol(knsec,naa) =  qins((knsec-1)*nsp+knh4) ! ammonium       !
-          aerosol(knsec,nan) =  qins((knsec-1)*nsp+kno3) ! nitrate        !
-        enddo                                                             !
-                                                                          !
-c     added by LA
-c        write(*,*)
-c        write(*,*)'gas(nga)=',gas(nga)
-c        write(*,*)'gas(ngn)=',gas(ngn)
-c        write(*,*)'qins(ng+inh3)=',qins(ng+inh3)
-c        write(*,*)'qins(ng+ihno3)=',qins(ng+ihno3)
-c        write(*,*)'nga=',nga
-c        write(*,*)'ngn=',ngn
-c        write(*,*)'ng=',ng
-c        write(*,*)'inh3=',inh3
-c        write(*,*)'ihno3=',ihno3
-c        write(*,*)
-c     end added by LA
-      gas(nga)   = max(qins(ng+inh3), 0.0)         ! NH3(g) in ppm                  !
-      gas(ngn)   = max(qins(ng+ihno3), 0.0)        ! HNO3(g) in ppm                 ! cf
-c     changed by LA
-c      gas(nga)   = max(qins(ng+inh3), 0.D0)         ! NH3(g) in ppm                  !
-c      gas(ngn)   = max(qins(ng+ihno3), 0.D0)        ! HNO3(g) in ppm                 ! cf
-c     end changed by LA
 c
          call aqchem(gas,aerosol,rhumid,prs,tempk,lwc_c,t0_min,t1_min,
      &            dt_min,ierr,kchm,height,chtype)
@@ -532,7 +422,7 @@ cdbg           enddo
 cdbg        endif
 
         do knsec=1,nsect
-cjgj          con(kph2o_c+(knsec-1)) = aerosol(knsec,naw)
+          con(kph2o_c+(knsec-1)) = aerosol(knsec,naw)
 cjgj          con(kpnh4_c+(knsec-1)) = aerosol(knsec,naa)
 cjgj          con(kpso4_c+(knsec-1)) = aerosol(knsec,na4)
 cjgj          con(kpno3_c+(knsec-1)) = aerosol(knsec,nan)
@@ -541,17 +431,16 @@ cjgj          con(kpcl_c+(knsec-1))  = aerosol(knsec,nac)
 cjgj          con(kpoc_c+(knsec-1))  = aerosol(knsec,nao)
 cjgj          con(kpec_c+(knsec-1))  = aerosol(knsec,nae)
 cjgj          con(kcrst_c+(knsec-1)) = aerosol(knsec,nar)
-          moxid0(knsec,kph2o_c) = aerosol(knsec,naw) - arsl(knsec,naw)
-          moxid0(knsec,kpnh4_c) = aerosol(knsec,naa) - arsl(knsec,naa)
-          moxid0(knsec,kpso4_c) = aerosol(knsec,na4) - arsl(knsec,na4)
-          moxid0(knsec,kpno3_c) = aerosol(knsec,nan) - arsl(knsec,nan)
-          moxid0(knsec,kna_c) = aerosol(knsec,nas) - arsl(knsec,nas)
-          moxid0(knsec,kpcl_c) = aerosol(knsec,nac) - arsl(knsec,nac)
-          moxid0(knsec,kpoc_c) = aerosol(knsec,nao) - arsl(knsec,nao)
-          moxid0(knsec,kpec_c) = aerosol(knsec,nae) - arsl(knsec,nae)
-          moxid0(knsec,kcrst_c) = aerosol(knsec,nar) - arsl(knsec,nar)
+          moxid0(knsec,kpnh4_c) = aerosol(knsec,naa)
+          moxid0(knsec,kpso4_c) = aerosol(knsec,na4)
+          moxid0(knsec,kpno3_c) = aerosol(knsec,nan)
+          moxid0(knsec,kna_c) = aerosol(knsec,nas)
+          moxid0(knsec,kpcl_c) = aerosol(knsec,nac)
+          moxid0(knsec,kpoc_c) = aerosol(knsec,nao)
+          moxid0(knsec,kpec_c) = aerosol(knsec,nae)
+          moxid0(knsec,kcrst_c) = aerosol(knsec,nar)
         enddo
-       iaqflag = 1
+        call CAMx2so4cond(q,t0,t1,tempk,pressure,moxid0,ich,jch,kch) 
        endif
        modeaero = 1
       endif
@@ -577,10 +466,6 @@ c
 c     map con to q [ugr/m3]  gas in ppm
 c     For number conc., q [#/cm3]
 c
-c     added by LA
-c        write(*,*)
-c        write(*,*)'nsp=',nsp
-c     end added by LA
         do knsec=1,nsec
           q((knsec-1)*nsp+kcl+1)=con(ksoa1_c+(knsec-1))
           q((knsec-1)*nsp+kcl+2)=con(ksoa2_c+(knsec-1))
@@ -588,14 +473,9 @@ c     end added by LA
           q((knsec-1)*nsp+kcl+4)=con(ksoa4_c+(knsec-1))
           q((knsec-1)*nsp+kso4)=con(kpso4_c+(knsec-1)) / 96.  * 98.
           q((knsec-1)*nsp+kcl)=con(kpcl_c+(knsec-1))   / 35.5 * 36.5
-c
-          q((knsec-1)*nsp+kno3)=con(kpno3_c+(knsec-1)) / 62.  * 63.     !  cf
-c          q((knsec-1)*nsp+kno3)=arsl(knsec,nan) / 62.  * 63.             !  cf
-c
+          q((knsec-1)*nsp+kno3)=con(kpno3_c+(knsec-1)) / 62.  * 63.
           q((knsec-1)*nsp+kna)=con(kna_c+(knsec-1))
-          q((knsec-1)*nsp+knh4)=con(kpnh4_c+(knsec-1)) / 18.  * 17.     !  cf
-c          q((knsec-1)*nsp+knh4)=arsl(knsec,naa) / 18.  * 17.             !  cf
-c
+          q((knsec-1)*nsp+knh4)=con(kpnh4_c+(knsec-1)) / 18.  * 17.
           q((knsec-1)*nsp+kh2o)=con(kph2o_c+(knsec-1))
           q((knsec-1)*nsp+kec)=con(kpec_c+(knsec-1))
           q((knsec-1)*nsp+kpom)=con(kpoc_c+(knsec-1))
@@ -603,20 +483,7 @@ c
           q((knsec-1)*nsp+knum)=con(knum_c+(knsec-1))
                      ! Number concentration jgj 2/28/06
         enddo
-
-c     added by LA
-c        write(*,*)
-c        write(*,*)'q bef CAMx2so4cond=',q
-c     end added by LA
-
-        if (iaqflag.eq.1) then
-          call CAMx2so4cond(q,t0,t1,tempk,pressure,moxid0,ich,jch,kch)
-        endif
-
-c     added by LA
-c        write(*,*)
-c        write(*,*)'q aft CAMx2so4cond=',q
-c     end added by LA
+c
 cbk   SOAP has been merged with inorganic aerosol module - bkoo (03/09/03)
 cbk        if (lsoap) then
 cbk   	  q(naer+icg1)    =0.d0
@@ -663,17 +530,15 @@ cjgj
 cjgj          call aerchem(chaero,q,t0,t1,lfrst,ierr)
         pressure=pres
 c
-cjgj
-c     added by LA
-c        write(*,*)'Calling CAMx2dman'
-c     end added by LA
+cdbg          print*,'In fullaero'
+cdbg          print*,'pres=',pres
+cdbg          if ((ich.eq.31).and.(jch.eq.2).and.(kch.eq.1)) then!dbg
+cdbg            print*,'In fullaero, before CAMx2dman'
+cdbg            print*,'coordinate of (31,2,1)' !dbg
+cdbg            print*,'tempk,pressure,dsulfdt=',tempk,pressure,dsulfdt !dbg
+cdbg          endif !dbg
           call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch) 
-
         endif
-c     added by LA
-c        write(*,*)
-c        write(*,*)'q aft CAMx2dman=',q
-c     end added by LA
 c
 c     map q back to con 
 c
@@ -694,31 +559,6 @@ c
           con(knum_c+(knsec-1))=q((knsec-1)*nsp+knum)
                      ! Number concentration jgj 2/28/06
         enddo
-c     added by LA
-c        write(*,*)'ksoa1_c=',ksoa1_c
-c        write(*,*)'ksoa2_c=',ksoa2_c
-c        write(*,*)'ksoa3_c=',ksoa3_c
-c        write(*,*)'ksoa4_c=',ksoa4_c
-c        write(*,*)'kpso4_c=',kpso4_c
-c        write(*,*)'kpcl_c=',kpcl_c
-c        write(*,*)'kpno3_c=',kpno3_c
-c        write(*,*)'kna_c=',kna_c
-c        write(*,*)'kpnh4_c=',kpnh4_c
-c        write(*,*)'kph2o_c=',kph2o_c
-c        write(*,*)'kcrst_c=',kcrst_c
-c        write(*,*)'kpec_c=',kpec_c
-c        write(*,*)'kpoc_c=',kpoc_c
-c        write(*,*)'knum_c=',knum_c
-c        write(*,*)'kcg1_c=',kcg1_c
-c        write(*,*)'kcg2_c=',kcg2_c
-c        write(*,*)'kcg3_c=',kcg3_c
-c        write(*,*)'kcg4_c=',kcg4_c
-c        write(*,*)'kh2oso4_c=',kh2oso4_c
-c        write(*,*)'knh3_c=',knh3_c
-c        write(*,*)'khno3_c=',khno3_c
-c        write(*,*)'khcl_c=',khcl_c
-c        write(*,*)'kcl=',kcl
-c     end added by LA
 c
 cdbg      if ((t0.gt.4500).and.(t0.lt.6300))then !between 1:15 and 1:45
 cdbg      if ((t0.gt.0.0).and.(t0.lt.30.))then !between 0:00 and 0:30

@@ -33,9 +33,7 @@ c
 cdbg      include 'aervaria.inc'
 
       integer ibins, icomp
-      integer naqbin
       parameter (ibins=41, icomp=4)
-      parameter (naqbin=2)
 c
 c-----Argument declarations
 c
@@ -44,7 +42,7 @@ c
       real tempK      ! temperature [=] K
       real pressure   ! atm
 cdbg      real dsulfdt    !sulfuric acid production rate
-      real*4 moxid0(ibins+naqbin,naers)    
+      real*4 moxid0(ibins,naers)    
                       !sulfate produced by aqueous chemistry [=]ug/m3
       integer ich, jch, kch ! coordiate, x, y, z
 c
@@ -77,17 +75,14 @@ cnogas      real nh3ppt     ! ammonia gas [=] ppt
       real tend       ! starting time and ending time of simulation
       real boxvol     ! A volume of arbitrary box
       real pres       ! Pa 
-
       real rt_pom(ibins), rt_ec(ibins), rt_crst(ibins), rt_cl(ibins),
-     &    rt_na(ibins)
-     & , rt_no3(ibins) ! Ratios of each inert component                 ! cf
-
-      real add_rt_pom(ibins), add_rt_ec(ibins), add_rt_crst(ibins),
-     &    add_rt_cl(ibins), add_rt_na(ibins), add_rt_soa1(ibins),
-     &    add_rt_soa2(ibins), add_rt_soa3(ibins), add_rt_soa4(ibins)
-     &    ,add_rt_no3(ibins) ! Ratios of each inert component added    ! cf
-      real tot_inert(ibins) ! total inert mass
-      real tot_inert2(ibins) ! total inert mass after calling dman
+     &    rt_na(ibins), rt_no3(ibins) ! Ratios of each inert component
+      real add_rt_pom(ibins), add_rt_ec(ibins), add_rt_crst(ibins), 
+     &    add_rt_cl(ibins), add_rt_na(ibins), add_rt_soa1(ibins), 
+     &    add_rt_soa2(ibins), add_rt_soa3(ibins), add_rt_soa4(ibins), 
+     &    add_rt_no3(ibins) ! Ratios of each inert component added
+      real tot_inert ! total inert mass
+      real tot_inert2 ! total inert mass after calling dman
 cdbg      real eps
       real cvt, cvt2
       real*4 moxid(ibins,icomp-1)
@@ -97,13 +92,14 @@ cnogas      real gmw(icomp) !gas molecular weight
 cnogas      data gmw/98.,50.,17.,18./
       real deltat
       real dt ! [=] sec
-      real add_tot_inert(ibins) ! added tot_inert by an aqueous chemistry
-      real dtot_inert(ibins)    ! tot_inert changed after the process
+      real add_tot_inert ! added tot_inert by an aqueous chemistry
+      real dtot_inert    ! tot_inert changed after the process
 c
 c-----Adjustable parameters
 c
       parameter (Neps=1.0d-10, Meps=1.0d-20)
-      parameter (eps = 1.0d-20)
+cdbg      parameter (eps = 1.0d-20)
+      parameter (eps = 1.0d-10)
       parameter (boxvol = 3.0d20) ! cm3, arbitrary value
       parameter (cvt = 1.0d-15)   ! a convert factor from ug/m3 to kg/cm3
       parameter (cvt2 = 1.0d+15)  ! a covert factor from kg/cm3 to ug/m3
@@ -157,38 +153,33 @@ cnogas          STOP
 cnogas        endif
 cnogas      endif
 
-
       do i=1, ibins !Transfer moxid0
       ! Check negative moxid0
-      if (moxid0(i,kpnh4_c).lt.0.0) moxid0(i,kpnh4_c)=0.0            !jjung
-      if (moxid0(i,kpso4_c).lt.0.0) moxid0(i,kpso4_c)=0.0
-      if (moxid0(i,kpno3_c).lt.0.0) moxid0(i,kpno3_c)=0.0            !jjung
-      if (moxid0(i,kna_c).lt.0.0) moxid0(i,kna_c)=0.0
-      if (moxid0(i,kpoc_c).lt.0.0) moxid0(i,kpoc_c)=0.0
-      if (moxid0(i,kpec_c).lt.0.0) moxid0(i,kpec_c)=0.0
-      if (moxid0(i,kcrst_c).lt.0.0) moxid0(i,kcrst_c)=0.0
-      if (moxid0(i,kpcl_c).lt.0.0) moxid0(i,kpcl_c)=0.0
+      if (moxid0(i,kpnh4_c).lt.0.0) stop 'moxid0(i,kpnh4_c) is negative'
+      if (moxid0(i,kpso4_c).lt.0.0) stop 'moxid0(i,kpso4_c) is negative'
+      if (moxid0(i,kpno3_c).lt.0.0) stop 'moxid0(i,kpno3_c) is negative'
+      if (moxid0(i,kna_c).lt.0.0) stop 'moxid0(i,kna_c) is negative'
+      if (moxid0(i,kpcl_c).lt.0.0) stop 'moxid0(i,kpcl_c) is negative'
+      if (moxid0(i,kpoc_c).lt.0.0) stop 'moxid0(i,kpoc_c) is negative'
+      if (moxid0(i,kpec_c).lt.0.0) stop 'moxid0(i,kpec_c) is negative'
+      if (moxid0(i,kcrst_c).lt.0.0) stop 'moxid0(i,kcrst_c) is negative'
 c
          moxid(i,srtnh3)=moxid0(i,kpnh4_c)*cvt*boxvol
          moxid(i,srtso4)=moxid0(i,kpso4_c)*cvt*boxvol
-         add_tot_inert(i) = moxid0(i,kpno3_c)+moxid0(i,kna_c)+         ! cf
-c                            ! Nitrate                 Na              !
-c         add_tot_inert(i) = moxid0(i,kna_c)+                          ! cf
-                     !        Na
+         add_tot_inert = moxid0(i,kpno3_c)+moxid0(i,kna_c)+
+                     ! Nitrate                 Na
      &                moxid0(i,kpcl_c)+moxid0(i,kpoc_c)+
                      ! Cl                OC
-     &                moxid0(i,kpec_c)+moxid0(i,kcrst_c)+
+     &                moxid0(i,kpec_c)+moxid0(i,kcrst_c)
                      ! EC                Crust
-     &                eps
-                     ! for safety
          ! Capture ratios added before calling dman 
-         add_rt_no3(i) = moxid0(i,kpno3_c) * (1.0/add_tot_inert(i))   ! cf
-         add_rt_na(i) = moxid0(i,kna_c) * (1.0/add_tot_inert(i))
-         add_rt_cl(i) = moxid0(i,kpcl_c) * (1.0/add_tot_inert(i))
-         add_rt_pom(i) = moxid0(i,kpoc_c) * (1.0/add_tot_inert(i))
-         add_rt_ec(i) = moxid0(i,kpec_c) * (1.0/add_tot_inert(i))
-         add_rt_crst(i) = moxid0(i,kcrst_c) * (1.0/add_tot_inert(i))
-         moxid(i,srtorg) = add_tot_inert(i)*cvt*boxvol
+         add_rt_no3(i) = moxid0(i,kpno3_c) * (1.0/add_tot_inert)
+         add_rt_na(i) = moxid0(i,kna_c) * (1.0/add_tot_inert)
+         add_rt_cl(i) = moxid0(i,kpcl_c) * (1.0/add_tot_inert)
+         add_rt_pom(i) = moxid0(i,kpoc_c) * (1.0/add_tot_inert)
+         add_rt_ec(i) = moxid0(i,kpec_c) * (1.0/add_tot_inert)
+         add_rt_crst(i) = moxid0(i,kcrst_c) * (1.0/add_tot_inert)
+         moxid(i,srtorg) = add_tot_inert*cvt*boxvol
 cdbg         if (moxid(i).ge.0.0) then
 cdbg            moxid(i)=moxid0(i)*cvt*boxvol
 cdbg         else
@@ -211,7 +202,6 @@ cdbg         endif
                   q((i-1)*nsp+j) = Neps*(1./boxvol)*1.4*xk(i)*(1./12.)
                enddo
             else
-               write(*,*)'CAMx2so4cond'
                write(*,*)'Coordinate =', ich, jch, kch
                write(*,*)'Negative tracer in DMAN before dman'
                write(*,*)'sizesection=', i
@@ -268,25 +258,25 @@ c
               ! Nk [=] #, q [=] #/cm3, and boxvol [=] cm3
          Mk(i,srtso4)=q((i-1)*nsp+kso4) * cvt * boxvol
               ! Mk [=] kg, q [=] ug/m3
-         tot_inert(i) = (q((i-1)*nsp+kpom)+q((i-1)*nsp+kec)+
+         tot_inert = (q((i-1)*nsp+kpom)+q((i-1)*nsp+kec)+
                      ! POA                 EC
      &                q((i-1)*nsp+kcrus)+q((i-1)*nsp+kcl)+
                      ! CRST                Cl
-     &                q((i-1)*nsp+kna)!)
+     &                q((i-1)*nsp+kna)+
                      ! Na                  
                      ! No SOA
-     &                +q((i-1)*nsp+kno3))                          !  cf
+     &                q((i-1)*nsp+kno3))
                      ! Nitrate
          ! Capture ratios before calling dman 
-         rt_pom(i) = q((i-1)*nsp+kpom) * (1.0/tot_inert(i))
-         rt_ec(i) = q((i-1)*nsp+kec) * (1.0/tot_inert(i))
-         rt_crst(i) = q((i-1)*nsp+kcrus) * (1.0/tot_inert(i))
-         rt_cl(i) = q((i-1)*nsp+kcl) * (1.0/tot_inert(i))
-         rt_na(i) = q((i-1)*nsp+kna) * (1.0/tot_inert(i))
+         rt_pom(i) = q((i-1)*nsp+kpom) * (1.0/tot_inert)
+         rt_ec(i) = q((i-1)*nsp+kec) * (1.0/tot_inert)
+         rt_crst(i) = q((i-1)*nsp+kcrus) * (1.0/tot_inert)
+         rt_cl(i) = q((i-1)*nsp+kcl) * (1.0/tot_inert)
+         rt_na(i) = q((i-1)*nsp+kna) * (1.0/tot_inert)
          ! No SOA
-         rt_no3(i) = q((i-1)*nsp+kno3) * (1.0/tot_inert(i))          !  cf
+         rt_no3(i) = q((i-1)*nsp+kno3) * (1.0/tot_inert)   
 c
-         Mk(i,srtorg) = tot_inert(i) * cvt * boxvol
+         Mk(i,srtorg) = tot_inert * cvt * boxvol
          Mk(i,srtnh3)=q((i-1)*nsp+knh4) * cvt * boxvol
          Mk(i,srth2o)=q((i-1)*nsp+kh2o) * cvt * boxvol
       enddo      
@@ -295,24 +285,29 @@ c     Find a starting activation bin
 c
       i = 1
       ifind = 0
-c      do while (ifind.eq.1)
-      do while (ifind.eq.0) ! changed by LA
+      do while (ifind.eq.1)
         if (daer(i).gt.dactiv) then
           iact = i
           ifind = 1
-c          ifind = 0  ! changed by LA
         else
           i=i+1
         endif
       enddo 
 
+c      call dman(tstart,tend,Nk,Mk,h2so4,nh3ppt,relh,tempK,pres,dsulfdt
+c     & ,moxid,ich,jch,kch)
+
 c------No gas change. It is addition  by aqueous oxidation chemistry
 c
+cnogas      boxmass=0.0289*pres*boxvol*1.0d-6*(1./(R*tempK))
 
+cnogas      Gc(srtso4)=boxmass*h2so4*1.0d-12*gmw(srtso4)/28.9
+cnogas      Gc(srtnh3)=boxmass*nh3ppt*1.0d-12*gmw(srtnh3)/28.9
       deltat=tend-tstart
       dt=deltat*3600.
 
-      call so4cond_oxd(Nk,Mk,Nkout,Mkout,dt,moxid,iact,ich,jch,kch,xk)  ! cf
+cnogas      call so4cond(Nk,Mk,Gc,Nkout,Mkout,Gcout,dt,ich,jch,kch)
+      call so4cond_oxd(Nk,Mk,Nkout,Mkout,dt,moxid,iact,ich,jch,kch)
 
       do i=1,ibins
         do j=1, icomp
@@ -399,33 +394,33 @@ c
 c     Only POA has the sum of POA, EC, CRST, Cl, and Na. The rest of
 c     species are set to zero.
 c
-        tot_inert2(i) = Mk(i,srtorg) * cvt2 * (1.0/boxvol)
-        if (tot_inert(i).le.tot_inert2(i)) then
-           dtot_inert(i)=tot_inert2(i)-tot_inert(i) !Increased mass
+        tot_inert2 = Mk(i,srtorg) * cvt2 * (1.0/boxvol)
+        if (tot_inert.le.tot_inert2) then
+           dtot_inert=tot_inert2-tot_inert !Increased mass
            q((i-1)*nsp+kpom) = q((i-1)*nsp+kpom) 
-     &                        + dtot_inert(i)* add_rt_pom(i)
+     &                        + dtot_inert* add_rt_pom(i)
            q((i-1)*nsp+kec) = q((i-1)*nsp+kec)
-     &                        + dtot_inert(i) * add_rt_ec(i)
+     &                        + dtot_inert2 * add_rt_ec(i)
            q((i-1)*nsp+kcrus) = q((i-1)*nsp+kcrus)
-     &                        + dtot_inert(i) * add_rt_crst(i)
+     &                        + dtot_inert2 * add_rt_crst(i)
            q((i-1)*nsp+kcl) = q((i-1)*nsp+kcl)
-     &                        + dtot_inert(i) * add_rt_cl(i)
+     &                        + dtot_inert2 * add_rt_cl(i)
            q((i-1)*nsp+kna) = q((i-1)*nsp+kna)
-     &                        + dtot_inert(i) * add_rt_na(i)
+     &                        + dtot_inert2 * add_rt_na(i)
            ! SOA is not added by aqueous chemistry
-           q((i-1)*nsp+kno3) = q((i-1)*nsp+kno3)                      ! cf
-     &                        + dtot_inert(i) * add_rt_no3(i)         ! cf
+           q((i-1)*nsp+kno3) = q((i-1)*nsp+kno3)
+     &                        + dtot_inert2 * add_rt_no3(i)
          else !redistribute as the portion of before aqueous chemistry
-           q((i-1)*nsp+kpom) = tot_inert2(i) * rt_pom(i)
-           q((i-1)*nsp+kec) = tot_inert2(i) * rt_ec(i)
-           q((i-1)*nsp+kcrus) = tot_inert2(i) * rt_crst(i)
-           q((i-1)*nsp+kcl) = tot_inert2(i) * rt_cl(i)
-           q((i-1)*nsp+kna) = tot_inert2(i) * rt_na(i)
+           q((i-1)*nsp+kpom) = tot_inert2 * rt_pom(i)
+           q((i-1)*nsp+kec) = tot_inert2 * rt_ec(i)
+           q((i-1)*nsp+kcrus) = tot_inert2 * rt_crst(i)
+           q((i-1)*nsp+kcl) = tot_inert2 * rt_cl(i)
+           q((i-1)*nsp+kna) = tot_inert2 * rt_na(i)
            ! SOA is not added by aqueous chemistry
-           q((i-1)*nsp+kno3) = tot_inert2(i) * rt_no3(i)               ! cf
+           q((i-1)*nsp+kno3) = tot_inert2 * rt_no3(i)
 cdbg           write(*,*)'Inert mass by aqueous chemistry is not increased'
-cdbg           write(*,*)'Inert mass before aqueous',tot_inert(i)
-cdbg           write(*,*)'Inert mass after aqueous',tot_inert2(i)
+cdbg           write(*,*)'Inert mass before aqueous',tot_inert
+cdbg           write(*,*)'Inert mass after aqueous',tot_inert2
 cdbg           write(*,*)'Coordinate =', ich, jch, kch
 cdbg           STOP
          endif   
@@ -433,6 +428,38 @@ c
          q((i-1)*nsp+knh4) = Mk(i,srtnh3) * cvt2 * (1.0/boxvol)
          ! Water is not changed by this process
       enddo      
+
+cnogas      if (h2so4.ge.0.0) then
+cnogas        q(naer+ih2so4) = h2so4 * 1.0d-6   ! h2so4 [=] ppt, q [=] ppm 
+cnogas      else
+cnogas        if (h2so4.gt.-eps) then
+cnogas          q(naer+ih2so4) = eps * 1.0d-6  ! h2so4 [=] ppt, q [=] ppm 
+cnogas          h2so4 = eps
+cnogas        else
+cnogas          write(*,*)'H2SO4 is less than zero'
+cnogas          write(*,*)'h2so4 [=]ppt',h2so4
+cnogas          write(*,*)'Coordinate =', ich, jch, kch
+cnogas          write(*,*)'dsulfdt=',dsulfdt
+cnogas          STOP
+cnogas        endif
+cnogas      endif
+
+cnogas      if (nh3ppt.ge.0.0) then
+cnogas        q(naer+inh3) = nh3ppt * 1.0d-6 
+cnogas      else
+cnogas        if (nh3ppt.gt.-eps) then
+cnogas          q(naer+inh3) = eps * 1.0d-6
+cnogas          nh3ppt = eps
+cnogas        else
+cnogas          write(*,*)'NH3 is less than zero'
+cnogas          write(*,*)'nh3ppt=',nh3ppt
+cnogas          write(*,*)'Coordinate =', ich, jch, kch
+cnogas          write(*,*)'dsulfdt=',dsulfdt
+cnogas          STOP
+cnogas        endif
+cnogas      endif
+
+
 
       RETURN
       END

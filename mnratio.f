@@ -37,9 +37,9 @@ c
                    print*,'Concentration=',c2d(l)
                    print*,'Coordinate='
                    if (flag.eq.1) then
-                     write(*,*)i,j,k
+                     print*,(i,j,k)
                    elseif (flag.eq.2) then
-                     write(*,*),j,i,k
+                     print*,(j,i,k)
                    endif
                    pause
                  endif

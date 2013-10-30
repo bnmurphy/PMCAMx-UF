@@ -202,7 +202,6 @@ c 	      massnuc = 4.d0/3.d0*pi*(rnuc*1.d-9)**3*1800.*fn*boxvol*
            print*,'gasConc',gasConc,' massnuc',massnuc
 	   print*,'gasConc too high in getH2SO4conc.f'
            print*,'nh3ppt=',nh3ppt
-           print*,'fn',fn,'rnuc',rnuc
            STOP
          endif
          enddo

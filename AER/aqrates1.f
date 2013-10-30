@@ -408,10 +408,10 @@ cdb110   continue
 c
 c     MASS BALANCE FOR SULFUR
 c
-c      sulfrate=yaqprime(3)/gmol(1)+yaqprime(6)/wmol(1)+         ! commented out by LA 
-c     & yaqprime(11)/wmol(2)                                     ! commented out by LA
-c      rsrate=sulfrate/(ABS(yaqprime(3))+ABS(yaqprime(11)) +     ! commented out by LA
-c     &  ABS(yaqprime(6)))                                       ! commented out by LA
+      sulfrate=yaqprime(3)/gmol(1)+yaqprime(6)/wmol(1)+
+     & yaqprime(11)/wmol(2)
+      rsrate=sulfrate/(ABS(yaqprime(3))+ABS(yaqprime(11)) +
+     &  ABS(yaqprime(6)))
 c      if (ABS(rsrate) .ge. 0.01) then
 c        write(80, *)'PROBLEM AT ',tmin/60.
 c        write(80, *) yaqprime(3),yaqprime(6),yaqprime(11)

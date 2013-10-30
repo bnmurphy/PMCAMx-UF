@@ -383,37 +383,35 @@ cdbg      write(*,*) 't=',tsum+dts,' ',limit
       if (tsum .lt. dt) then
          !Iteration
          itr=itr+1
-         if (itr.lt.10000) then
-c            write(*,*) 'Coord.(i,j,k)=',ichm,jchm,kchm
-c            write(*,*) 'An iteration in multicoag exceeds 5000'
-c            write(*,*) 'dt=',dt,'tsum=',tsum,'dts=',dts
-c            write(*,*) 'Nk='
-c            do k=1,ibins
-c              write(*,*)Nkf(k)
-c            enddo
-c            write(*,*) 'Mkf='
-c            do j=1,icomp
-c              write(*,*)'j=',j
-c              do k=1,ibins
-c                write(*,*)Mkf(k,j)
-c              enddo
-c            enddo
-c            write(*,*) 'dNdt='
-c            do k=1,ibins
-c              write(*,*)dNdt(k)
-c            enddo
-c            write(*,*) 'dMdt='
-c            do j=1,icomp
-c              write(*,*)'j=',j
-c              do k=1,ibins
-c                write(*,*)dMdt(k,j)
-c              enddo
-c            enddo
-c            STOP
-c         endif
-
-         goto 10
+         if (itr.gt.5000) then
+            write(*,*) 'Coord.(i,j,k)=',ichm,jchm,kchm
+            write(*,*) 'An iteration in multicoag exceeds 5000'
+            write(*,*) 'dt=',dt,'tsum=',tsum,'dts=',dts
+            write(*,*) 'Nk='
+            do k=1,ibins
+              write(*,*)Nkf(k)
+            enddo
+            write(*,*) 'Mkf='
+            do j=1,icomp
+              write(*,*)'j=',j
+              do k=1,ibins
+                write(*,*)Mkf(k,j)
+              enddo
+            enddo
+            write(*,*) 'dNdt='
+            do k=1,ibins
+              write(*,*)dNdt(k)
+            enddo
+            write(*,*) 'dMdt='
+            do j=1,icomp
+              write(*,*)'j=',j
+              do k=1,ibins
+                write(*,*)dMdt(k,j)
+              enddo
+            enddo
+            STOP
          endif
+         goto 10
       endif
 
 

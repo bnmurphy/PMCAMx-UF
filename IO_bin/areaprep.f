@@ -71,16 +71,6 @@ c-----Read 1st AREA header record and check inputs
 c             
          rewind(iarem)
          read(iarem) ifile,note,nseg,narspc,idat1,tim1,idat2,tim2
-c     added by LA
-c         write(*,*)
-c         write(*,*)'note = ',note
-c         write(*,*)'nseg = ',nseg
-c         write(*,*)'narspc = ',narspc
-c         write(*,*)'idat1 = ',idat1
-c         write(*,*)'tim1 = ',tim1
-c         write(*,*)'idat2 = ',idat2
-c         write(*,*)'tim2 = ',tim2
-c     end added by LA
          if( INT(tim2) .EQ. 24 ) then
              idat2 = idat2 + 1
              tim2 = 0.
@@ -145,19 +135,7 @@ c     end added by LA
 c 
 c-----Read 2nd AREA header record and check inputs 
 c 
-      read(iarem) orgx,orgy,izone,utmx,utmy,dx,dy,nx,ny,nz
-c     added by LA
-c         write(*,*)'orgx = ',orgx
-c         write(*,*)'orgy = ',orgy
-c         write(*,*)'izone = ',izone
-c         write(*,*)'utmx = ',utmx
-c         write(*,*)'utmy = ',utmy
-c         write(*,*)'dx = ',dx
-c         write(*,*)'dy = ',dy
-c         write(*,*)'nx = ',nx
-c         write(*,*)'ny = ',ny
-c         write(*,*)'nz = ',nz
-c     end added by LA
+      read(iarem) orgx,orgy,izone,utmx,utmy,dx,dy,nx,ny,nz 
       if (.NOT.llatlon) then
         dx = dx/1000.
         dy = dy/1000.
@@ -176,15 +154,8 @@ c     end added by LA
 c 
 c-----Read 3rd & 4th AREA header 
 c 
-      read(iarem) (idum,idum,idum,idum,n=1,nseg)
-c     added by LA
-c      write(*,*)'idum = ',idum
-c     end added by LA
-      read(iarem) ((arspec(n,l),n=1,10),l=1,narspc)
-c     added by LA
-c      write(*,*)
-c      write(*,*)'arspec = ',arspec
-c     end added by LA
+      read(iarem) (idum,idum,idum,idum,n=1,nseg) 
+      read(iarem) ((arspec(n,l),n=1,10),l=1,narspc) 
 c 
 c-----Map AREA species to model species 
 c 

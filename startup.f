@@ -100,8 +100,6 @@ c
       data inp /3/
       data ctlfil /'CAMx.in'/
       data camxv /'VERSION4.0'/
-
-      integer domlen_vec2d      ! Pavan
 c
 c-----Entry point
 c
@@ -243,12 +241,9 @@ c
      &                         ' the southern hemisphere'
            call camxerr()
          endif
-C*****Pavan: added  -> psp_stdlon, psp_truelat1, psp_lon1, psp_lat1
-C*****       remove -> polelon, polelat
       elseif( lpolar ) then
-         read(inprec(21:),*,ERR=7002,END=7002) xorg, yorg, delx, dely,
-     &                   psp_stdlon, psp_truelat1, psp_lon1, psp_lat1
-C*****
+         read(inprec(21:),*,ERR=7002,END=7002) xorg,yorg,delx,dely,
+     &                                             polelon,polelat
       else
          read(inprec(21:),*,ERR=7002,END=7002) xorg,yorg,delx,dely,
      &                                       xlonc,ylatc,tlat1,tlat2
@@ -743,7 +738,7 @@ c
      &         'UTM: zone number           : ',iuzon
       elseif (lpolar) then
         write(idiag,'(A,2F10.3)')
-     &         'Polar: pole lon/lat        : ',psp_stdlon, psp_truelat1, psp_lon1, psp_lat1
+     &         'Polar: pole lon/lat        : ',polelon,polelat
       elseif (lambrt) then
         write(idiag,'(A,4F10.3)')
      &         'Lmbrt: lonc/latc, true lats: ',xlonc,ylatc,tlat1,tlat2
@@ -1059,13 +1054,6 @@ c
 c-----Calculate grid parameters for coarse grid
 c
       call grdprep(ncol(1),nrow(1),cellon(1),cellat(1),mapscl(1))
-
-c-----Pavan (Pavan_Nandan_Racherla@alumni.cmu.edu)
-c-----Updated Oct 10 2008
-      write(iout, *) "Pavan: print lon/lat's for outermost domain"
-      do domlen_vec2d = 1, mxvec2d
-         write(iout, '(2(E14.6,1X))') cellon(domlen_vec2d), cellat(domlen_vec2d)
-      end do
 c
 c-----Calculate nested grid mapping parameters
 c

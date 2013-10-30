@@ -44,7 +44,7 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
       double precision H2SO4rate
 
       real dt
-c      double precision dt
+cjgj      double precision dt
 
 C-----VARIABLE DECLARATIONS---------------------------------------------
 
@@ -237,7 +237,7 @@ c            call ezwatereqm(Mk2,Mnuc2)
 
 c            call getCondSink(Nk2,Mk2,Nnuc2,Mnuc2,srtso4,CStest,sinkfrac)  
 
-            call ezcond(Nk2,Mk2,mcond,srtso4,Nk3,Mk3,ichm,jchm,kchm)
+            call ezcond(Nk2,Mk2,mcond,srtso4,Nk3,Mk3)
             Gc3(srtnh4) = Gc1(srtnh4)
 cdynamic            call eznh3eqm(Gc3,Mk3) ! NH3 is calculated dynamically.-on
             call ezwatereqm(Mk3)
@@ -256,13 +256,7 @@ Cjrp                  print*,''
 Cjrp
 Cjrp                  addt = min(addt,time_rem)
 Cjrp               else
-c               addt = min(addt*CSch_tol/CSch,addt*1.5d0) ! allow adaptive timestep to change  commented out by LA
-               if(CSch.le.eps) then   ! added by LA
-                  addt=addt*1.5d0
-               else
-                  addt=min(addt*CSch_tol/CSch,addt*1.5d0)
-               end if
-                     
+               addt = min(addt*CSch_tol/CSch,addt*1.5d0) ! allow adaptive timestep to change
                addt = min(addt,time_rem) ! allow adaptive timestep to change
                addt = max(addt,min_tstep)
 Cjrp               endif

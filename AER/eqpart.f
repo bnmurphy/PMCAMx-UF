@@ -65,38 +65,38 @@ cbk      real*8 qsav(ntotal), DQsav(nsp), accom(nsp)
       real*8 qq, frq0(nsec,nexti) ! bkoo (10/07/03)
       logical done
 
-c__cf      if(aerm.eq.'EQUI') then                                     ! cf
-cc                                                                     !
-cc     STEP 1/3: CALCULATE NUCLEATION RATE FOR THE WHOLE STEP          !
-cc                                                                     !
-c       call nucl(q)                                                   !
-cc                                                                     !
-cc     STEP 2/3: CALCULATE COAGULATION RATE FOR THE WHOLE STEP         !
-cc                                                                     !
-c       call coagul(q)                                                 !
-c                                                                      !
-ccbk       call step(nsec,q) ! tmg (10/22/02)                          !
-c      endif                                                           !
-c      call step(nsecx2,q) ! bkoo (03/07/03)                           !
-c      call wdiameter(q) ! bkoo (03/09/03)                             !
-c      call eqparto(t,q) ! bkoo (03/09/03)                             !
-c__cf                                                                  ! cf
+      if(aerm.eq.'EQUI') then	
+c
+c     STEP 1/3: CALCULATE NUCLEATION RATE FOR THE WHOLE STEP
+c
+       call nucl(q)
+c
+c     STEP 2/3: CALCULATE COAGULATION RATE FOR THE WHOLE STEP
+c
+       call coagul(q)
+
+cbk       call step(nsec,q) ! tmg (10/22/02)
+      endif
+      call step(nsecx2,q) ! bkoo (03/07/03)
+      call wdiameter(q) ! bkoo (03/09/03)
+      call eqparto(t,q) ! bkoo (03/09/03)
+c
 C     STEP 1:  DETERMINE BULK EQUILIBRIUM
 c
 C  INPUT:
 c     IPROB = 1=Reverse prob, 0=Foreward prob
-C  1. [WI]
-C     DOUBLE PRECISION array of length [NCOMP=5]. [NCOMP] is defined in
+C  1. [WI] 
+C     DOUBLE PRECISION array of length [NCOMP=5]. [NCOMP] is defined in 
 C     include file 'isrpia.inc'.
-C     Total aerosol concentrations, expressed in moles/m3.
+C     Total aerosol concentrations, expressed in moles/m3.  
 C     WI(1) - sodium,   expressed as [Na]
 C     WI(2) - sulfate,  expressed as [H2SO4]
 C     WI(3) - ammonium, expressed as [NH3]
 C     WI(4) - nitrate,  expressed as [HNO3]
 C     WI(5) - chloride, expressed as [HCl]
 C
-C  2. [RHI]
-C     DOUBLE PRECISION variable.
+C  2. [RHI] 
+C     DOUBLE PRECISION variable.  
 C     Ambient relative humidity expressed on a (0,1) scale.
 C
 C  3. [TEMPI]
@@ -112,15 +112,14 @@ C
       WI(2) = Q(ng+ih2SO4) / PROD*1.0d-6
       WI(3) = q(ng+iNH3)   / PROD*1.0d-6
       WI(4) = q(ng+ihNO3)  / PROD*1.0d-6
-c      WI(5) = q(ng+ihCL)   / PROD*1.0d-6
-      WI(5) = 0.0D0                                                   ! cf
+      WI(5) = q(ng+ihCL)   / PROD*1.0d-6
       do k=1,nsecx2                         ! aerosols
          nn=(k-1)*nsp
-c         WI(1) = wi(1)+ q(nn+KNa) /emw(KNa) *1.D-6                   ! cf
+         WI(1) = wi(1)+ q(nn+KNa) /emw(KNa) *1.D-6
          WI(2) = wi(2)+ q(nn+KSO4)/emw(KSO4)*1.D-6
          WI(3) = wi(3)+ q(nn+KNH4)/emw(KNH4)*1.D-6
          WI(4) = wi(4)+ q(nn+KNO3)/emw(KNO3)*1.D-6
-c         WI(5) = wi(5)+ q(nn+KCL) /emw(KCL) *1.D-6                   ! cf
+         WI(5) = wi(5)+ q(nn+KCL) /emw(KCL) *1.D-6
       enddo
       RHI=rh
       TEMPI=temp
@@ -144,8 +143,7 @@ c      DQ(KNA) =0.0D0                        ! SODIUM IS IN AEROSOL PHASE ONLY
       DQ(KSO4)=Q(ng+ih2so4)/prod            ! all H2SO4 condenses
       DQ(KNH4)=Q(NG+INH3)  /PROD - dmax1(GNH3 *1.0d6, 0.d0) ! bkoo (10/07/03)
       DQ(KNO3)=Q(NG+IHNO3) /PROD - dmax1(GHNO3*1.0d6, 0.d0) ! bkoo (10/07/03)
-c_cf      DQ(KCL) =Q(NG+IHCL)  /PROD - dmax1(GHCL *1.0d6, 0.d0) ! bkoo (10/07/03)     ! cf
-      DQ(KCL) =0.0D0                                                              !   cf
+      DQ(KCL) =Q(NG+IHCL)  /PROD - dmax1(GHCL *1.0d6, 0.d0) ! bkoo (10/07/03)
 C    DO ORGANICS  **ASSUME PS HAS NO SIZE OR COMPOSITION DEPENDANCE **
 cbk  removed - bkoo (03/09/03)
 cbk      DO IOG = 1,NORG-1
@@ -178,7 +176,7 @@ c     due to diferences between aerosol sectional vs. bulk composition
       do isec=1,nsecx2
         q0(1)=q0(1)+q((isec-1)*nsp+kno3)    ! initial aerosol NO3
         q0(2)=q0(2)+q((isec-1)*nsp+knh4)    ! initial aerosol NH4
-c        q0(3)=q0(3)+q((isec-1)*nsp+kcl)     ! initial aerosol Cl     !  cf
+        q0(3)=q0(3)+q((isec-1)*nsp+kcl)     ! initial aerosol Cl
       enddo
 C
 c   STEP 3: DETERMINE THE RELATIVE RATES OF MASS TRANSFER FOR EACH SECTION
@@ -451,21 +449,21 @@ cbk removed - bkoo (03/09/03)
 cbk      DO IOG = 1,NORG-1
 cbk       Q(NG+IHCL+IOG) =PS(1,IHCL+NORG)/(1.01325d-1*pres) ! pres (bkoo, 06/09/00)
 cbk      ENDDO
-ccf
-ccf      call negchk(t,q,nsecx2)
-ccf
-ccf      call eqneut(0, q) ! tmg (12/05/02)
-c
-cc_cf      if(aerm.eq.'EQUI') then ! (tmg,01/31/02)                       ! cf
-C                                                                         !
-C   STEP 5: CALL EQUILIBRIUM CODE FOR EACH SECTION TO DETERMINE WATER     !
-C                                                                         !
-cbk        CALL STEP(nsec,Q)  ! tmg (10/22/02) bkoo (03/07/03)            !
-C                                                                         !
-C   STEP 6: Determine new diameter                                        !
-C                                                                         !
-cc_cf        call ddiameter(q)                                            ! cf
-c      endif
+  
+      call negchk(t,q,nsecx2)
+
+      call eqneut(0, q) ! tmg (12/05/02)
+
+      if(aerm.eq.'EQUI') then ! (tmg,01/31/02)
+C
+C   STEP 5: CALL EQUILIBRIUM CODE FOR EACH SECTION TO DETERMINE WATER
+C
+cbk        CALL STEP(nsec,Q)  ! tmg (10/22/02) bkoo (03/07/03)
+C
+C   STEP 6: Determine new diameter
+C
+        call ddiameter(q)
+      endif
 C
       RETURN
       END     
@@ -483,101 +481,101 @@ c                    ntotald for dynamic     section of HYBR
 c
 c CHTOT: Total charge balance [umole/m3]
 c
-cc_cf      subroutine eqneut(is, q)
-c                                                                     ! cf
-c      include 'dynamic.inc'
+      subroutine eqneut(is, q)
+
+      include 'dynamic.inc'
+
+      real*8      q(ntotal),chtot,chmove,chno3,chcl,chnh4,prod
+      integer     nsx,ng,na,chspc(nexti)
+      integer     jani,jcat ! bkoo (10/07/03)
+      integer     kerr ! bkoo (01/06/04)
+
+c charges of H2O, Na, SO4, NO3, NH4, Cl
+      data chspc / 0, 1, -2, -1, 1, -1 /
+
+      nsx  = nsecx * is + nsecx2 * (1 - is)
+      ng   = nsp * nsx
+      prod = rgas*temp/(1.01325d5*pres) ! PPM / prod = UMOLE/M3
+
+c      if(is) call negchk(0.d0,q,nsecx)
+
+      do i = 1, nsx
+        na = (i-1)*nsp
+        chtot = 0.0d0
+        jani = 0 ! bkoo (10/07/03)
+        jcat = 0 ! bkoo (10/07/03)
+        do j = 2, nexti ! the first element is H2O
+          chtot = chtot + DBLE(chspc(j)) * q(na+j) / emw(j)
+          if(chspc(j).lt.0 .and. q(na+j).gt.tinys) jani = 1 ! bkoo (10/07/03)
+          if(chspc(j).gt.0 .and. q(na+j).gt.tinys) jcat = 1 ! bkoo (10/07/03)
+        enddo
+c BASIC:
+        if(chtot .gt. 0.0d0 .and. jani .eq. 0) then ! bkoo (10/07/03)
+          chno3 = (q(ng+IHNO3)/prod)
+          chcl  = (q(ng+IHCL) /prod)
+          chnh4 = (q(na+KNH4) /emw(KNH4))
+c first move HCl in
+          chmove     = max(min(chtot, chcl),0.0d0)
+          q(na+KCL)  = q(na+KCL)  + chmove * emw(KCL)
+          q(ng+IHCL) = max(q(ng+IHCL) - chmove * prod,0.0d0)
+          chtot      = chtot - chmove
+c then move HNO3 in
+          chmove     = max(min(chtot, chno3),0.0d0)
+          q(na+KNO3) = q(na+KNO3) + chmove * emw(KNO3)
+          q(ng+IHNO3)= max(q(ng+IHNO3)- chmove * prod,0.0d0)
+          chtot      = chtot - chmove
+c then move NH4 out
+          chmove     = max(min(chtot, chnh4),0.0d0)
+          q(na+KNH4) = max(q(na+KNH4) - chmove * emw(KNH4),0.0d0)
+          q(ng+INH3) = q(ng+INH3) + chmove * prod
+          chtot      = chtot - chmove
+        endif                                       ! bkoo (10/07/03)
+c ACIDIC:
+        if(chtot .lt. 0.0d0 .and. jcat .eq. 0) then ! bkoo (10/07/03)
+          chtot = -1.0d0 * chtot
+          chno3 = (q(na+KNO3)/emw(KNO3))
+          chcl  = (q(na+KCL) /emw(KCL))
+          chnh4 = (q(ng+INH3)/prod)
+c first move NH3 in
+          chmove     = max(min(chtot, chnh4),0.0d0)
+          q(na+KNH4) = q(na+KNH4) + chmove * emw(KNH4)
+          q(ng+INH3) = max(q(ng+INH3) - chmove * prod,0.0d0)
+          chtot      = chtot - chmove
+c then move HCl out
+          chmove     = max(min(chtot, chcl),0.0d0)
+          q(na+KCL)  = max(q(na+KCL)  - chmove * emw(KCL),0.0d0)
+          q(ng+IHCL) = q(ng+IHCL) + chmove * prod
+          chtot      = chtot - chmove
+c then move HNO3 out
+          chmove     = max(min(chtot, chno3),0.0d0)
+          q(na+KNO3) = max(q(na+KNO3) - chmove * emw(KNO3),0.0d0)
+          q(ng+IHNO3)= q(ng+IHNO3)+ chmove * prod
+          chtot      = chtot - chmove
+        endif
+      enddo
 c
-c      real*8      q(ntotal),chtot,chmove,chno3,chcl,chnh4,prod
-c      integer     nsx,ng,na,chspc(nexti)
-c      integer     jani,jcat ! bkoo (10/07/03)
-c      integer     kerr ! bkoo (01/06/04)
+c     check the charge balance in each section - bkoo (01/06/04)
 c
-cc charges of H2O, Na, SO4, NO3, NH4, Cl
-c      data chspc / 0, 1, -2, -1, 1, -1 /
-c
-c      nsx  = nsecx * is + nsecx2 * (1 - is)
-c      ng   = nsp * nsx
-c      prod = rgas*temp/(1.01325d5*pres) ! PPM / prod = UMOLE/M3
-c
-cc      if(is) call negchk(0.d0,q,nsecx)
-c
-c      do i = 1, nsx
-c        na = (i-1)*nsp
-c        chtot = 0.0d0
-c        jani = 0 ! bkoo (10/07/03)
-c        jcat = 0 ! bkoo (10/07/03)
-c        do j = 2, nexti ! the first element is H2O
-c          chtot = chtot + DBLE(chspc(j)) * q(na+j) / emw(j)
-c          if(chspc(j).lt.0 .and. q(na+j).gt.tinys) jani = 1 ! bkoo (10/07/03)
-c          if(chspc(j).gt.0 .and. q(na+j).gt.tinys) jcat = 1 ! bkoo (10/07/03)
-c        enddo
-cc BASIC:
-c        if(chtot .gt. 0.0d0 .and. jani .eq. 0) then ! bkoo (10/07/03)
-c          chno3 = (q(ng+IHNO3)/prod)
-c          chcl  = (q(ng+IHCL) /prod)
-c          chnh4 = (q(na+KNH4) /emw(KNH4))
-cc first move HCl in
-c          chmove     = max(min(chtot, chcl),0.0d0)
-c          q(na+KCL)  = q(na+KCL)  + chmove * emw(KCL)
-c          q(ng+IHCL) = max(q(ng+IHCL) - chmove * prod,0.0d0)
-c          chtot      = chtot - chmove
-cc then move HNO3 in
-c          chmove     = max(min(chtot, chno3),0.0d0)
-c          q(na+KNO3) = q(na+KNO3) + chmove * emw(KNO3)
-c          q(ng+IHNO3)= max(q(ng+IHNO3)- chmove * prod,0.0d0)
-c          chtot      = chtot - chmove
-cc then move NH4 out
-c          chmove     = max(min(chtot, chnh4),0.0d0)
-c          q(na+KNH4) = max(q(na+KNH4) - chmove * emw(KNH4),0.0d0)
-c          q(ng+INH3) = q(ng+INH3) + chmove * prod
-c          chtot      = chtot - chmove
-c        endif                                       ! bkoo (10/07/03)
-cc ACIDIC:
-c        if(chtot .lt. 0.0d0 .and. jcat .eq. 0) then ! bkoo (10/07/03)
-c          chtot = -1.0d0 * chtot
-c          chno3 = (q(na+KNO3)/emw(KNO3))
-c          chcl  = (q(na+KCL) /emw(KCL))
-c          chnh4 = (q(ng+INH3)/prod)
-cc first move NH3 in
-c          chmove     = max(min(chtot, chnh4),0.0d0)
-c          q(na+KNH4) = q(na+KNH4) + chmove * emw(KNH4)
-c          q(ng+INH3) = max(q(ng+INH3) - chmove * prod,0.0d0)
-c          chtot      = chtot - chmove
-cc then move HCl out
-c          chmove     = max(min(chtot, chcl),0.0d0)
-c          q(na+KCL)  = max(q(na+KCL)  - chmove * emw(KCL),0.0d0)
-c          q(ng+IHCL) = q(ng+IHCL) + chmove * prod
-c          chtot      = chtot - chmove
-cc then move HNO3 out
-c          chmove     = max(min(chtot, chno3),0.0d0)
-c          q(na+KNO3) = max(q(na+KNO3) - chmove * emw(KNO3),0.0d0)
-c          q(ng+IHNO3)= q(ng+IHNO3)+ chmove * prod
-c          chtot      = chtot - chmove
-c        endif
-c      enddo
-cc
-cc     check the charge balance in each section - bkoo (01/06/04)
-cc
-c      do i = 1, nsx
-c        na = (i-1)*nsp
-c        kerr = 0
-c        if (q(na+KNA).gt.tinys .or. q(na+KNH4).gt.tinys) then
-c          if (q(na+KSO4).le.tinys .and. q(na+KNO3).le.tinys .and.
-c     &        q(na+KCL).le.tinys) kerr = 1
-ccbk          if ( (2.*q(na+KSO4)/emw(KSO4)+q(na+KNO3)/emw(KNO3)+q(na+KCL)
-ccbk     &            /emw(KCL))/(q(na+KNA)/emw(KNA)+q(na+KNH4)/emw(KNH4))
-ccbk     &            .gt.0.2e10) kerr = 1
-c        else
-c          if (q(na+KNO3).gt.tinys .or. q(na+KCL).gt.tinys) kerr = 1
-c        endif
-c        if (kerr.ne.0) then
-c          call get_param(igrdchm,ichm,jchm,kchm,iout,idiag)
-cctmg          write(iout,'(//,A)')'CHECK in EQNEUT'
-cctmg          write(iout,*)' q(',i,'): ',(q(na+j),j=2,nexti)
-cctmg          write(iout,*)' igrd,i,j,k: ',igrdchm,ichm,jchm,kchm
-c        endif
-c      enddo
-c
-c      return
-c      end                                                            ! cf
-c
+      do i = 1, nsx
+        na = (i-1)*nsp
+        kerr = 0
+        if (q(na+KNA).gt.tinys .or. q(na+KNH4).gt.tinys) then
+          if (q(na+KSO4).le.tinys .and. q(na+KNO3).le.tinys .and.
+     &        q(na+KCL).le.tinys) kerr = 1
+cbk          if ( (2.*q(na+KSO4)/emw(KSO4)+q(na+KNO3)/emw(KNO3)+q(na+KCL)
+cbk     &            /emw(KCL))/(q(na+KNA)/emw(KNA)+q(na+KNH4)/emw(KNH4))
+cbk     &            .gt.0.2e10) kerr = 1
+        else
+          if (q(na+KNO3).gt.tinys .or. q(na+KCL).gt.tinys) kerr = 1
+        endif
+        if (kerr.ne.0) then
+          call get_param(igrdchm,ichm,jchm,kchm,iout,idiag)
+ctmg          write(iout,'(//,A)')'CHECK in EQNEUT'
+ctmg          write(iout,*)' q(',i,'): ',(q(na+j),j=2,nexti)
+ctmg          write(iout,*)' igrd,i,j,k: ',igrdchm,ichm,jchm,kchm
+        endif
+      enddo
+
+      return
+      end
+

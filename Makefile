@@ -47,24 +47,81 @@ TARGT = CAMx
 
 default:
 	@echo '---------------------------------------------------------'
-	@echo 'To make PMCAMx.exe type make PMCAMx.exe DOMAIN=string'
+	@echo 'This is the Makefile for CAMx v4.00'
+	@echo ' '
+	@echo 'Syntax is: "make platform DOMAIN=string"'
+	@echo ' '
+	@echo 'Acceptable platforms are:'
+	@echo '          dec        -- configure for DEC/Alpha platform'
+	@echo '          linux      -- configure for Linux platform'
+	@echo '          linuxomp   -- configure for Linux platform w/OMP'
+	@echo '          sgi        -- configure for SGI platform'
+	@echo '          sgiomp     -- configure for SGI platform w/OMP'
+	@echo '          sun        -- configure for SUN platform'
+	@echo '          hp         -- configure for HP platform'
+	@echo '          ibm        -- configure for IBM platform'
+	@echo ' '
+	@echo 'Do not use OMP for modeling PM with mechanism 4 '
+	@echo ' '
 	@echo '----------------------------------------------------------'
 
-# Pavan Nandan Racherla (pavanracherla@cmu.edu) removed the -ipo flag, which performs inter procedural optimizations.
-# Date: Oct 1 2008.
-PMCAMx.exe:
+
+dec:
 	@rm -f $(INC)/camx.prm
-	@csh chktracer camx.prm.$(DOMAIN) PMCAMx.exe
+	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).dec
 	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC="ifort" FLGS="-I$(INC) -O2 -fpe3 -traceback -align dcommons -extend_source -convert big_endian -mcmodel=medium -i-dynamic" TARGT="PMCAMx.exe" DUM=dummy
-#	make model FC="pgf90" FLGS="-I$(INC) -g -tp k8-64 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl, -mcmodel=medium" TARGT="PMCAMx.exe" DUM=dummy
-#	make model FC="pgf90" FLGS="-I$(INC) -O2 -tp p6 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl,-Bstatic" TARGT="PMCAMx.exe" DUM=dummy
+	make model FC="f77" FLGS="-I$(INC) -convert big_endian -O3 -align dcommons" TARGT=CAMx.$(DOMAIN).dec DUM=dummy
+
+sgi:
+	@rm -f $(INC)/camx.prm
+	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).sgi
+	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
+	make model FC="f77" FLGS="-O2 -Wf,-I$(INC)" TARGT="CAMx.$(DOMAIN).sgi" DUM=dummy
+
+sgiomp:
+	@rm -f $(INC)/camx.prm
+	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).sgiomp
+	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
+	make model FC="f77" FLGS="-mp -Wf,-I$(INC)" TARGT="CAMx.$(DOMAIN).sgiomp" DUM=dummy_omp
+
+sun:
+	@rm -f $(INC)/camx.prm
+	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).sun
+	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
+	make model FC="f77" FLGS="-I$(INC)" TARGT="CAMx.$(DOMAIN).sun" DUM=dummy
+
+hp:
+	@rm -f $(INC)/camx.prm
+	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).hp
+	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
+	make model FC="f77" FLGS="-I$(INC) -O +U77 +FPVZODu" TARGT="CAMx.$(DOMAIN).hp" DUM=dummy
+
+ibm:
+	@rm -f $(INC)/camx.prm
+	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).ibm
+	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
+	make model FC="xlf" FLGS="-I$(INC) -O2 -static -I$(INC) -brename:.flush,.flush_ -brename:.etime,.etime_  -brename:.dtime,.dtime_ -brename:.fdate,.fdate_" TARGT="CAMx.$(DOMAIN).ibm" DUM=dummy
+
+linux:
+	@rm -f $(INC)/camx.prm
+	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).linux
+	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
+#	make model FC="pgf77" FLGS="-I$(INC) -g -tp p6 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl,-Bstatic" TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
+#	make model FC="pgf77" FLGS="-I$(INC) -g -tp k8-64 -pc 64 -Mnoframe -byteswapio -Wl,-Bstatic" TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
+	make model FC="pgf77" FLGS="-I$(INC) -g -tp k8-64 -pc 64 -Mnoframe -byteswapio -Wl, -mcmodel=medium" TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
+#	make model FC="pgf77" FLGS="-I$(INC) -O2 -tp k8-64 -pc 64 -Mnoframe -byteswapio -Wl, -mcmodel=medium" TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
+#	make model FC="pgf77" FLGS="-I$(INC) -O2 -tp k8-64 -pc 64 -Mnoframe -byteswapio -Wl" TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
+#	make model FC="pgf77" FLGS="-I$(INC) -tp k8-64 -pc 64 -Mnoframe -byteswapio -Wl," TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
+linuxomp:
+linuxomp:
+	@rm -f $(INC)/camx.prm
+	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).linuxomp
+	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
+	make model FC="pgf77" FLGS="-I$(INC) -O2 -mp -tp p6 -pc 64 -Mnoframe -byteswapio -Wl,-Bstatic" TARGT="CAMx.$(DOMAIN).linuxomp" DUM=dummy_omp
 
 clean:	
-	rm -f $(OBJCTS) dummy*.o
+	rm -f $(OBJCTS) dummy*.o CAMx.ladco.linux
 
-superclean:	
-	rm -f $(OBJCTS) dummy*.o *.exe *.mod
 
 OBJCTS = \
 CAMx.o \
@@ -106,7 +163,6 @@ fullaero.o \
 getdelt.o \
 getznth.o \
 grdprep.o \
-pspgeo.o \
 hadvbot.o \
 hadvppm.o \
 iassgn2d.o \
@@ -135,7 +191,7 @@ numconv.o \
 parntchd.o \
 plumeris.o \
 pntprep.o \
-ProjUtils.o\
+pspgeo.o \
 raddrivr.o \
 rassgn3d.o \
 rassgn4d.o \
@@ -427,33 +483,8 @@ $(PSSA)/waternacl.o
 
 model: 	$(OBJCTS)
 	$(FC) -o $(TARGT) $(FLGS) $(OBJCTS) $(LIBS)
-
-# Modifications by Pavan Nandan Racherla (July 2 2008)--->
-# Date: July 2 2008.
-
-# Suffixes and instructions on how to compile those files:
-.SUFFIXES : .f90 .f .mod .o
-.f90.o :
+.f.o	:
 	$(FC) -c -o $@ $(FLGS) $<
-.f.o :
-	$(FC) -c -o $@ $(FLGS) $<
-
-# Build module files using a 'touch' command:
-# 'touch' updates the access time and modification time/dates to the current time and date
-# if the .mod file does'nt exist, 'touch' creates it with a filesize of 0
-%.mod :
-	@if [ ! -s $@ ] ; then \
-	echo "error, module file deleted?"; rm $^; exit 1; fi
-	echo "module file $@ considered updated through dependence on $^"
-	touch $@
-
-# module-object dependencies:
-projutils.mod : ProjUtils.o
-
-# Instructions to create objects wrt modules (based on the USE statements)
-pspgeo.o : projutils.mod
-
-# End of my modifications
 
 
 CAMx.o 			: CAMx.f                                               \
@@ -533,12 +564,10 @@ drydep.o 		: drydep.f                                             \
                         $(INC)/filunit.com $(INC)/section.inc
 
 CAMx2dman.o	        : CAMx2dman.f                                          \
-                        $(INC)/dynamic.inc $(INC)/aervaria.inc                 
+                        $(INC)/dynamic.inc $(INC)/aervaria.inc                 \
 
 CAMx2so4cond.o	        : CAMx2so4cond.f                                       \
-                        $(INC)/dynamic.inc $(INC)/aerpar.inc                   \
-                        $(INC)/camx_aero.inc $(INC)/droppar.inc                \
-                        $(INC)/dropcom.inc
+                        $(INC)/dynamic.inc $(INC)/aervaria.inc                 \
 
 emiss.o 		: emiss.f                                              \
                         $(INC)/camx.prm $(INC)/ptemiss.com $(INC)/bndary.com   \
@@ -1524,4 +1553,4 @@ $(PSSA)/vehk_nucl.o	  : $(PSSA)/vehk_nucl.f
 
 $(PSSA)/waterso4.o	  : $(PSSA)/waterso4.f	
 
-$(PSSA)/waternacl.o	  : $(PSSA)/waternacl.f
+$(PSSA)/waternacl.o	  : $(PSSA)/waternacl.f 

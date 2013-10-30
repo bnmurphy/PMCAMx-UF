@@ -366,9 +366,8 @@ C-----Calculate tau values for all species/bins
            do kk=1,ibins
               sumataunh3=sumataunh3+atau(kk,srtnh4)
            enddo
-           Gcknh3(k)=Gcf(srtnh4)*atau(k,srtnh4)/sumataunh3
-           Mknh3max=Mkf(k,srtnh3)+Gcknh3(k)
-c           Mknh3max=0.375*Mkf(k,srtso4)+Gcknh3(k)
+           Gcknh3(k)=Gcf(srtnh4)*atau(kk,srtnh4)/sumataunh3
+           Mknh3max=0.375*Mkf(k,srtso4)+Gcknh3(k)
                                          ! maximally allowable NH4 mass
         else !Total ammonia rich condition
            Mknh3max=0.375*Mkf(k,srtso4) ! maximally allowable NH4 mass
@@ -465,10 +464,7 @@ cdbg        endif
       enddo
 
       !Never shorten timestep by less than half
-c     changed by LA
       if (tr .gt. 1.0) tr=max(tr,2.0)
-c      if (tr .gt. 1.0) tr=max(tr,2.D0)
-c     end changed by LA
 
       !Repeat for shorter time step if necessary
       if (tr .gt. 1.0) then
@@ -554,7 +550,7 @@ cdbg         dNerr=dNerr+Ntotf-Ntoto
      &             ,Ntoto, Ntotf, dNerr/Ntoto
           if (abs(dNerr/Ntoto) .gt. 1.d-2) then
             write(*,*)'Serious Error in so4cond: Number not conserved 
-     &less than 1 %'
+&less than 1 %'
             write(*,*) 'Coord.(i,j,k)=',ichm,jchm,kchm
             STOP
           endif

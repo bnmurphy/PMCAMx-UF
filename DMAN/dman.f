@@ -267,7 +267,7 @@ cPMCAMx        endif
      &              iflagez) 
                                                            !Only ammonia
         if (iflagez.eq.1) then
-          call eznh3(Gc,Mk,Nk,Gcout,Mkout,Nkout,ichm,jchm,kchm)
+          call eznh3(Gc,Mk,Gcout,Mkout,ichm,jchm,kchm)
         endif
 
         do i=1,ibins
@@ -357,8 +357,8 @@ cdbg      endif
 
       !Call Pseudo Steady State condensation and nucleation
       if (inucl .eq. 1) then
-        call cond_nuc(Nk,Mk,Gc,Nkout,Mkout,Gcout,H2SO4rate,dt,
-     &   ichm,jchm,kchm)
+        call cond_nuc(Nk,Mk,Gc,Nkout,Mkout,Gcout,H2SO4rate,dt,xk,
+     &   temp,pres,rh,boxvol,ichm,jchm,kchm)
       endif
 
       do i=1,ibins
