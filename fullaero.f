@@ -391,7 +391,7 @@ ckf
 	 nitaf = nitaf+aerosol(i,nan)*14./62.
 	 enddo
 	 nitaf = nitaf+(14*prs/(8.314e-5*tempk))*(gas(ngn)+gas(nghno2)
-     & +gas(ngno3)+gas(ngno)+gas(ngno2)+gas(ngpan))    
+     &           +gas(ngno3)+gas(ngno)+gas(ngno2)+gas(ngpan))    
 	 nitbal = nitaf/nitbef
 	 
 c	 write(*,*) nitbal
@@ -454,8 +454,17 @@ cjgj          con(kcrst_c+(knsec-1)) = aerosol(knsec,nar)
           moxid0(knsec,kpoc_c) = aerosol(knsec,nao) - arsl(knsec,nao)
           moxid0(knsec,kpec_c) = aerosol(knsec,nae) - arsl(knsec,nae)
           moxid0(knsec,kcrst_c) = aerosol(knsec,nar) - arsl(knsec,nar)
+
+CBNM
+C	  Modify moxid0 to enhance growth to small particles due to aqueous-
+C	  phase chemistry. Collaboration with Ilona Riipinen
+C	  if (knsec.le.15) then 	!Size-Section with Upper-Limit at 25.6 nm
+C	    moxid0(knsec,kpso4_c) = moxid0(knsec,lpso4_c) * 4
+C	  endif
+CBNM
+
         enddo
-       iaqflag = 1
+        iaqflag = 1
        endif
        modeaero = 1
       endif
@@ -482,21 +491,20 @@ c     map con to q [ugr/m3]  gas in ppm
 c     For number conc., q [#/cm3]
 c
         do knsec=1,nsec
-          q((knsec-1)*nsp+kcl+1)=con(ksoa1_c+(knsec-1))
-          q((knsec-1)*nsp+kcl+2)=con(ksoa2_c+(knsec-1))
-          q((knsec-1)*nsp+kcl+3)=con(ksoa3_c+(knsec-1))
-          q((knsec-1)*nsp+kcl+4)=con(ksoa4_c+(knsec-1))
-          q((knsec-1)*nsp+kso4)=con(kpso4_c+(knsec-1)) / 96.  * 98.
-          q((knsec-1)*nsp+kcl)=con(kpcl_c+(knsec-1))   / 35.5 * 36.5
-          q((knsec-1)*nsp+kno3)=con(kpno3_c+(knsec-1)) / 62.  * 63.
-          q((knsec-1)*nsp+kna)=con(kna_c+(knsec-1))
-          q((knsec-1)*nsp+knh4)=con(kpnh4_c+(knsec-1)) / 18.  * 17.
-          q((knsec-1)*nsp+kh2o)=con(kph2o_c+(knsec-1))
-          q((knsec-1)*nsp+kec)=con(kpec_c+(knsec-1))
-          q((knsec-1)*nsp+kpom)=con(kpoc_c+(knsec-1))
-          q((knsec-1)*nsp+kcrus)=con(kcrst_c+(knsec-1))
-          q((knsec-1)*nsp+knum)=con(knum_c+(knsec-1))
-                     ! Number concentration jgj 2/28/06
+          q((knsec-1)*nsp+kcl+1) = con(ksoa1_c+(knsec-1))
+          q((knsec-1)*nsp+kcl+2) = con(ksoa2_c+(knsec-1))
+          q((knsec-1)*nsp+kcl+3) = con(ksoa3_c+(knsec-1))
+          q((knsec-1)*nsp+kcl+4) = con(ksoa4_c+(knsec-1))
+          q((knsec-1)*nsp+kso4)  = con(kpso4_c+(knsec-1)) / 96.  * 98.
+          q((knsec-1)*nsp+kcl)   = con(kpcl_c+(knsec-1))   / 35.5 * 36.5
+          q((knsec-1)*nsp+kno3)  = con(kpno3_c+(knsec-1)) / 62.  * 63.
+          q((knsec-1)*nsp+kna)   = con(kna_c+(knsec-1))
+          q((knsec-1)*nsp+knh4)  = con(kpnh4_c+(knsec-1)) / 18.  * 17.
+          q((knsec-1)*nsp+kh2o)  = con(kph2o_c+(knsec-1))
+          q((knsec-1)*nsp+kec)   = con(kpec_c+(knsec-1))
+          q((knsec-1)*nsp+kpom)  = con(kpoc_c+(knsec-1))
+          q((knsec-1)*nsp+kcrus) = con(kcrst_c+(knsec-1))
+          q((knsec-1)*nsp+knum)  = con(knum_c+(knsec-1))	! Number concentration jgj 2/28/06
         enddo
 
         if (iaqflag.eq.1) then
@@ -558,20 +566,20 @@ c
 c     map q back to con 
 c
         do knsec=1,nsec
-          con(ksoa1_c+(knsec-1))=q((knsec-1)*nsp+kcl+1)
-          con(ksoa2_c+(knsec-1))=q((knsec-1)*nsp+kcl+2)
-          con(ksoa3_c+(knsec-1))=q((knsec-1)*nsp+kcl+3)
-          con(ksoa4_c+(knsec-1))=q((knsec-1)*nsp+kcl+4)
+          con(ksoa1_c+(knsec-1)) = q((knsec-1)*nsp+kcl+1)
+          con(ksoa2_c+(knsec-1)) = q((knsec-1)*nsp+kcl+2)
+          con(ksoa3_c+(knsec-1)) = q((knsec-1)*nsp+kcl+3)
+          con(ksoa4_c+(knsec-1)) = q((knsec-1)*nsp+kcl+4)
           con(kpso4_c+(knsec-1))=q((knsec-1)*nsp+kso4) * 96.d0  / 98.d0
           con(kpcl_c +(knsec-1))=q((knsec-1)*nsp+kcl)  * 35.5d0 / 36.5d0
           con(kpno3_c+(knsec-1))=q((knsec-1)*nsp+kno3) * 62.d0  / 63.d0
-          con(kna_c  +(knsec-1))=q((knsec-1)*nsp+kna)
+          con(kna_c  +(knsec-1)) = q((knsec-1)*nsp+kna)
           con(kpnh4_c+(knsec-1))=q((knsec-1)*nsp+knh4) * 18.d0  / 17.d0
-          con(kph2o_c+(knsec-1))=q((knsec-1)*nsp+kh2o)
-          con(kcrst_c+(knsec-1))=q((knsec-1)*nsp+kcrus)
-          con(kpec_c +(knsec-1))=q((knsec-1)*nsp+kec)
-          con(kpoc_c +(knsec-1))=q((knsec-1)*nsp+kpom)
-          con(knum_c+(knsec-1))=q((knsec-1)*nsp+knum)
+          con(kph2o_c+(knsec-1)) = q((knsec-1)*nsp+kh2o)
+          con(kcrst_c+(knsec-1)) = q((knsec-1)*nsp+kcrus)
+          con(kpec_c +(knsec-1)) = q((knsec-1)*nsp+kec)
+          con(kpoc_c +(knsec-1)) = q((knsec-1)*nsp+kpom)
+          con(knum_c+(knsec-1))  = q((knsec-1)*nsp+knum)
                      ! Number concentration jgj 2/28/06
         enddo
 c
