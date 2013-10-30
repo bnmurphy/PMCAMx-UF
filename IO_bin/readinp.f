@@ -124,6 +124,9 @@ c-----Read height/pressure file for coarse grid and optionally for any fine
 c     grids
 c
       iunit = ihtp(igrd)
+c     added by LA
+c      write(*,*)'iunit=',iunit
+c     end added by LA
       if( iunit .GT. 0 ) then
  101     continue
          do k = 1,nglay

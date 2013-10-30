@@ -157,11 +157,35 @@ cdbg      print*,'nsteps',nsteps
             enddo
          endif      
 
-         do k=1,ibins
+c         do k=1,ibins ! commented out by LA
+c            mpo=0.0
+c            mpw=0.0
+c            !WIN'S CODE MODIFICATION 6/19/06
+c            !THIS MUST CHANGED WITH THE NEW dmdt_int.f
+c            do j=1,icomp-idiag
+c               mpo = mpo+Mk1(k,j)  !accumulate dry mass
+c            enddo
+c            do j=1,icomp
+c               mpw = mpw+Mk1(k,j)  ! have wet mass include amso4
+c            enddo
+c            WR = mpw/mpo  !WR = wet ratio = total mass/dry mass
+c            if (Nk1(k) .gt. 0.d0) then
+c               maddp(k) = mconds*sinkfrac(k)/totsinkfrac/Nk1(k)
+c               mpw=mpw/Nk1(k)
+cdbg               print*,'k',k,'mpw',mpw,'maddp(k)',maddp(k),'WR',WR
+c               tau(k)=1.5d0*((mpw+maddp(k)*WR)**tdt-mpw**tdt)  
+c                              !added WR to moxid term (win, 5/15/06)
+c            else
+c               !nothing in this bin - set tau to zero
+c               tau(k)=0.d0
+c               maddp(k) = 0.d0
+c            endif
+c         enddo
+
+         do k=1,ibins      ! do-loop changed by LA
             mpo=0.0
             mpw=0.0
-            !WIN'S CODE MODIFICATION 6/19/06
-            !THIS MUST CHANGED WITH THE NEW dmdt_int.f
+            if(Nk1(k).gt.0.d0) then !! this is the change
             do j=1,icomp-idiag
                mpo = mpo+Mk1(k,j)  !accumulate dry mass
             enddo
@@ -169,7 +193,7 @@ cdbg      print*,'nsteps',nsteps
                mpw = mpw+Mk1(k,j)  ! have wet mass include amso4
             enddo
             WR = mpw/mpo  !WR = wet ratio = total mass/dry mass
-            if (Nk1(k) .gt. 0.d0) then
+c            if (Nk1(k) .gt. 0.d0) then   commented out by LA
                maddp(k) = mconds*sinkfrac(k)/totsinkfrac/Nk1(k)
                mpw=mpw/Nk1(k)
 cdbg               print*,'k',k,'mpw',mpw,'maddp(k)',maddp(k),'WR',WR

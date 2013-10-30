@@ -44,7 +44,7 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
       double precision H2SO4rate
 
       real dt
-cjgj      double precision dt
+c      double precision dt
 
 C-----VARIABLE DECLARATIONS---------------------------------------------
 
@@ -256,7 +256,13 @@ Cjrp                  print*,''
 Cjrp
 Cjrp                  addt = min(addt,time_rem)
 Cjrp               else
-               addt = min(addt*CSch_tol/CSch,addt*1.5d0) ! allow adaptive timestep to change
+c               addt = min(addt*CSch_tol/CSch,addt*1.5d0) ! allow adaptive timestep to change  commented out by LA
+               if(CSch.le.eps) then   ! added by LA
+                  addt=addt*1.5d0
+               else
+                  addt=min(addt*CSch_tol/CSch,addt*1.5d0)
+               end if
+                     
                addt = min(addt,time_rem) ! allow adaptive timestep to change
                addt = max(addt,min_tstep)
 Cjrp               endif

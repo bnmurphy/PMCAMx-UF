@@ -144,6 +144,10 @@ c
   100 continue
       nsteps = nsteps + 1
       xyordr = mod(nsteps,2)
+c     added by LA
+c      write(*,*)
+c      write(*,*)'xyordr = ',xyordr
+c     end added by LA
       write(iout,*)
       write(iout,'(a,i8.5,f8.2)') 'Date/time: ',date,time
       write(iout,*)
@@ -154,6 +158,11 @@ c
 c-----Check if time-varying grid/met data are to be read
 c
       if (date.eq.inpdate .and. abs(time-inptim).lt.0.01) then
+c     added by LA
+c        write(*,*)
+c        write(*,*)'time = ',time
+c        write(*,*)'inptim bef = ',inptim
+c     end added by LA
         write(*,'(a20,$)') 'readinp ......'
         tcpu = dtime(tarray2)
         do 10 igrd = 1,ngrid
@@ -183,8 +192,17 @@ c
         write(*,'(a,f10.3)') '   CPU = ', tarray2(1)
         whr = aint(inptim/100.)
         wmn = amod(inptim,100.)
+c     added by LA
+c        write(*,*)
+c        write(*,*)'whr = ',whr
+c        write(*,*)'wmn = ',wmn
+c     end added by LA
         inptim = 100.*(whr + aint((wmn + dtinp)/60.)) + 
      &             amod((wmn + dtinp),60.)
+c     added by LA
+c        write(*,*)
+c        write(*,*)'inptim = ',inptim
+c     end added by LA
         if (inptim.ge.2400.) then
           inptim = inptim - 2400.
           inpdate = inpdate + 1
@@ -200,6 +218,10 @@ c
 c
 c-----Initialize concentrations from an AIRQUALITY file or RESTART files
 c
+c     added by LA
+c        write(*,*)
+c        write(*,*)'nsteps = ',nsteps
+c     end added by LA
         if (nsteps.eq.1) then
           write(*,'(a20,$)') 'readcnc ......'
           call readcnc
@@ -434,12 +456,20 @@ c
           write(*,'(a,f10.3)') '   CPU = ', tarray2(1)
         endif
 c
+c     added by LA
+c        write(*,*)
+c        write(*,*)'larsrc = ',larsrc
+c     end added by LA
         if( larsrc ) then
 c
 c------Read area emissions if data is available----
 c
            write(*,'(a20,$)') 'readar ......'
            do igrd = 1,ngrid
+c     added by LA
+c              write(*,*)'iarem(1,igrd) = ',iarem(1,igrd)
+c              write(*,*)'ngrid = ',ngrid
+c     end added by LA
               if( iarem(1,igrd) .GT. 0 ) then
                  call readar(igrd,ncol(igrd),nrow(igrd),
      &                            iarem(1,igrd),iout,
@@ -449,6 +479,12 @@ c
 c
 c------Otherwise assign values from the parent---
 c
+c     added by LA
+c                 write(*,*)
+c                 write(*,*)'nchdrn(ip) = ',nchdrn(ip)
+c                 write(*,*)'igrd = ',igrd
+c                 write(*,*)'idchdrn(ic,ip) = ',idchdrn(ic,ip)
+c     end added by LA
                  do ip=1,ngrid
                    do ic = 1,nchdrn(ip)
                      if( igrd .EQ. idchdrn(ic,ip) ) then
@@ -525,6 +561,13 @@ c
 c
 c-----Check if coarse grid boundary data are to be read
 c
+c     added by LA
+      write(*,*)'Before if statement in CAMx.f'
+      write(*,*)'date=',date
+      write(*,*)'bnddate=',bnddate
+      write(*,*)'time=',time
+      write(*,*)'bndtim=',bndtim
+c     end added by LA
       if (date.eq.bnddate .and. abs(time-bndtim).lt.0.01) then
         write(*,'(a20,$)') 'readbnd ......'
         call readbnd(bndtim,bnddate)

@@ -77,12 +77,15 @@ cnogas      real nh3ppt     ! ammonia gas [=] ppt
       real tend       ! starting time and ending time of simulation
       real boxvol     ! A volume of arbitrary box
       real pres       ! Pa 
+
       real rt_pom(ibins), rt_ec(ibins), rt_crst(ibins), rt_cl(ibins),
-     &    rt_na(ibins), rt_no3(ibins) ! Ratios of each inert component
-      real add_rt_pom(ibins), add_rt_ec(ibins), add_rt_crst(ibins), 
-     &    add_rt_cl(ibins), add_rt_na(ibins), add_rt_soa1(ibins), 
-     &    add_rt_soa2(ibins), add_rt_soa3(ibins), add_rt_soa4(ibins), 
-     &    add_rt_no3(ibins) ! Ratios of each inert component added
+     &    rt_na(ibins)
+     & , rt_no3(ibins) ! Ratios of each inert component                 ! cf
+
+      real add_rt_pom(ibins), add_rt_ec(ibins), add_rt_crst(ibins),
+     &    add_rt_cl(ibins), add_rt_na(ibins), add_rt_soa1(ibins),
+     &    add_rt_soa2(ibins), add_rt_soa3(ibins), add_rt_soa4(ibins)
+     &    ,add_rt_no3(ibins) ! Ratios of each inert component added    ! cf
       real tot_inert(ibins) ! total inert mass
       real tot_inert2(ibins) ! total inert mass after calling dman
 cdbg      real eps
@@ -157,9 +160,9 @@ cnogas      endif
 
       do i=1, ibins !Transfer moxid0
       ! Check negative moxid0
-      if (moxid0(i,kpnh4_c).lt.0.0) moxid0(i,kpnh4_c)=0.0
+      if (moxid0(i,kpnh4_c).lt.0.0) moxid0(i,kpnh4_c)=0.0            !jjung
       if (moxid0(i,kpso4_c).lt.0.0) moxid0(i,kpso4_c)=0.0
-      if (moxid0(i,kpno3_c).lt.0.0) moxid0(i,kpno3_c)=0.0
+      if (moxid0(i,kpno3_c).lt.0.0) moxid0(i,kpno3_c)=0.0            !jjung
       if (moxid0(i,kna_c).lt.0.0) moxid0(i,kna_c)=0.0
       if (moxid0(i,kpoc_c).lt.0.0) moxid0(i,kpoc_c)=0.0
       if (moxid0(i,kpec_c).lt.0.0) moxid0(i,kpec_c)=0.0
@@ -168,8 +171,10 @@ cnogas      endif
 c
          moxid(i,srtnh3)=moxid0(i,kpnh4_c)*cvt*boxvol
          moxid(i,srtso4)=moxid0(i,kpso4_c)*cvt*boxvol
-         add_tot_inert(i) = moxid0(i,kpno3_c)+moxid0(i,kna_c)+
-                     ! Nitrate                 Na
+         add_tot_inert(i) = moxid0(i,kpno3_c)+moxid0(i,kna_c)+         ! cf
+c                            ! Nitrate                 Na              !
+c         add_tot_inert(i) = moxid0(i,kna_c)+                          ! cf
+                     !        Na
      &                moxid0(i,kpcl_c)+moxid0(i,kpoc_c)+
                      ! Cl                OC
      &                moxid0(i,kpec_c)+moxid0(i,kcrst_c)+
@@ -177,7 +182,7 @@ c
      &                eps
                      ! for safety
          ! Capture ratios added before calling dman 
-         add_rt_no3(i) = moxid0(i,kpno3_c) * (1.0/add_tot_inert(i))
+         add_rt_no3(i) = moxid0(i,kpno3_c) * (1.0/add_tot_inert(i))   ! cf
          add_rt_na(i) = moxid0(i,kna_c) * (1.0/add_tot_inert(i))
          add_rt_cl(i) = moxid0(i,kpcl_c) * (1.0/add_tot_inert(i))
          add_rt_pom(i) = moxid0(i,kpoc_c) * (1.0/add_tot_inert(i))
@@ -267,10 +272,10 @@ c
                      ! POA                 EC
      &                q((i-1)*nsp+kcrus)+q((i-1)*nsp+kcl)+
                      ! CRST                Cl
-     &                q((i-1)*nsp+kna)+
+     &                q((i-1)*nsp+kna)!)
                      ! Na                  
                      ! No SOA
-     &                q((i-1)*nsp+kno3))
+     &                +q((i-1)*nsp+kno3))                          !  cf
                      ! Nitrate
          ! Capture ratios before calling dman 
          rt_pom(i) = q((i-1)*nsp+kpom) * (1.0/tot_inert(i))
@@ -279,7 +284,7 @@ c
          rt_cl(i) = q((i-1)*nsp+kcl) * (1.0/tot_inert(i))
          rt_na(i) = q((i-1)*nsp+kna) * (1.0/tot_inert(i))
          ! No SOA
-         rt_no3(i) = q((i-1)*nsp+kno3) * (1.0/tot_inert(i))   
+         rt_no3(i) = q((i-1)*nsp+kno3) * (1.0/tot_inert(i))          !  cf
 c
          Mk(i,srtorg) = tot_inert(i) * cvt * boxvol
          Mk(i,srtnh3)=q((i-1)*nsp+knh4) * cvt * boxvol
@@ -290,10 +295,12 @@ c     Find a starting activation bin
 c
       i = 1
       ifind = 0
-      do while (ifind.eq.1)
+c      do while (ifind.eq.1)
+      do while (ifind.eq.0) ! changed by LA
         if (daer(i).gt.dactiv) then
           iact = i
           ifind = 1
+c          ifind = 0  ! changed by LA
         else
           i=i+1
         endif
@@ -305,7 +312,7 @@ c
       deltat=tend-tstart
       dt=deltat*3600.
 
-      call so4cond_oxd(Nk,Mk,Nkout,Mkout,dt,moxid,iact,ich,jch,kch,xk)
+      call so4cond_oxd(Nk,Mk,Nkout,Mkout,dt,moxid,iact,ich,jch,kch,xk)  ! cf
 
       do i=1,ibins
         do j=1, icomp
@@ -406,8 +413,8 @@ c
            q((i-1)*nsp+kna) = q((i-1)*nsp+kna)
      &                        + dtot_inert(i) * add_rt_na(i)
            ! SOA is not added by aqueous chemistry
-           q((i-1)*nsp+kno3) = q((i-1)*nsp+kno3)
-     &                        + dtot_inert(i) * add_rt_no3(i)
+           q((i-1)*nsp+kno3) = q((i-1)*nsp+kno3)                      ! cf
+     &                        + dtot_inert(i) * add_rt_no3(i)         ! cf
          else !redistribute as the portion of before aqueous chemistry
            q((i-1)*nsp+kpom) = tot_inert2(i) * rt_pom(i)
            q((i-1)*nsp+kec) = tot_inert2(i) * rt_ec(i)
@@ -415,7 +422,7 @@ c
            q((i-1)*nsp+kcl) = tot_inert2(i) * rt_cl(i)
            q((i-1)*nsp+kna) = tot_inert2(i) * rt_na(i)
            ! SOA is not added by aqueous chemistry
-           q((i-1)*nsp+kno3) = tot_inert2(i) * rt_no3(i)
+           q((i-1)*nsp+kno3) = tot_inert2(i) * rt_no3(i)               ! cf
 cdbg           write(*,*)'Inert mass by aqueous chemistry is not increased'
 cdbg           write(*,*)'Inert mass before aqueous',tot_inert(i)
 cdbg           write(*,*)'Inert mass after aqueous',tot_inert2(i)

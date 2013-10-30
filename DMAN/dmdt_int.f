@@ -28,7 +28,12 @@ Cpja framework.
       MH2O=(WR-1.d0)*M0
       X=((M0+MH2O)**C+L0)
 c      X=MAX(ZERO,SQRT(MAX(ZERO,C*TAU+X))-L0)
-      X=MAX(ZERO,SQRT(C*TAU+X))
+c      X=MAX(ZERO,SQRT(C*TAU+X))    ! commented out by LA
+      if((C*TAU+X).gt.ZERO) then
+         X=SQRT(C*TAU+X)
+      else
+         X=ZERO
+      end if
       DMDT_INT=X*X*X-MH2O
 
 Cpja Perform some numerical checks on dmdt_int

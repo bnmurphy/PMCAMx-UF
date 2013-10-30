@@ -99,6 +99,13 @@ c
       relh = rh ! Change a relative humidity variable for DMAN
 c
 cdbg      write(*,*)'CAMx2dman.f - chkpt 1. at the very beginning'
+c     added by LA
+c      write(*,*)
+c      write(*,*)'naer=',naer
+c      write(*,*)'ih2so4=',ih2so4
+c      write(*,*)'inh3=',inh3
+c      write(*,*)'knum=',knum
+c     end added by LA
       if (q(naer+ih2so4).ge.0.0) then 
         h2so4 = q(naer+ih2so4) * 1.0d6   ! h2so4 [=] ppt, q [=] ppm 
       else
@@ -114,6 +121,10 @@ cdbg          h2so4 = 0.0
           STOP
         endif
       endif
+c     added by LA
+c      write(*,*)
+c      write(*,*)'h2so4=',h2so4
+c     end added by LA
 
       if (q(naer+inh3).ge.0.d0) then
         nh3ppt = q(naer+inh3) * 1.0d6 
@@ -130,6 +141,10 @@ cdbg          nh3ppt = 0.d0
           STOP
         endif
       endif
+c     added by LA
+c      write(*,*)
+c      write(*,*)'nh3ppt=',nh3ppt
+c     end added by LA
      
       do i=1, ibins
          ! First check for negative tracers
@@ -183,6 +198,10 @@ cdbg          nh3ppt = 0.d0
                endif
             endif
          enddo
+c     added by LA
+c         write(*,*)
+c         write(*,*)'iflag=',iflag
+c     end added by LA
          if (iflag.eq.1) then
             newmass=0.0
             do jj=2, 13 ! from KNa to KEC, all mass species wo H2O 
@@ -246,10 +265,20 @@ cdbg            enddo
 cdbg          enddo
 cdbg        endif
 cdbg      endif
+c     added by LA
+c      write(*,*)
+c      write(*,*)'nh3ppt before dman=',nh3ppt
+c      write(*,*)
+c     end added by LA
 
       call dman(tstart,tend,Nk,Mk,h2so4,nh3ppt,relh,tempK,pres,dsulfdt
      & ,ich,jch,kch)
 
+c     added by LA
+c      write(*,*)
+c      write(*,*)'nh3ppt after dman=',nh3ppt
+c      write(*,*)
+c     end added by LA
       !For a debuging purpose
 cdbg      if ((tstart.gt.0.0).and.(tstart.lt.0.5)) then
 cdbg        if ((ich.eq.36).and.(jch.eq.29).and.(kch.eq.1)) then

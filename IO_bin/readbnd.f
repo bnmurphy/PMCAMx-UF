@@ -44,6 +44,13 @@ c
 c-----Read through coarse grid concentration records until current time/date
 c
  100  read(ibc,end=900) idat1,tim1,idat2,tim2
+c     added by LA
+      write(*,*)'In readbnd.f'
+      write(*,*)'idat1: ',idat1
+      write(*,*)'idat2: ',idat2
+      write(*,*)'tim1: ',tim1
+      write(*,*)'tim2: ',tim2
+c     end added by LA
       if (INT(tim2) .EQ. 24) then
         tim2 = 0.
         idat2 = idat2 + 1
@@ -63,7 +70,10 @@ c
           nc = nrow(1)
           if (n.gt.2) nc = ncol(1)
           read(ibc) idum,(bcspec(j),j=1,10),iedge,
-     &              ((bctmp(i,k,n,l),k=1,nz),i=1,nc) 
+     &              ((bctmp(i,k,n,l),k=1,nz),i=1,nc)
+c     added by LA
+          write(*,*)'bctmp(1:10,1,1,225)=',bctmp(1:10,1,1,225)
+c     end added by LA
         enddo
       enddo
       write(iout,'(a40,2(f7.0,i8.5))')
@@ -172,6 +182,11 @@ c
         endif
       endif
 c
+c     added by LA
+      write(*,*)'Updated bnddate in readbnd.f'
+      write(*,*)'bndtim: ',bndtim
+      write(*,*)'bnddate: ',bnddate
+c     end added by LA
       goto 999
 c-----End of BC file reached
 c

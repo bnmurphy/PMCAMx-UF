@@ -140,7 +140,8 @@ c
       integer idfin(ncol,nrow)
 c
       integer ii,jj,kk
-      integer nsect,ispc,isp,naero
+      integer nsect,isp
+c      integer ispc,naero
       integer order(nspec)
       integer iflag
       integer isund !check underbar
@@ -280,6 +281,12 @@ c
 cjgj                con(is) = amax1(bdnl(is),con(is)) ! for conserving M/N ratios
               enddo
             endif
+c     added by LA
+c            if ((i.le.2).and.(j.le.2).and.(k.le.1)) then
+c                write(*,*)
+c               write(*,*)'con bef fullaero=',con
+c            endif
+c     end added by LA
 c
 c-----Load radicals from last time step to use as initial guess
 c
@@ -469,6 +476,16 @@ cdbg                 endif !dbg
      &                         ichm,jchm,kchm,height,dsulfdt)
 cjgj     &                         ichm,jchm,kchm,height)
 cdbg                 endif
+c     added by LA
+c                 if ((i.le.2).and.(j.le.2).and.(k.le.1)) then
+c                    write(*,*)
+c                    write(*,*)'con aft fullaero=',con
+c                 endif
+c     end added by LA
+c     added by LA
+c                 write(*,*)
+c                 write(*,*)'conc(i,j,k,100) aft fulla=',conc(i,j,k,100)
+c     end added by LA
                endif
 c
             elseif ( idsolv .EQ. IDIEH ) then
@@ -640,6 +657,15 @@ cbk            endif
               con(is) = amax1(bdnl(is),con(is)) ! bkoo (03/12/03)
               conc(i,j,k,is) = con(is)*convfac
             enddo
+c     added by LA
+c            if ((i.le.2).and.(j.le.2).and.(k.le.1)) then
+c               write(*,*)
+c               write(*,*)'con aft fullaero and spec1=',con
+c            endif
+c     end added by LA
+c     added by LA
+c            write(*,*)'con(10)=',con(10)
+c     end added by LA
 c
 c       In case a con is less than bdnl, the fraction of difference 
 c       between con and bdnl to the total mass at the size bin will be 
@@ -649,6 +675,18 @@ c       very tiny values to con so that we do not have M/N ratio
 c       problem in TOMAS.
 c                                                  12/6/06 jgj
 c
+c            added by LA
+            do is = 1,nspec
+               if (con(is).lt.1.0e-37) then
+                  con(is)=1.0e-37
+               endif
+            enddo
+c            if ((i.le.2).and.(j.le.2).and.(k.le.1)) then
+c               write(*,*)
+c               write(*,*)'con (test)=',con
+c            endif
+c           end added by LA
+
             if (ngas.lt.nspec) then
               ispc=ngas
               do ii=1,nsect
@@ -672,6 +710,17 @@ cdbg                         endif
 cdbg                         endif
                       endif
                     endif
+c     added by LA
+c                    if ((i.le.2).and.(j.le.2).and.(k.le.1)) then
+c                       write(*,*)
+c                       write(*,*)'isund=',INDEX(spname(is),'_')
+c                       write(*,*)'is=',is
+c                       write(*,*)'spname(is)(1:isund-1)=',
+c     &                      spname(is)(1:isund-1)
+c                       write(*,*)'con(is)=',con(is)
+c                       write(*,*)'massum=',massum
+c                    endif
+c     end added by LA
                  enddo
                  ispc = isp
                  inum = order(ispc+naero)
@@ -703,7 +752,7 @@ cdbg                      endif
                     endif
                  enddo
                  frctn=massum2/massum
-                 con(inum)=nmbr*frctn
+                 con(inum)=nmbr*frctn    ! commented out by LA
 cdbg                 if (iflag.eq.1) then
 cdbg                   write(*,*)'con(inum)=',con(inum)
 cdbg                   write(*,*)'massum=',massum
@@ -712,12 +761,28 @@ cdbg                   write(*,*)'frctn=',frctn
 cdbg                   iflag = 0
 cdbg                 endif
               enddo
-              
+c              if ((i.le.2).and.(j.le.2).and.(k.le.1)) then
+c                    write(*,*)
+c                    write(*,*)'con=',con
+c              endif
               do is=ngas+1,nspec
 cjgj                conc(i,j,k,is) = amax1(con(is),bdnl(is))
                 conc(i,j,k,is) = con(is)
               enddo
+c     added by LA
+c              write(*,*)
+c              write(*,*)'conc(i,j,k,100)=',conc(i,j,k,100)
+c              write(*,*)'massum=',massum
+c              write(*,*)'massume2=',massum2
+c              write(*,*)'frctn=',frctn
+c     end added by LA
             endif
+c     added by LA
+c                 if ((i.le.2).and.(j.le.2).and.(k.le.1)) then
+c                    write(*,*)
+c                    write(*,*)'con aft fullaero and spec2=',con
+c                 endif
+c     end added by LA
 c
   89      continue
   90    continue
