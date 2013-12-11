@@ -164,7 +164,8 @@ c
       integer   MXPIG
       integer   MXHRS
 
-      parameter ( MXPTSRC = 120000 )
+clnp      parameter ( MXPTSRC = 120000 ) !LNP commented 09/26/2012
+      parameter ( MXPTSRC = 200000 ) !LNP added 09/26/2012
       parameter ( MXPIG   = 25000 )
       parameter ( MXHRS   =   250 )
 c
