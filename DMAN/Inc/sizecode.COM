@@ -87,7 +87,7 @@ C The following variables describe the grid cell in which the
 C microphysics is operating.
 
       double precision boxvol     !volume of grid cell (cm3)
-      double precision boxmass    !volume of grid cell (kg)
+      double precision boxmass    !mass of grid cell (kg)
 cdbg      double precision temp       !temperature (K) of grid cell
 cdbg      double precision pres       !air pressure (Pa) of grid cell
 cdbg      double precision rh         !relative humidity (0-1)
@@ -114,7 +114,7 @@ cjgj      data molwt/96.,58.45,18.,18./ ! The 2nd is NaCl
 
 C Flag for which nucleation parameterizations to use
       integer bin_nuc, tern_nuc   !flags for binary and ternary nuc
-      parameter(bin_nuc=1, tern_nuc=1) ! 1 = on
+      parameter(bin_nuc=0, tern_nuc=0) ! 1 = on
 
 cdbg	  double precision NH3ppt_o
 cdbg	  double precision h2so4_print
