@@ -106,9 +106,15 @@ linux:
 	@rm -f $(INC)/camx.prm
 	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).linux
 	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
+
 #	make model FC="pgf77" FLGS="-I$(INC) -g -tp p6 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl,-Bstatic" TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
 #	make model FC="pgf77" FLGS="-I$(INC) -g -tp k8-64 -pc 64 -Mnoframe -byteswapio -Wl,-Bstatic" TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
+#	make model FC="pgf77" FLGS="-I$(INC) -g -pg -tp k8-64 -pc 64 -Mnoframe -byteswapio -mcmodel=medium" TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
+
 	make model FC="pgf77" FLGS="-I$(INC) -g -tp k8-64 -pc 64 -Mnoframe -byteswapio -Wl, -mcmodel=medium" TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
+
+#	make model FC="pgf77" FLGS="-I$(INC) -O2 -tp k8-64 -pc 64 -Mnoframe -byteswapio -Mlarge_arrays -mcmodel=medium" TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
+#       make model FC="pgf77" FLGS="-I$(INC) -O2 -tp k8-64 -pc 64 -Mnoframe -byteswapio -Wl, -Mlarge_arrays -mcmodel=medium" TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
 #	make model FC="pgf77" FLGS="-I$(INC) -O2 -tp k8-64 -pc 64 -Mnoframe -byteswapio -Wl, -mcmodel=medium" TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
 #	make model FC="pgf77" FLGS="-I$(INC) -O2 -tp k8-64 -pc 64 -Mnoframe -byteswapio -Wl" TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
 #	make model FC="pgf77" FLGS="-I$(INC) -tp k8-64 -pc 64 -Mnoframe -byteswapio -Wl," TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
