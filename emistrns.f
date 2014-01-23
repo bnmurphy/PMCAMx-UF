@@ -111,9 +111,9 @@ cdbg         write(*,*)conc(n4d)
 cdbg      enddo
 cdbg      pause
 c
-cdbg      write(*,*)'before saveconc'
+      write(*,*)'before saveconc'
       call saveconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,sconc)
-cdbg      write(*,*)'after saveconc'
+      write(*,*)'after saveconc'
 c
 cdbg      call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,spname,12)
       call emiss(igrd,kno,kno2,nspec,narspc,nptspc,larmap(1,igrd),
