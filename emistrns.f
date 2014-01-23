@@ -111,9 +111,9 @@ cdbg         write(*,*)conc(n4d)
 cdbg      enddo
 cdbg      pause
 c
-      write(*,*)'before saveconc'
+cdbg      write(*,*)'before saveconc'
       call saveconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,sconc)
-      write(*,*)'after saveconc'
+cdbg      write(*,*)'after saveconc'
 c
 cdbg      call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,spname,12)
       call emiss(igrd,kno,kno2,nspec,narspc,nptspc,larmap(1,igrd),
@@ -130,9 +130,9 @@ cdbg      call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,spname,12)
      &           conc(iptr4d(igrd)),ipacl_3d(iptr3d(igrd)) )
 c
 cdbg      call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,spname,13)
-cdbg      write(*,*)'before numconv'
+      write(*,*)'before numconv'
       call numconv(conc(1),ncol(1),nrow(1),nlay(1),sconc,nspec,2)
-cdbg      write(*,*)'after numconv after emiss'
+      write(*,*)'after numconv after emiss'
 cdbg      call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,spname,14)
                            ! by jgj 2/17/06
 c======================== Source Apportion Begin =======================
