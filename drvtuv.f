@@ -127,27 +127,6 @@ c
       data eps/0.622/, e0/6.11/, lv/2.5e6/, rv/461./
 
 
-!  added by Elham
-      data julday /'08122','08123','08124','08125','08126','08127',
-     & '08128','08129','08130','08131','08132','08133','08134',
-     & '08135','08136','08137','08138','08139','08140', '08141',
-     & '08142','08143','08144','08145','08146','08147','08148',
-     & '08149','08150'/
-
-
-
-      data chr /'01','02','03','04','05','06','07','08','09','10','11',
-     & '12','13','14','15','16','17','18','19','20','21','22','23','24'/
-
-      data clay /'01','02','03','04','05','06','07','08','09','10','11',
-     &         '12', '13','14'/
-
-      clear_flag=1
-
-
-! end added by Elham
-
-
 c
 c-----Aerosol optical depth profile from Elterman (1968).
 c     These are vertical optical depths per km, in 1 km
@@ -206,7 +185,6 @@ c                       pcl  na   pnh4 pno3 pso4 ph2o num
       enddo
 
 c
-c      print *, 'Elham.drvtuv.nrow',nrow,'ncol',ncol
 c-----Entry point
 c
       nz = nlay + 1
@@ -225,10 +203,6 @@ c-----Get solar zenith angle
 c
           call getznth(cellat(i,j),cellon(i,j),time,date,itzon,zen,
      &                 ldark)
-!        print *,'Elham.afterGetzenk',time
-c        print *, 'lat',cellat(i,j),'lon',cellon(i,j)
-c        print *, 'zen',zen
-c        print *,'date',date,'time',time,'itzon:',itzon
           if (ldark) goto 100
           zen = min(zen,75.)
           coszen = COS(zen*3.1415/180.)
@@ -258,13 +232,6 @@ c
             ev        = qwatr*pres1d(k)/(qwatr + eps)
             es        = e0*exp((lv/rv)*(1./273. - 1./temp1d(k)))
             rh1d(k)   = nint(100.*max(0.01,min(0.95,ev/es)))
-
-c            if (i.eq.145.and.j.eq.107.and.13) then
-c              print *,'Environmental Variables at i,j=145,107)'
-c              print *,' k)',k,'   T=',temp1d(k),' P=',pres1d(k)
-c              print *,' qv)',wvapor,'  ql=',qwatr,'  rh=',rh1d(k)
-c              print *,' z)',z(k)
-c            endif
           enddo
           do k = 1,nlay
             midht1d(k) = (z(k) + z(k+1))*0.5
@@ -326,7 +293,6 @@ c
             goto 31
  30       continue
 c
-!         print *,'naero is ', naero !added by Elham
  31       do iz = 1,nz-1
             if (naero.eq.0) then
               odaer2(iz) = odaer1(iz)
@@ -335,17 +301,15 @@ c
               totext = 0.
               totssa = 0.
               totcon = 0.
-              do l = 1,naero -1 ! changed from 1,naero to 1,naero-1 by Elham on 1st Sep
+              do l = 1,naero -1 ! changed from 1,naero to 1,naero-1 by Elham on 1/9/14
                 do ibin= 1,43 
                rhfac = 1.
                 if (rhadj(l).eq.1) rhfac = frh(rh1d(iz))
                 lspc = ngas + (l-1)*43 + ibin  
-c             print *, 'lspc is ',lspc  !by Elham
                 totext = totext + bext(l)*rhfac*conc(i,j,iz,lspc)
                 totssa = totssa + ssa(l)*conc(i,j,iz,lspc)
                 totcon = totcon + conc(i,j,iz,lspc)
 
-c       print *, 'what conc)',conc(i,j,iz,lspc) !by Elham
              enddo !ibin
               enddo
               odaer2(iz) = totext*(z(iz+1)-z(iz))*1000.
@@ -355,16 +319,6 @@ c       print *, 'what conc)',conc(i,j,iz,lspc) !by Elham
 c
 c-----Call the tuv-cloud routine
 c
-c      if(i.eq.145.and.j.eq.107) then
-       
-c      print *,'EB,nz',nz,'z',z,'airlev',airlev
-c      print *,'EB.tuvalb',tuvalb,'coszen',coszen
-c      print *,'EB.odcld',odcld,'omcld',omcld,'gcld',gcld
-c      print *,'EB.odaerl',odaer1,'odaer2',odaer2,'omaer1',omaer1
-c      print *,'EB.omaer2',omaer2,'gaer',gaer,'rafcld',rafcld
-     
-c      endif
-
           call tuv(nz,z,airlev,tuvalb,coszen,odcld,omcld,gcld,
      &             odaer1,odaer2,omaer1,omaer2,gaer,rafcld,actflx)
 
@@ -380,16 +334,6 @@ c
 
             actflx_cldy(i,j,k)=0.5*(actflx(2,k)+actflx(2,k+1))   ! added by Elham
 
-c        if (cldtrns(i,j,k).lt.0.and.cod(i,j,k).eq.0) then
-
-c       print *,'EB.negative ctrns at tau=0' 
-c         else if (cldtrns(i,j,k).lt.0.and.cod(i,j,k).gt.0) then
-c       print *,'EB.negative ctrns at tau>0'   
-c       elseif (cldtrns(i,j,k).gt.0.and.cod(i,j,k).eq.0) then
-c       print *,'EB.positive ctrns at tau=0'
-c        else 
-c        print *,'EB.positive ctrns at tau>0' 
-c        endif
           enddo !k
        enddo
       enddo
@@ -418,177 +362,5 @@ c      end if ! clear_flag
 
 
 
-      do k=1,nlay
-
-      idate=int(date-8121)
-       ihr=int(time/100)
-       MM=time-100*int(time/100)
-
-c       if (time.eq.0.0) then
-c         print *,'Elham.date', date
-
-c       endif
-      if (time.eq.0) then
-
-        filena='cldtrnsDir/cldtrns.'//julday(idate-1)//
-     &       '.ly'//clay(k)
-        filenaClr='cldtrnsDir/clearActFlux.'//julday(idate-1)//
-     &       '.ly'//clay(k)
-
-        filenaCldy='cldtrnsDir/cldyActFlux.'//julday(idate-1)//
-     &       '.ly'//clay(k)
-
-      else
-
-        filena='cldtrnsDir/cldtrns.'//julday(idate)//
-     &       '.ly'//clay(k)
-        filenaClr='cldtrnsDir/clearActFlux.'//julday(idate)//
-     &       '.ly'//clay(k)
-
-        filenaCldy='cldtrnsDir/cldyActFlux.'//julday(idate)//
-     &       '.ly'//clay(k)
-      endif
-      
-
-       if (time.eq.5)  then
-
-       open(unit=50,file=filena, action='write',position='rewind')
-
-       write(50,'(150f8.2)'),((cldtrns(i,j,k),i=1,ncol),j=1,nrow)
-       close(50)
-
-       open(unit=60,file=filenaClr, action='write',position='rewind')
-
-       write(60,'(150f8.2)'),((actflx_clear(i,j,k),i=1,ncol),j=1,nrow)
-       close(60)
-
-       open(unit=61,file=filenaCldy, action='write',position='rewind')
-       write(61,'(150f8.2)'),((actflx_cldy(i,j,k),i=1,ncol),j=1,nrow)
-       close(61)
-
-       else
-
-
-c       filena='cldtrnsDir/cldtrns.'//julday(idate-1)//
-c     &       '.ly'//clay(k)
-
-      open(unit=50,file=filena, action='write',position='append')
-
-       write(50,'(150f8.2)'),((cldtrns(i,j,k),i=1,ncol),j=1,nrow)
-       close(50)
-       
-
-       open(unit=60,file=filenaClr, action='write',position='append')
-       write(60,'(150f8.2)'),((actflx_clear(i,j,k),i=1,ncol),j=1,nrow)
-       close(60)
-
-       open(unit=61,file=filenaCldy, action='write',position='append')
-       write(61,'(150f8.2)'),((actflx_cldy(i,j,k),i=1,ncol),j=1,nrow)
-       close(61)
-
-
-       endif
-
-      enddo !k
-
-
-
-
-C      do k=1,nlay
-      
-C      idate=int(date-8121)
-C       ihr=int(time/100)
-C       MM=time-100*int(time/100)
-
-C        ihr_dummy=ihr           
-c       if (time.eq.0.0) then
-!         print *,'Elham.date', date
-
-c       endif
-
-C      filena='cldtrnsDir/clearActFlux.'//julday(idate)//
-C     &       '.ly'//clay(k)
-
-C      filenaCldy='cldtrnsDir/cldyActFlux.'//julday(idate)//
-C     &       '.ly'//clay(k)
-
-Caverage 5-minutely data for each hour so that the finle output has 24 records
-
-
-C      write(*,*)'what is time?',time
-
-C       count_MM=0
-C       if (time.ge.(ihr*100).and.time.le.(ihr*100+55)) then
-      
-
-C       do j=1,nrow
-C         do i=1,ncol
-C        sum_clear(i,j,k)= actflx_clear(i,j,k)/12+sum_clear(i,j,k)
-C        sum_cldy(i,j,k)=actflx_cldy(i,j,k)/12+sum_cldy(i,j,k)
-
-C        enddo !i
-C      enddo !j
-
-C       endif !MM
-
-c       actflx_clear(:,:,k)=sum_clear(:,:,k)/count_MM
-c         actflx_cldy(:,:,k)=sum_clear(:,:,k)/count_MM
-
-
-C          write(*,*)'what is time?',time,'and',count_MM
-
-
-
-C end averaging
-
-
-C        if (time.eq.0.0)  then
-
-C       open(unit=50,file=filena, action='write',position='rewind')
-
-C       write(50,'(150f8.2)'),((sum_clear(i,j,k),i=1,ncol),j=1,nrow)
-C       close(50)
-
-
-C       open(unit=55,file=filenaCldy, action='write',position='rewind')
-
-C       write(55,'(150f8.2)'),((sum_cldy(i,j,k),i=1,ncol),j=1,nrow)
-C       close(55)
-
-C      elseif(MM.eq.0.and.ihr.ne.0) then
-
-C       open(unit=50,file=filena, action='write',position='append')
-
-C       write(50,'(150f8.2)'),((sum_clear(i,j,k),i=1,ncol),j=1,nrow)
-C       close(50)
-
-
-
-C      open(unit=55,file=filenaCldy, action='write',position='append')
-
-C       write(55,'(150f8.2)'),((sum_cldy(i,j,k),i=1,ncol),j=1,nrow)
-C       close(55)
-
-
-C       endif !ihr
-
-C       if (MM.eq.0) then
-C        do j=1,nrow
-C          do i=1,ncol
-C            do kk=1,nlay
-
-C          sum_clear(i,j,kk)=0.0
-C          sum_cldy(i,j,kk)=0.0
-
-C            enddo  !k
-C          enddo !i
-C        enddo !j
-C        write(*,*)'what when sum_clear=0?',time
-
-C        endif !time=ihr*100+55
-
-C         enddo!k
-
-	 
 	      return
       end
