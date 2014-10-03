@@ -281,12 +281,6 @@ c
 cjgj                con(is) = amax1(bdnl(is),con(is)) ! for conserving M/N ratios
               enddo
             endif
-c     added by LA
-c            if ((i.le.2).and.(j.le.2).and.(k.le.1)) then
-c                write(*,*)
-c               write(*,*)'con bef fullaero=',con
-c            endif
-c     end added by LA
 c
 c-----Load radicals from last time step to use as initial guess
 c
@@ -309,20 +303,36 @@ c
      &        hght = (height(i,j,k) + height(i,j,k-1))/2000.
             if (cldtrns(i,j,k).ne.1.) then
               iabov = 0 
-              ctrns = cldtrns(i,j,k)
+!              ctrns = cldtrns(i,j,k)
               fcld = fcloud(i,j,k)
             else
               iabov = 1
-              ctrns = cldtrns(i,j,1)
+!              ctrns = cldtrns(i,j,1)
               fcld = fcloud(i,j,1)
             endif
+            ctrns = cldtrns(i,j,k)
+c           print *, 'Elham.Chemdrive.ctrns',ctrns
             call getznth(cellat(i,j),cellon(i,j),time,date,itzon,
      &                   zenith,ldark(i,j))
 c
 c-----Determine photolysis rates through interpolation of look-up table
 c
+
+c           print *,'Eli.ldark.chemdrive',ldark(i,j)
+
+          
             call kphoto(iozon,ialb,ihaze,hght,zenith,fcld,
      &                  ctrns,ldark(i,j),iabov)
+
+c          if (i.eq.145.and.j.eq.107.and.k.eq.13) then
+c       write(*,*) 
+c       print *,'Eli.chemdriv.i145.j107', rk 
+c       print *,'Eli.hght',hght,'iozon',iozon,'ialb',ialb
+c        print *,'Eli.chemdrive.zenth',zenith,'ctrns',ctrns
+c       print *,'Eli.ldark:',ldark(i,j),'iabov',iabov
+c        endif
+
+
 c
 c======================== Source Apportion Begin =======================
 c
@@ -469,6 +479,10 @@ cdbg                   print*,'coordinate of (31,2,1)' !dbg
 cdbg                   print*,'tempk,pressure,dsulfdt=',tempk,pressure
 cdbg     &                  ,dsulfdt !dbg
 cdbg                 endif !dbg
+
+
+              
+
                  if ( laero_upd )
      &           call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
      &                         MXSPEC,MXRADCL,NSPEC,NGAS,
@@ -476,16 +490,6 @@ cdbg                 endif !dbg
      &                         ichm,jchm,kchm,height,dsulfdt)
 cjgj     &                         ichm,jchm,kchm,height)
 cdbg                 endif
-c     added by LA
-c                 if ((i.le.2).and.(j.le.2).and.(k.le.1)) then
-c                    write(*,*)
-c                    write(*,*)'con aft fullaero=',con
-c                 endif
-c     end added by LA
-c     added by LA
-c                 write(*,*)
-c                 write(*,*)'conc(i,j,k,100) aft fulla=',conc(i,j,k,100)
-c     end added by LA
                endif
 c
             elseif ( idsolv .EQ. IDIEH ) then
@@ -657,15 +661,6 @@ cbk            endif
               con(is) = amax1(bdnl(is),con(is)) ! bkoo (03/12/03)
               conc(i,j,k,is) = con(is)*convfac
             enddo
-c     added by LA
-c            if ((i.le.2).and.(j.le.2).and.(k.le.1)) then
-c               write(*,*)
-c               write(*,*)'con aft fullaero and spec1=',con
-c            endif
-c     end added by LA
-c     added by LA
-c            write(*,*)'con(10)=',con(10)
-c     end added by LA
 c
 c       In case a con is less than bdnl, the fraction of difference 
 c       between con and bdnl to the total mass at the size bin will be 
@@ -675,18 +670,13 @@ c       very tiny values to con so that we do not have M/N ratio
 c       problem in TOMAS.
 c                                                  12/6/06 jgj
 c
-c            added by LA
-            do is = 1,nspec
-               if (con(is).lt.1.0e-37) then
+c     added by LA
+            do is=1,nspec
+               if(con(is).lt.1.0e-37) then
                   con(is)=1.0e-37
                endif
             enddo
-c            if ((i.le.2).and.(j.le.2).and.(k.le.1)) then
-c               write(*,*)
-c               write(*,*)'con (test)=',con
-c            endif
-c           end added by LA
-
+c     end LA
             if (ngas.lt.nspec) then
               ispc=ngas
               do ii=1,nsect
@@ -711,7 +701,7 @@ cdbg                         endif
                       endif
                     endif
 c     added by LA
-c                    if ((i.le.2).and.(j.le.2).and.(k.le.1)) then
+c                    if(i.le.2 .and. j.le.2 .and. k.le.1) then
 c                       write(*,*)
 c                       write(*,*)'isund=',INDEX(spname(is),'_')
 c                       write(*,*)'is=',is
@@ -720,7 +710,7 @@ c     &                      spname(is)(1:isund-1)
 c                       write(*,*)'con(is)=',con(is)
 c                       write(*,*)'massum=',massum
 c                    endif
-c     end added by LA
+c     end LA
                  enddo
                  ispc = isp
                  inum = order(ispc+naero)
@@ -752,7 +742,7 @@ cdbg                      endif
                     endif
                  enddo
                  frctn=massum2/massum
-                 con(inum)=nmbr*frctn    ! commented out by LA
+                 con(inum)=nmbr*frctn
 cdbg                 if (iflag.eq.1) then
 cdbg                   write(*,*)'con(inum)=',con(inum)
 cdbg                   write(*,*)'massum=',massum
@@ -761,28 +751,18 @@ cdbg                   write(*,*)'frctn=',frctn
 cdbg                   iflag = 0
 cdbg                 endif
               enddo
-c              if ((i.le.2).and.(j.le.2).and.(k.le.1)) then
-c                    write(*,*)
-c                    write(*,*)'con=',con
-c              endif
+              
               do is=ngas+1,nspec
 cjgj                conc(i,j,k,is) = amax1(con(is),bdnl(is))
                 conc(i,j,k,is) = con(is)
               enddo
-c     added by LA
-c              write(*,*)
-c              write(*,*)'conc(i,j,k,100)=',conc(i,j,k,100)
-c              write(*,*)'massum=',massum
-c              write(*,*)'massume2=',massum2
-c              write(*,*)'frctn=',frctn
-c     end added by LA
             endif
 c     added by LA
-c                 if ((i.le.2).and.(j.le.2).and.(k.le.1)) then
-c                    write(*,*)
-c                    write(*,*)'con aft fullaero and spec2=',con
-c                 endif
-c     end added by LA
+c            if(i.le.2 .and. j.le.2 .and. k.le.1) then
+c               write(*,*)
+c               write(*,*)'con aft fullaero and spec2=',con
+c            endif
+c     end LA
 c
   89      continue
   90    continue
@@ -807,6 +787,9 @@ c     - increase grd_time (& date_aer) by dtaero (or multiple of dtaero)
         goto 92
       endif
   93  continue
+c     added by LA
+c      write(*,*)'end of chemdriv; conc(2,2,1,:) =',conc(2,2,1,:)
+c     end LA
 c
       return
       end

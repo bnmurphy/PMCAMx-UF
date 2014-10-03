@@ -187,7 +187,16 @@ c
           moxid0(knsec,naers) = 0.0
         enddo
       enddo
-
+c     added by LA
+c      if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c      write(*,*)
+c      write(*,*)'lwc_c=',lwc_c
+c      write(*,*)'aqcwmin=',aqcwmin
+c      write(*,*)'tempk=',tempk
+c      write(*,*)'aqtamin=',aqtamin
+c      write(*,*)'laq=',laq
+c      endif
+c     end LA
       if ( lwc_c.ge.aqcwmin .and. tempk.ge.aqtamin .and. laq ) then
        if ( chaq.eq.'RADM' ) then
         pres_pa = 100. * press
@@ -329,7 +338,7 @@ cdbg        write(*,*)'Coord.=',ich,jch,kch
         endif
 c
 c     map con to gas and aerosol gas in ppm; aerosol in ugr/m3
-c   
+c
         gas(nga)       = con(knh3_c)         ! NH3(g) in ppm
         gas(ngn)       = con(khno3_c)        ! HNO3(g) in ppm 
         gas(ngc)       = con(khcl_c)         ! HCl (g) in ppm
@@ -380,11 +389,13 @@ c     end added by LA
           aerosol(knsec,nar)    = con(kcrst_c+(knsec-1))   ! crustal
           aerosol(knsec,nahso5) = 0.0
           aerosol(knsec,nahmsa) = 0.0
-c     added by LA
-c          write(*,*)
-c          write(*,*)'aerosol=',aerosol
-c     end added by LA
         enddo
+c     added by LA
+c      if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c      write(*,*)
+c      write(*,*)'aerosol=',aerosol
+c      endif
+c     end LA
 c
 ckf
 c        Nitrogen mass balance (convert n2o5 to nitrate)
@@ -392,13 +403,10 @@ c
 ckf
          n2o5nit = cncrad(3)*prs*101325*62./8.314/tempk
 	 cncrad(3) = 0.0
-ckf
-
 ckf        
  	 do knsec=1,nsect
 	   aerosol(knsec,nan)    = aerosol(knsec,nan)+fdist(knsec)*n2o5nit
 	 enddo
-	 
 ckf
          nitbef = 0.0
 	 do i =1, nsect
@@ -421,6 +429,12 @@ c
           arsl(knsec,nao) = aerosol(knsec,nao) ! primary organics
           arsl(knsec,nar) = aerosol(knsec,nar) ! crustal
         enddo
+c     added by LA
+c      if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c      write(*,*)
+c      write(*,*)'arsl=',arsl
+c      endif
+c     end LA
 c
 c     added by LA
 c        write(*,*)
@@ -449,30 +463,34 @@ c          qins((knsec-1)*nsp+knum)=con(knum_c+(knsec-1))                 !
                      ! Number concentration jgj 2/28/06                   !
         enddo                                                             !
 c                                                                         !
+c     added by LA
+c      if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c      write(*,*)
+c      write(*,*)'bef eqpart qins=',qins
+c      endif
+c     end LA
 c----------------------call isorropia here------------------------------  !
 c                                                                         !
         call eqpart(t1,qins)                                              !
 c-----------------------------------------------------------------------  !
+c     added by LA
+c      if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c      write(*,*)
+c      write(*,*)'aft eqpart qins=',qins
+c      endif
+c     end LA
                                                                           !
         do knsec=1,nsect                                                  !
 c          aerosol(knsec,naw) =  qins((knsec-1)*nsp+kh2o) ! water          !
           aerosol(knsec,naa) =  qins((knsec-1)*nsp+knh4) ! ammonium       !
           aerosol(knsec,nan) =  qins((knsec-1)*nsp+kno3) ! nitrate        !
-        enddo                                                             !
-                                                                          !
+        enddo
 c     added by LA
-c        write(*,*)
-c        write(*,*)'gas(nga)=',gas(nga)
-c        write(*,*)'gas(ngn)=',gas(ngn)
-c        write(*,*)'qins(ng+inh3)=',qins(ng+inh3)
-c        write(*,*)'qins(ng+ihno3)=',qins(ng+ihno3)
-c        write(*,*)'nga=',nga
-c        write(*,*)'ngn=',ngn
-c        write(*,*)'ng=',ng
-c        write(*,*)'inh3=',inh3
-c        write(*,*)'ihno3=',ihno3
-c        write(*,*)
-c     end added by LA
+c      if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c      write(*,*)
+c      write(*,*)'aft eqpart aerosol=',aerosol
+c      endif
+c     end LA                                                             !                                                              !
       gas(nga)   = max(qins(ng+inh3), 0.0)         ! NH3(g) in ppm                  !
       gas(ngn)   = max(qins(ng+ihno3), 0.0)        ! HNO3(g) in ppm                 ! cf
 c     changed by LA
@@ -490,7 +508,7 @@ ckf
 	 nitaf = nitaf+aerosol(i,nan)*14./62.
 	 enddo
 	 nitaf = nitaf+(14*prs/(8.314e-5*tempk))*(gas(ngn)+gas(nghno2)
-     &           +gas(ngno3)+gas(ngno)+gas(ngno2)+gas(ngpan))    
+     & +gas(ngno3)+gas(ngno)+gas(ngno2)+gas(ngpan))    
 	 nitbal = nitaf/nitbef
 	 
 c	 write(*,*) nitbal
@@ -553,17 +571,8 @@ cjgj          con(kcrst_c+(knsec-1)) = aerosol(knsec,nar)
           moxid0(knsec,kpoc_c) = aerosol(knsec,nao) - arsl(knsec,nao)
           moxid0(knsec,kpec_c) = aerosol(knsec,nae) - arsl(knsec,nae)
           moxid0(knsec,kcrst_c) = aerosol(knsec,nar) - arsl(knsec,nar)
-
-CBNM
-C	  Modify moxid0 to enhance growth to small particles due to aqueous-
-C	  phase chemistry. Collaboration with Ilona Riipinen
-C	  if (knsec.le.15) then 	!Size-Section with Upper-Limit at 25.6 nm
-C	    moxid0(knsec,kpso4_c) = moxid0(knsec,lpso4_c) * 4
-C	  endif
-CBNM
-
         enddo
-        iaqflag = 1
+       iaqflag = 1
        endif
        modeaero = 1
       endif
@@ -589,10 +598,6 @@ c
 c     map con to q [ugr/m3]  gas in ppm
 c     For number conc., q [#/cm3]
 c
-c     added by LA
-c        write(*,*)
-c        write(*,*)'nsp=',nsp
-c     end added by LA
         do knsec=1,nsec
           q((knsec-1)*nsp+kcl+1)=con(ksoa1_c+(knsec-1))
           q((knsec-1)*nsp+kcl+2)=con(ksoa2_c+(knsec-1))
@@ -615,19 +620,26 @@ c
           q((knsec-1)*nsp+knum)=con(knum_c+(knsec-1))
                      ! Number concentration jgj 2/28/06
         enddo
-
 c     added by LA
+c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
 c        write(*,*)
-c        write(*,*)'q bef CAMx2so4cond=',q
+c        write(*,*)'bef CAMx2so4cond con=',con
+c        write(*,*)
+c        write(*,*)'bef CAMx2so4cond q=',q
+c        write(*,*)
+c        write(*,*)'bef CAMx2so4cond moxid0=',moxid0
+c        endif
 c     end added by LA
-
         if (iaqflag.eq.1) then
           call CAMx2so4cond(q,t0,t1,tempk,pressure,moxid0,ich,jch,kch)
         endif
-
 c     added by LA
+c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
 c        write(*,*)
-c        write(*,*)'q aft CAMx2so4cond=',q
+c        write(*,*)'aft CAMx2so4cond q=',q
+c        write(*,*)
+c        write(*,*)'aft CAMx2so4cond moxid0=',moxid0
+c        endif
 c     end added by LA
 cbk   SOAP has been merged with inorganic aerosol module - bkoo (03/09/03)
 cbk        if (lsoap) then
@@ -650,6 +662,12 @@ c
         q(naer+ihno3)  = con(khno3_c)
         q(naer+ihcl)   = con(khcl_c)
 c
+c     added by LA
+c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c        write(*,*)
+c        write(*,*)'after CAMx2so4cond and defining gases q=',q
+c        endif
+c     end LA
         if (modeaero.eq.1) then     ! call SOAP only
 cjgj
 c     Currently, soap is turned off.
@@ -677,10 +695,18 @@ cjgj          call aerchem(chaero,q,t0,t1,lfrst,ierr)
 c
 cjgj
 c     added by LA
-c        write(*,*)'Calling CAMx2dman'
+c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c           write(*,*)
+c           write(*,*)'bef CAMx2dman q=',q
+c        endif
 c     end added by LA
           call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch) 
-
+c     added by LA
+c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c           write(*,*)
+c           write(*,*)'aft CAMx2dman q=',q
+c        endif
+c     end added by LA
         endif
 c     added by LA
 c        write(*,*)
@@ -766,6 +792,12 @@ cbk      endif
         con(khno3_c) =q(naer+ihno3)
         con(khcl_c)  =q(naer+ihcl)
 c
+c     added by LA
+c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c           write(*,*)
+c           write(*,*)'aft CAMx2dman anbd remapping con=',con
+c        endif
+c     end added by LA
       endif
 c
 c      if ( .not. lsoap .or. .not.lcond ) then

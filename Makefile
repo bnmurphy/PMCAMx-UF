@@ -57,6 +57,7 @@ PMCAMx.exe:
 	@csh chktracer camx.prm.$(DOMAIN) PMCAMx.exe
 	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
 	make model FC="ifort" FLGS="-I$(INC) -O2 -fpe3 -traceback -align dcommons -extend_source -convert big_endian -mcmodel=medium -i-dynamic" TARGT="PMCAMx.exe" DUM=dummy
+#	make model FC="ifort" FLGS="-I$(INC) -O2 -align dcommons -extend_source -convert big_endian -static" TARGT="PMCAMx.exe" DUM=dummy
 #	make model FC="pgf90" FLGS="-I$(INC) -g -tp k8-64 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl, -mcmodel=medium" TARGT="PMCAMx.exe" DUM=dummy
 #	make model FC="pgf90" FLGS="-I$(INC) -O2 -tp p6 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl,-Bstatic" TARGT="PMCAMx.exe" DUM=dummy
 
@@ -91,6 +92,8 @@ cvtwind.o \
 dateerr.o \
 depsmry.o \
 diffus.o \
+drvtuv.o \
+tuv.o \
 CAMx2dman.o \
 CAMx2so4cond.o \
 drydep.o \
@@ -527,6 +530,15 @@ diffus.o 		: diffus.f                                             \
                         $(INC)/camx.prm $(INC)/filunit.com $(INC)/bndary.com   \
                         $(INC)/chmstry.com $(INC)/tracer.com $(INC)/procan.com
 
+
+drvtuv.o 		: drvtuv.f                                             \
+                        $(INC)/camx.prm $(INC)/camx_aero.inc $(INC)/flags.com  \
+                        $(INC)/chmstry.com $(INC)/section.inc
+
+
+tuv.o 			: tuv.f   
+
+
 drydep.o 		: drydep.f                                             \
                         $(INC)/camx.prm $(INC)/camx.com $(INC)/bndary.com      \
                         $(INC)/deposit.com $(INC)/chmstry.com                  \
@@ -547,7 +559,7 @@ emiss.o 		: emiss.f                                              \
 emistrns.o 		: emistrns.f                                           \
                         $(INC)/camx.prm $(INC)/camx.com $(INC)/camxfld.com     \
                         $(INC)/chmstry.com $(INC)/grid.com $(INC)/flags.com    \
-                        $(INC)/filunit.com $(INC)/ptemiss.com                  \
+                        $(INC)/filunit.com $(INC)/ptemiss.com $(INC)/ahomap.com \
                         $(INC)/bndary.com $(INC)/procan.com                    \
                         $(INC)/tracer.com $(INC)/rtracchm.com
 
@@ -1524,4 +1536,4 @@ $(PSSA)/vehk_nucl.o	  : $(PSSA)/vehk_nucl.f
 
 $(PSSA)/waterso4.o	  : $(PSSA)/waterso4.f	
 
-$(PSSA)/waternacl.o	  : $(PSSA)/waternacl.f
+$(PSSA)/waternacl.o	  : $(PSSA)/waternacl.f 

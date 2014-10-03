@@ -126,7 +126,6 @@ c
 c-----Save initial sulfuric acid concentration by jgj 1/9/2008
 c
       h2so4_i = conc(ksulf)
-      print *,'		TRAP: Sulfuric Acid Mixing Ratio(ppm) =',conc(ksulf)
 
 c-----Mass of NO3 and N2O5 goes in NO2 because steady state used 
 c 

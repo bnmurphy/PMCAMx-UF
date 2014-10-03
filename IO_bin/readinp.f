@@ -124,9 +124,6 @@ c-----Read height/pressure file for coarse grid and optionally for any fine
 c     grids
 c
       iunit = ihtp(igrd)
-c     added by LA
-c      write(*,*)'iunit=',iunit
-c     end added by LA
       if( iunit .GT. 0 ) then
  101     continue
          do k = 1,nglay
@@ -409,11 +406,12 @@ c
             do j = 1,ngrow
               do i = 1,ngcol
                 tau = cldod(i,j,k)
+                 energy(i,j,k)=1
                 if (tau.lt.5.) then
-                  energy(i,j,k) = 1.
+c                  energy(i,j,k) = 1.
                   cloud(i,j,k) = 0.
                 else
-                  energy(i,j,k) = (5. - exp(-tau))/(4. + 0.42*tau)
+c                  energy(i,j,k) = (5. - exp(-tau))/(4. + 0.42*tau)
                   cloud(i,j,k) = 1.
                 endif
               enddo
