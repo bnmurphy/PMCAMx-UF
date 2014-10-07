@@ -94,7 +94,8 @@ c
      &             'SO2       ','SOA1      ','SOA2      ',
      &             'SOA3      ','SOA4      ','SULF      ',
      &             'TERP      ','TOL       ','XN        ',
-     &             'XYL       ','SOA1_1    ','SOA1_2    ',
+     &             'XYL       ','AMINE     ',
+     &             'SOA1_1    ','SOA1_2    ',
      &             'SOA1_3    ','SOA1_4    ','SOA1_5    ',
      &             'SOA1_6    ','SOA1_7    ','SOA1_8    ',
      &             'SOA1_9    ','SOA1_10   ','SOA1_11   ',
@@ -333,6 +334,7 @@ c
      &             'CXO2      ','HCO3      ','TBUO      ',
      &             'BZO       ','BZNO      '/
 c
+c     Chemical Mechanism Specs
       data mchgas   / 34, 24, 25, 34, 56, 34,  0, 0, 0, 0 /
 cjgj      data mchaero  /  0,  0,  0, 16,  0, 13,  0, 0, 0, 0 /
       data mchaero  /  0,  0,  0, 16,  0, 14,  0, 0, 0, 0 /
