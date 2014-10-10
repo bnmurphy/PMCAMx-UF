@@ -63,7 +63,10 @@ c      print*,'h2so4',h2so4,'nh3ppt',nh3ppt
 C     if requirements for nucleation are met, call nucleation subroutines
 C     and get the nucleation rate and critical cluster size
       if (h2so4.gt.1.d4) then
-         if ((nh3ppt.gt.0.1).and.(tern_nuc.eq.1)) then
+         if (amine_nuc.eq.1.and.amineppt.gt.0.001) then
+            call amine_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !amine nuc
+            nflg=.true.
+	 elseif ((nh3ppt.gt.0.1).and.(tern_nuc.eq.1)) then
 c            print*, 'napari'
             call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
             nflg=.true.
@@ -76,6 +79,7 @@ c            print*, 'vehk'
                fn = 0.d0
                nflg=.false.
             endif
+
          else
             nflg=.false.
          endif

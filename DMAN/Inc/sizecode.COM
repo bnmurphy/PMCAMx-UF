@@ -113,8 +113,8 @@ cjgj      data molwt/96.,58.45,18.,18./ ! The 2nd is NaCl
       data Sv /42.88,42.88,42.88,42.88/
 
 C Flag for which nucleation parameterizations to use
-      integer bin_nuc, tern_nuc   !flags for binary and ternary nuc
-      parameter(bin_nuc=1, tern_nuc=1) ! 1 = on
+      integer bin_nuc, tern_nuc, amine_nuc   !flags for binary and ternary nuc
+      parameter(bin_nuc=1, tern_nuc=1, amine_nuc=1) ! 1 = on
 
 cdbg	  double precision NH3ppt_o
 cdbg	  double precision h2so4_print
