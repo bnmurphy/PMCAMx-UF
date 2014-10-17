@@ -358,26 +358,9 @@ c
         gas(ngch3o2)   = 1.0e-6              ! CH3O2(g) in ppm
         gas(ngch3oh)   = 1.0e-3              ! CH3OH(g) in ppm = 1 ppb
         gas(ngch3co3h) = 0.05*con(kh2o2_c)   ! CH3C(O)OOH(g) in ppm  = 0.05*H2O2
-c
-c     added by LA
-c        write(*,*)
-c        write(*,*)'knh3_c=',knh3_c
-c        write(*,*)'khno3_c=',khno3_c
-c        write(*,*)'khcl_c=',khcl_c
-c        write(*,*)'kso2_c=',kso2_c
-c        write(*,*)'kh2o2_c=',kh2o2_c
-c        write(*,*)'kform_c=',kform_c
-c        write(*,*)'khono_c=',khono_c
-c        write(*,*)'ko3_c=',ko3_c
-c        write(*,*)'koh_c=',koh_c
-c        write(*,*)'kho2_c=',kho2_c
-c        write(*,*)'kno3_c=',kno3_c
-c        write(*,*)'kno_c=',kno_c
-c        write(*,*)'kno2_c=',kno2_c
-c        write(*,*)'kpan_c=',kpan_c
-c        write(*,*)'kcl=',kcl
-c     end added by LA
-        do knsec=1,nsect
+        
+	
+	do knsec=1,nsect
           aerosol(knsec,naw)    = con(kph2o_c+(knsec-1))   ! water
           aerosol(knsec,naa)    = con(kpnh4_c+(knsec-1))   ! ammonium
           aerosol(knsec,na4)    = con(kpso4_c+(knsec-1))   ! sulfate
@@ -390,13 +373,7 @@ c     end added by LA
           aerosol(knsec,nahso5) = 0.0
           aerosol(knsec,nahmsa) = 0.0
         enddo
-c     added by LA
-c      if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
-c      write(*,*)
-c      write(*,*)'aerosol=',aerosol
-c      endif
-c     end LA
-c
+
 ckf
 c        Nitrogen mass balance (convert n2o5 to nitrate)
 c
@@ -521,7 +498,7 @@ ctmg	 write(6,*) n2o5nit, nitbal, nitbef, nitaf
 ctmg	 endif
 ckf
 c
-c     CAMx doesn't carry HMSA or HSO5 so we put their mass into sulfate (NA4)
+c     CAMx doesn''t carry HMSA or HSO5 so we put their mass into sulfate (NA4)
 c
         do knsec=1,nsect
           aerosol(knsec,na4)=aerosol(knsec,na4)+
@@ -587,7 +564,7 @@ c
         endif
       endif
 c
-c     if neither aqchem nor aerchem is called we don't call soap
+c     if neither aqchem nor aerchem is called we don''t call soap
 c     - should we??? 
 c
       if (modeaero.ne.0) then
@@ -656,11 +633,13 @@ c     now organic gases are given in ppm - bkoo (08/25/03)
         q(naer+icg3)   = con(kcg3_c)
         q(naer+icg4)   = con(kcg4_c)
 cbk        endif
-c
+c       
+        !Pass Gas-Phase Compounds to DMAN
         q(naer+ih2so4) = con(kh2so4_c)
         q(naer+inh3)   = con(knh3_c)
         q(naer+ihno3)  = con(khno3_c)
         q(naer+ihcl)   = con(khcl_c)
+        q(naer+idma)   = con(kamine_c)
 c
 c     added by LA
 c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
@@ -781,16 +760,19 @@ cdbg        endif
 cdbg      endif
 c
 cbk   SOAP has been merged with inorganic aerosol module - bkoo (03/09/03)
+
+        !Map Gas-Phase Species back to PMCAMx
 cbk      if (.not.lsoap) then
         con(kcg1_c) = q(naer+icg1)
         con(kcg2_c) = q(naer+icg2)
         con(kcg3_c) = q(naer+icg3)
         con(kcg4_c) = q(naer+icg4)
 cbk      endif
-        con(kh2so4_c)=q(naer+ih2so4)
-        con(knh3_c)  =q(naer+inh3)
-        con(khno3_c) =q(naer+ihno3)
-        con(khcl_c)  =q(naer+ihcl)
+        con(kh2so4_c) = q(naer+ih2so4)
+        con(knh3_c)   = q(naer+inh3)
+        con(khno3_c)  = q(naer+ihno3)
+        con(khcl_c)   = q(naer+ihcl)
+        con(kamine_c) = q(naer+idma)
 c
 c     added by LA
 c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then

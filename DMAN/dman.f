@@ -18,7 +18,7 @@ C     110, D07S12.
 C     For the details of development history, see history.help file.
 
 cPMCAMx      PROGRAM DMAN
-      SUBROUTINE dman(tstart,tend,Nki,Mki,h2so4,nh3ppt,rhi,tempi,presi
+      SUBROUTINE dman(tstart,tend,Nki,Mki,h2so4,nh3ppt,dmappt,rhi,tempi,presi
      &               ,dsulfdt,ichm, jchm, kchm)
 
       IMPLICIT NONE
@@ -37,6 +37,7 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
       double precision Mki(ibins,icomp) !Mass in a box as kg
       real h2so4   ! h2so4 from PMCAMx [=] ppt
       real nh3ppt  ! nh3ppt from PMCAMx
+      real dmappt  ! nh3ppt from PMCAMx
       real rhi     ! relative humidity from PMCAMx
       real tempi   ! temperature from PMCAMx
       real presi   ! pressure from PMCAMx
@@ -92,7 +93,7 @@ cPMCAMx      real winddat(inmax)
       ! for PSSA_cond_nuc
       double precision Nkout(ibins) ! Number output
       double precision Mkout(ibins,icomp) ! Mass output
-      double precision Gcout(icomp-1) ! Gas output
+      double precision Gcout(icomp-1) ! Gas output - DONT INCLUDE WATER
       double precision H2SO4rate ! sulfuric acid production rate [kg box-1 s-1]
 cPMCAMx      double precision NH3rate ! ammonia emission rate [kg hr-1]
 
@@ -170,7 +171,7 @@ cdbg           do i=1, ibins
 cdbg             write(*,*)Mk(i,j)
 cdbg           enddo
 cdbg         enddo
-cdbg       endif
+cdbg    endif
     
       !Initialize ygas
       ygas(mgsvi)=h2so4
@@ -259,6 +260,7 @@ cdbg      endif
 cPMCAMx        if (icond_test.eq.1) then
 cPMCAMx          Gc(srtso4)=boxmass*ygas(mgsvi)*1.0e-12*100.0/28.9
 cPMCAMx        else
+        !Convert PPT to kg (gridcell)-1
         Gc(srtso4)=boxmass*ygas(mgsvi)*1.0d-12*gmw(srtso4)/28.9
         Gc(srtnh3)=boxmass*ygas(mgnh3)*1.0d-12*gmw(srtnh3)/28.9
 cPMCAMx        endif
@@ -357,7 +359,7 @@ cdbg      endif
 
       !Call Pseudo Steady State condensation and nucleation
       if (inucl .eq. 1) then
-        call cond_nuc(Nk,Mk,Gc,Nkout,Mkout,Gcout,H2SO4rate,dt,
+        call cond_nuc(Nk,Mk,Gc,Nkout,Mkout,Gcout,H2SO4rate,dmappt,dt,
      &   ichm,jchm,kchm)
       endif
 

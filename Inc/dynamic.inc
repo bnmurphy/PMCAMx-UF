@@ -69,7 +69,7 @@ c
        parameter(nnum=1)              ! Add number conc. 2/28/06
 cbk       parameter(nsoap=4)             ! Number or secondary organic aerosol species
 cbk       parameter(ngas=4+nsoap)        ! Number of gases of interest, 4 inorganic + nsoap
-       parameter(ngas=4+4) ! bkoo (03/09/03)
+       parameter(ngas=4+5) ! bkoo (03/09/03)  BNM and JJ (17/10/14)
        parameter(INH3  =1)            ! Pointer of NH3 in the gas phase
        parameter(IHNO3 =2)            ! Pointer of HNO3 in the gas phase
        parameter(IH2SO4=3)            ! Pointer of H2SO4 in the gas phase
@@ -78,6 +78,7 @@ cbk       parameter(ngas=4+nsoap)        ! Number of gases of interest, 4 inorga
        parameter(ICG2  =6)            ! Pointer of CG2 condensable gas #2 in the gas phase arrary
        parameter(ICG3  =7)            ! Pointer of CG3 condensable gas #3 in the gas phase arrary
        parameter(ICG4  =8)            ! Pointer of CG4 condensable gas #4 in the gas phase arrary
+       parameter(IDMA  =9)            ! Pointer of DMA in the gas phase
 c
 cjgj       parameter(nsp=nexti+norg+ninert)
        parameter(nsp=nexti+norg+ninert+nnum)

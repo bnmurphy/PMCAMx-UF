@@ -29,7 +29,7 @@ C-----OUTPUTS-----------------------------------------------------------
 
 C     Nkf, Mkf, Gcf - same as above, but final values
 
-      SUBROUTINE cond_nuc(Nki,Mki,Gci,Nkf,Mkf,Gcf,H2SO4rate,dt,ichm,jchm
+      SUBROUTINE cond_nuc(Nki,Mki,Gci,Nkf,Mkf,Gcf,H2SO4rate,dmappt,dt,ichm,jchm
      & ,kchm)             
       IMPLICIT NONE
 
@@ -80,6 +80,7 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision mass_change !change in mass during nucleation.f
       double precision total_nh4_1,total_nh4_2
       double precision min_tstep !minimum timestep [s]
+      double precision dmappt   !mixing ratio of dimethyl amine (for nucleation)
 
       logical nflg ! returned from nucleation, says whether nucleation occurred or not
  
@@ -117,14 +118,14 @@ C     Make sure that H2SO4 concentration doesn't exceed the amount generated
 C     during that timestep (this will happen when the condensation sink is very low)
 
       !Get the steady state H2SO4 concentration
-      call getH2SO4conc(H2SO4rate,CS1,Gc1(srtnh4),gasConc)
+      call getH2SO4conc(H2SO4rate,CS1,Gc1(srtnh4),gasConc,dmappt)
       Gc1(srtso4) = gasConc
       addt = min_tstep
 c      addt = 3600.d0
       totmass = H2SO4rate*addt*96.d0/98.d0
 
       !Get change size distribution due to nucleation with initial guess
-      call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt)          
+      call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,dmappt)
 
       mass_change = 0.d0
       do k=1,ibins
@@ -186,19 +187,21 @@ c      if (CSch.gt.CSch_tol) then ! condensation sink didn't change much use who
          
          num_iter = 0
          sumH2SO4=0.d0
-         ! do adaptive timesteps
+
+
+         !DO ADAPTIVE TIMESTEPS
          do while (time_rem .gt. 0.d0)
             num_iter = num_iter + 1
 
 C     Get the steady state H2SO4 concentration
             if (num_iter.gt.1)then ! no need to recalculate for first step
-               call getH2SO4conc(H2SO4rate,CS1,Gc1(srtnh4),gasConc)
+               call getH2SO4conc(H2SO4rate,CS1,Gc1(srtnh4),gasConc,dmappt)
                Gc1(srtso4) = gasConc
             endif
 
             sumH2SO4 = sumH2SO4 + Gc1(srtso4)*addt
             totmass = H2SO4rate*addt*96.d0/98.d0
-            call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt) 
+            call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,dmappt) 
             
             mass_change = 0.d0
             do k=1,ibins

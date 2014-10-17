@@ -103,6 +103,12 @@ cjgj      data molwt/96.,58.45,18.,18./ ! The 2nd is NaCl
       data molwt/96.,50.,18.,18./ ! The 2nd is organic matter. NEED TO BE UPDATED. 
       real gmw(icomp)
       data gmw/98.,50.,17.,18./
+
+      !Molecular weight of dimethyl amine (BNM and JJ 17/10/14)
+      real MW_dma
+      parameter (MW_dma=45.08)
+
+
       real alpha(icomp) ! accomodation coef  
       data alpha/0.65,0.,0.08,0./
            ! alpha(H2SO4) is from U. Poschl et al., J. Phys. Chem. A, 102,

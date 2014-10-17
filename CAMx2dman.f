@@ -41,8 +41,8 @@ c
       integer ibins, icomp
       parameter (ibins=41, icomp=4)
 
-      integer srtso4, srtorg, srtnh3, srth2o !species indicators
-      parameter (srtso4=1, srtorg=2, srtnh3=3, srth2o=4)
+      integer srtso4, srtorg, srtnh3, srth2o, srtdma !species indicators
+      parameter (srtso4=1, srtorg=2, srtnh3=3, srth2o=4, srtdma=5)
 
       integer i, j ! counter variables
       integer ii, jj ! counter variables
@@ -98,19 +98,12 @@ c
       pres = pressure * 1.01325d5 ! Pa
       relh = rh ! Change a relative humidity variable for DMAN
 c
-cdbg      write(*,*)'CAMx2dman.f - chkpt 1. at the very beginning'
-c     added by LA
-c      write(*,*)
-c      write(*,*)'naer=',naer
-c      write(*,*)'ih2so4=',ih2so4
-c      write(*,*)'inh3=',inh3
-c      write(*,*)'knum=',knum
-c     end added by LA
+      !Load Gas Variables
+      !Sulfuric Acid
       if (q(naer+ih2so4).ge.0.0) then 
         h2so4 = q(naer+ih2so4) * 1.0d6   ! h2so4 [=] ppt, q [=] ppm 
       else
         if (q(naer+ih2so4).gt.(-eps*1.0d-6)) then
-cdbg          h2so4 = 0.0
           h2so4 = eps
           q(naer+ih2so4) = eps * 1.0d-6
         else
@@ -121,11 +114,11 @@ cdbg          h2so4 = 0.0
           STOP
         endif
       endif
+      !Ammonia
       if (q(naer+inh3).ge.0.d0) then
         nh3ppt = q(naer+inh3) * 1.0d6 
       else
         if (q(naer+inh3).gt.(-eps*1.0d-6)) then
-cdbg          nh3ppt = 0.d0
           nh3ppt = eps
           q(naer+inh3) = eps * 1.0d-6
         else
@@ -136,6 +129,23 @@ cdbg          nh3ppt = 0.d0
           STOP
         endif
       endif
+      !Dimethyl Amine
+      if (q(naer+idma).ge.0.d0) then
+        dmappt = q(naer+idma) * 1.0d6 
+      else
+        if (q(naer+idma).gt.(-eps*1.0d-6)) then
+          dmappt = eps
+          q(naer+idma) = eps * 1.0d-6
+        else
+          write(*,*)'DMA is less than zero'
+          write(*,*)'q(naer+inh3) [ppm]=',q(naer+idma)
+          write(*,*)'Coordinate =', ich, jch, kch
+          write(*,*)'dsulfdt=',dsulfdt
+          STOP
+        endif
+      endif
+ 
+      !Load Aerosol Variables
       do i=1, ibins
          ! First check for negative tracers
          if (q((i-1)*nsp+knum).lt.0.0) then
@@ -251,7 +261,7 @@ cdbg            enddo
 cdbg          enddo
 cdbg        endif
 cdbg      endif
-      call dman(tstart,tend,Nk,Mk,h2so4,nh3ppt,relh,tempK,pres,dsulfdt
+      call dman(tstart,tend,Nk,Mk,h2so4,nh3ppt,dmappt,relh,tempK,pres,dsulfdt
      & ,ich,jch,kch)
       !For a debuging purpose
 cdbg      if ((tstart.gt.0.0).and.(tstart.lt.0.5)) then
@@ -364,11 +374,11 @@ c
         q((i-1)*nsp+kh2o) = Mk(i,srth2o) * cvt2 * (1.0/boxvol)
       enddo      
 
+      !Sulfuric Acid
       if (h2so4.ge.0.0) then
         q(naer+ih2so4) = h2so4 * 1.0d-6   ! h2so4 [=] ppt, q [=] ppm 
       else
         if (h2so4.gt.-eps) then
-cdbg          q(naer+ih2so4) = 0.0   ! h2so4 [=] ppt, q [=] ppm 
           q(naer+ih2so4) = eps * 1.0d-6  ! h2so4 [=] ppt, q [=] ppm 
           h2so4 = eps
         else
@@ -380,11 +390,11 @@ cdbg          q(naer+ih2so4) = 0.0   ! h2so4 [=] ppt, q [=] ppm
         endif
       endif
 
+      !Ammonia
       if (nh3ppt.ge.0.0) then
         q(naer+inh3) = nh3ppt * 1.0d-6 
       else
         if (nh3ppt.gt.-eps) then
-cdbg          q(naer+inh3) = 0.0
           q(naer+inh3) = eps * 1.0d-6
           nh3ppt = eps
         else
@@ -396,35 +406,22 @@ cdbg          q(naer+inh3) = 0.0
         endif
       endif
 
-      !For a debuging purpose
-cdbg      if ((tstart.gt.0.0).and.(tstart.lt.0.5)) then
-cdbg      if ((ich.eq.36).and.(jch.eq.29).and.(kch.eq.1)) then
-cdbg         write(*,*)'In CAMx2dman after converting Nk and Mk to q' 
-cdbg         write(*,*)'coordinate of (i,j,k)',ich, jch, kch
-cdbg         write(*,*)'tempK,pressure,dsulfdt=',tempK,pressure,dsulfdt
-cdbg         write(*,*)'q(naer+ih2so4)',q(naer+ih2so4)
-cdbg         write(*,*)'q(naer+inh3)',q(naer+inh3)
-cdbg         i = 4 !4th size section
-cdbg         write(*,*)'q(knum)=',q((i-1)*nsp+knum)   !number
-cdbg         write(*,*)'q(kso4)=',q((i-1)*nsp+kso4)   !1
-cdbg         write(*,*)'q(kpom)=',q((i-1)*nsp+kpom)   !2
-cdbg         write(*,*)'q(kec)=',q((i-1)*nsp+kec)     !3
-cdbg         write(*,*)'q(kcrus)=',q((i-1)*nsp+kcrus) !4
-cdbg         write(*,*)'q(kcl)=',q((i-1)*nsp+kcl)     !5
-cdbg         write(*,*)'q(kna)=',q((i-1)*nsp+kna)     !6
-cdbg         write(*,*)'q(ksoa1)=',q((i-1)*nsp+kcl+1) !7
-cdbg         write(*,*)'q(ksoa2)=',q((i-1)*nsp+kcl+2) !8
-cdbg         write(*,*)'q(ksoa3)=',q((i-1)*nsp+kcl+3) !9
-cdbg         write(*,*)'q(ksoa4)=',q((i-1)*nsp+kcl+4) !10
-cdbg         write(*,*)'q(kno3)=',q((i-1)*nsp+kno3)   !11
-cdbg         write(*,*)'q(knh4)=',q((i-1)*nsp+knh4)   !12
-cdbg         write(*,*)'q(kh2o)=',q((i-1)*nsp+kh2o)   !13
-cdbg       endif
-cdbg       endif
-
-cdbg      write(*,*)'CAMx2dman.f - chkpt 4. after converting after dman'
-
-
+      !Dimethyl Amine
+      if (dmappt.ge.0.0) then
+        q(naer+idma) = dmappt * 1.0d-6 
+      else
+        if (dmappt.gt.-eps) then
+          q(naer+idma) = eps * 1.0d-6
+          dmappt = eps
+        else
+          write(*,*)'DMA is less than zero'
+          write(*,*)'nh3ppt=',dmappt
+          write(*,*)'Coordinate =', ich, jch, kch
+          write(*,*)'dsulfdt=',dsulfdt
+          STOP
+        endif
+      endif
+ 
 
       RETURN
       END
