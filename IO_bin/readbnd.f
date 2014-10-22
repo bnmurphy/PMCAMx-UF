@@ -44,13 +44,6 @@ c
 c-----Read through coarse grid concentration records until current time/date
 c
  100  read(ibc,end=900) idat1,tim1,idat2,tim2
-c     added by LA
-c      write(*,*)'In readbnd.f'
-c      write(*,*)'idat1: ',idat1
-c      write(*,*)'idat2: ',idat2
-c      write(*,*)'tim1: ',tim1
-c      write(*,*)'tim2: ',tim2
-c     end added by LA
       if (INT(tim2) .EQ. 24) then
         tim2 = 0.
         idat2 = idat2 + 1
@@ -72,7 +65,7 @@ c     end added by LA
           read(ibc) idum,(bcspec(j),j=1,10),iedge,
      &              ((bctmp(i,k,n,l),k=1,nz),i=1,nc)
 c     added by LA
-c          write(*,*)'bctmp(1:10,1,1,225)=',bctmp(1:10,1,1,225)
+          !write(*,*)'bctmp(1:10,1,1,225)=',bctmp(1:10,1,1,225)
 c     end added by LA
         enddo
       enddo
@@ -99,9 +92,10 @@ c
                 convfac = 1.
               endif
               conc(n4d) = convfac*bdnl(l)
-              if (lbc.gt.0 .and. bctmp(j,k,1,lbc).gt.bdnl(l)) 
-     &          conc(n4d) = convfac*bctmp(j,k,1,lbc)
-c
+              if (lbc.gt.0) then
+	        if (bctmp(j,k,1,lbc).gt.bdnl(l)) 
+     &            conc(n4d) = convfac*bctmp(j,k,1,lbc)
+              endif
               i = iend(j) + 1
               n3d = i + ncol(1)*(j - 1) + ncol(1)*nrow(1)*(k - 1)
               n4d = n3d + ncol(1)*nrow(1)*nlay(1)*(l - 1)
@@ -111,8 +105,10 @@ c
                 convfac = 1.
               endif
               conc(n4d) = convfac*bdnl(l)
-              if (lbc.gt.0 .and. bctmp(j,k,2,lbc).gt.bdnl(l)) 
+              if (lbc.gt.0) then
+	        if ( bctmp(j,k,2,lbc).gt.bdnl(l)) 
      &          conc(n4d) = convfac*bctmp(j,k,2,lbc)
+              endif
 c-----Set POC and PEC BC-------------------------------------------
 cjgj              if (l.ge.75.and.l.le.80) then
 cjgj                conc(n4d)=1.8d-1
@@ -133,8 +129,10 @@ c
                 convfac = 1.
               endif
               conc(n4d) = convfac*bdnl(l)
-              if (lbc.gt.0 .and. bctmp(i,k,3,lbc).gt.bdnl(l))
+              if (lbc.gt.0) then
+	        if (bctmp(i,k,3,lbc).gt.bdnl(l))
      &          conc(n4d) = convfac*bctmp(i,k,3,lbc)
+              endif
 c
               j = jend(i) + 1 
               n3d = i + ncol(1)*(j - 1) + ncol(1)*nrow(1)*(k - 1) 
@@ -145,8 +143,10 @@ c
                 convfac = 1.
               endif
               conc(n4d) = convfac*bdnl(l)
-              if (lbc.gt.0 .and. bctmp(i,k,4,lbc).gt.bdnl(l))
+              if (lbc.gt.0) then
+	        if (bctmp(i,k,4,lbc).gt.bdnl(l))
      &            conc(n4d) = convfac*bctmp(i,k,4,lbc) 
+              endif
 c-----Set POC and PEC BC-------------------------------------------
 cjgj                if (l.ge.75.and.l.le.80) then
 cjgj                  conc(n4d)=1.8d-1
@@ -182,11 +182,6 @@ c
         endif
       endif
 c
-c     added by LA
-      write(*,*)'Updated bnddate in readbnd.f'
-      write(*,*)'bndtim: ',bndtim
-      write(*,*)'bnddate: ',bnddate
-c     end added by LA
       goto 999
 c-----End of BC file reached
 c

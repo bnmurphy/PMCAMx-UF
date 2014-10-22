@@ -28,7 +28,7 @@ C-----OUTPUTS-----------------------------------------------------------
 
 C     gasConc - gas H2SO4 [kg/box]
 
-      SUBROUTINE getH2SO4conc(H2SO4rate,CS,NH3conc,gasConc)
+      SUBROUTINE getH2SO4conc(H2SO4rate,CS,NH3conc,gasConc, dmappt)
 
       IMPLICIT NONE
 
@@ -66,6 +66,7 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
 	double precision CSeps ! low limit for CS
 	double precision max_H2SO4conc !maximum H2SO4 concentration in parameterizations (kg/box)
 	double precision nh3ppt   !ammonia concentration in ppt
+	double precision dmappt   !dimethyl amine concentration in ppt
       double precision maxres     !max res 50 ppt/hr = 16.7 kg box-1 s-1
                                   !by jgj 11/25/07
  
@@ -131,14 +132,14 @@ C Checks for when condensation sink is very small
 
 	gasConc = min(gasConc,max_H2SO4conc)
       Gci(srtso4) = gasConc
-      call getNucRate(Gci,fn,rnuc,nflg)
+      call getNucRate(Gci,fn,rnuc,nflg,CS,dmappt)
 
       if (nflg) then ! nucleation occured
          gasConc_lo = H2SO4min*boxvol/(1000.d0/98.d0*6.022d23) !convert to kg/box
 
 C     Test to see if gasConc_lo gives a res < 0 (this means ANY nucleation is too high)
          Gci(srtso4) = gasConc_lo*1.000001d0
-         call getNucRate(Gci,fn1,rnuc1,nflg)
+         call getNucRate(Gci,fn1,rnuc1,nflg,CS,dmappt)
          if (nflg) then
             massnuc = 4.d0/3.d0*pi*(rnuc1*1.d-9)**3*1350.*fn1*boxvol*
 c            massnuc = 4.d0/3.d0*pi*(rnuc1*1.d-9)**3*1800.*fn1*boxvol*
@@ -190,7 +191,7 @@ Cjrp            print*, 'iter',iter
 Cjrp            print*,'gasConc_lo',gasConc_lo,'gasConc_hi',gasConc_hi
             gasConc = sqrt(gasConc_hi*gasConc_lo) ! take new guess as logmean
             Gci(srtso4) = gasConc
-            call getNucRate(Gci,fn,rnuc,nflg)
+            call getNucRate(Gci,fn,rnuc,nflg,CS,dmappt)
             massnuc = 4.d0/3.d0*pi*(rnuc*1.d-9)**3*1350.*fn*boxvol*
 c 	      massnuc = 4.d0/3.d0*pi*(rnuc*1.d-9)**3*1800.*fn*boxvol*
      &           98.d0/96.d0

@@ -81,6 +81,7 @@ c
       character*20 version
       character*10 name
       dimension tmass(97,90,14,nsec) ! should be improved by jgj 2/18/06
+      integer igrd
 c
       data version /'CAMx v4.02, 03-07-09'/
 c
@@ -561,22 +562,10 @@ c
 c
 c-----Check if coarse grid boundary data are to be read
 c
-c     added by LA
-      write(*,*)'Before if statement in CAMx.f'
-      write(*,*)'date=',date
-      write(*,*)'bnddate=',bnddate
-      write(*,*)'time=',time
-      write(*,*)'bndtim=',bndtim
-c     end added by LA
       if (date.eq.bnddate .and. abs(time-bndtim).lt.0.01) then
         write(*,'(a20,$)') 'readbnd ......'
         call readbnd(bndtim,bnddate)
-cdbg        call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,
-cdbg     &       spname,22)
         call numconv(conc(1),ncol(1),nrow(1),nlay(1),conc(1),nspec,1)
-                           ! by jgj 2/17/06
-cdbg        call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,
-cdbg     &       spname,23)
         tcpu = dtime(tarray2)
         write(*,'(a,f10.3)') '   CPU = ', tarray2(1)
 c

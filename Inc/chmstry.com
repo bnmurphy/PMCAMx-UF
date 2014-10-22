@@ -298,8 +298,7 @@ c
      &            (kmap(91),ksoa3), (kmap(92),ksoa4), (kmap(93),ksulf),
      &            (kmap(94),kterp), (kmap(95),ktol ), (kmap(96),kxn  ),
      &            (kmap(97),kxyl ), (kmap(98),kamine)
-     
-      equivalance (kmap( 99),ksoa1_1  ),(kmap(100),ksoa1_2  ),
+      equivalence (kmap(99), ksoa1_1  ),(kmap(100),ksoa1_2  ),  
      &(kmap(101),ksoa1_3  ),(kmap(102),ksoa1_4  ),(kmap(103),ksoa1_5  ),
      &(kmap(104),ksoa1_6  ),(kmap(105),ksoa1_7  ),(kmap(106),ksoa1_8  ),
      &(kmap(107),ksoa1_9  ),(kmap(108),ksoa1_10 ),(kmap(109),ksoa1_11 ),
@@ -508,8 +507,7 @@ c
      &(kmap(691),knum_34  ),(kmap(692),knum_35  ),(kmap(693),knum_36  ),
      &(kmap(694),knum_37  ),(kmap(695),knum_38  ),(kmap(696),knum_39  ),
      &(kmap(697),knum_40  ),(kmap(698),knum_41  ),(kmap(699),knum_42  ),
-     &(kmap(700),knum_43  ),
-     &(kmap(701),kph2o    )
+     &(kmap(700),knum_43  ),(kmap(701),kph2o    )
 c
       integer   ko1d  ,ko    ,kclo 
       integer   kcl   ,kn2o5 ,kno3 

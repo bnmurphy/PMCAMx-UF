@@ -26,7 +26,7 @@ C-----OUTPUTS-----------------------------------------------------------
 
 C     Nkf, Mkf, Gcf - same as above, but final values
 
-      SUBROUTINE nucleation(Nki,Mki,Gci,Nkf,Mkf,Gcf,nuc_bin,dt)
+      SUBROUTINE nucleation(Nki,Mki,Gci,Nkf,Mkf,Gcf,nuc_bin,dt,cs,dmappt)
 
       IMPLICIT NONE
 
@@ -48,6 +48,7 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
 cdbg      real nh3ppt   ! gas phase ammonia in pptv
 cdbg      real h2so4    ! gas phase h2so4 in molec cc-1
       double precision nh3ppt   ! gas phase ammonia in pptv
+      double precision dmappt   ! gas phase dimethyl amine in pptv
       double precision h2so4    ! gas phase h2so4 in molec cc-1
       double precision fn       ! nucleation rate cm-3 s-1
       double precision rnuc     ! critical nucleation radius [nm]
@@ -63,6 +64,7 @@ cdbg      real h2so4    ! gas phase h2so4 in molec cc-1
       double precision mp       ! mass of particle [kg]
       double precision mold     ! saved mass in first bin
       double precision mnuc     !mass of nucleation
+      double precision cs       ! condensation sink [s-1]
 
 C-----EXTERNAL FUNCTIONS------------------------------------------------
 
@@ -78,8 +80,6 @@ C-----CODE--------------------------------------------------------------
 
       h2so4 = Gci(srtso4)/boxvol*1000.d0/98.d0*6.022d23
       nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
-cjgj      nh3ppt = Gci(srtnh4)/17.d0/(boxmass/29.d0)*1d12
-cjgj	nh3ppt = NH3ppt_o
 
       fn = 0.d0
       rnuc = 0.d0
@@ -92,12 +92,21 @@ cdbg      print*,'h2so4',h2so4,'nh3ppt',nh3ppt
 C     if requirements for nucleation are met, call nucleation subroutines
 C     and get the nucleation rate and critical cluster size
       if (h2so4.gt.1.d4) then
-         if (nh3ppt.gt.0.1.and.tern_nuc.eq.1) then
-cdbg            print*, 'napari'
+         if (amine_nuc.eq.1.and.dmappt.gt.0.001) then
+            call amine_nucl(temp,cs,h2so4,dmappt,fn,rnuc) !amine nuc
+            nflag=3 !Amine Nucleation Called, BNM and JJ 10/17/14
+
+            !Update DMA Concentration
+            d_dma = 0.48 * (4.d0/3.d0*pi*(rnuc*1D-9)**3)*1350.d0*fn*1.e6*dt !kg m-3
+            dmappt = dmappt - d_dma/0.045 / (pres/(8.314*temp) * 1.e9 !ppt
+
+            Mkf(nuc_bin,srtso4) = Mki(nuc_bin,srtso4)+0.8144*fn*mnuc*boxvol*dt
+
+         elseif (nh3ppt.gt.0.1.and.tern_nuc.eq.1) then
             call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
             nflag=1 !ternary nucleation called, jgj 12/14/07
+
          elseif (bin_nuc.eq.1) then
-cdbg            print*, 'vehk'
             call vehk_nucl(temp,rh,h2so4,fn,rnuc) !binary nuc
             nflag=2 !binary nucleation called, jgj 12/14/07
          endif    
@@ -171,25 +180,36 @@ cdbg         print*,'nuc_bin',nuc_bin
          mold = Mki(nuc_bin,srtso4)
          if (nflag.eq.1) then
            !nuclei are assumed as ammonium bisulfte
-           Mkf(nuc_bin,srtso4) = Mki(nuc_bin,srtso4)+0.8144*fn*mnuc*
-     &        boxvol*dt
-           Mkf(nuc_bin,srtnh4) = Mki(nuc_bin,srtnh4)+0.1856*fn*mnuc*
-     &        boxvol*dt
+           Mkf(nuc_bin,srtso4) = Mki(nuc_bin,srtso4)+0.8144*fn*mnuc*boxvol*dt
+           Mkf(nuc_bin,srtnh4) = Mki(nuc_bin,srtnh4)+0.1856*fn*mnuc*boxvol*dt
            !Save other components. by jgj 1/8/2008
            Mkf(nuc_bin,srtna) = Mki(nuc_bin,srtna)
            Mkf(nuc_bin,srth2o) = Mki(nuc_bin,srth2o)
+
          elseif (nflag.eq.2) then
-           Mkf(nuc_bin,srtso4) = Mki(nuc_bin,srtso4)+fn*mnuc*
-     &        boxvol*dt
+           !nuclei are assumed to be sulfuric acid
+           Mkf(nuc_bin,srtso4) = Mki(nuc_bin,srtso4)+fn*mnuc*boxvol*dt
            !Save other components. by jgj 1/8/2008
            Mkf(nuc_bin,srtna) = Mki(nuc_bin,srtna)
            Mkf(nuc_bin,srtnh4) = Mki(nuc_bin,srtnh4)
            Mkf(nuc_bin,srth2o) = Mki(nuc_bin,srth2o)
+          
+	 elseif (nflag.eq.3) then
+	   !nuclei consist of sulfate and amine compounds
+	   !assume them to be like ammonium bisulfate
+	   !even though they should be bigger and look more organic
+           Mkf(nuc_bin,srtso4) = Mki(nuc_bin,srtso4)+0.8144*fn*mnuc*boxvol*dt
+           Mkf(nuc_bin,srtnh4) = Mki(nuc_bin,srtnh4)+0.1856*fn*mnuc*boxvol*dt
+           !Save other components. by jgj 1/8/2008
+           Mkf(nuc_bin,srtna) = Mki(nuc_bin,srtna)
+           Mkf(nuc_bin,srth2o) = Mki(nuc_bin,srth2o)
+          
          endif
          Nkf(nuc_bin) = Nki(nuc_bin)+fn*boxvol*dt
 cdbg         print*,'Nk_NUUUC',Nki(nuc_bin),Nkf(nuc_bin)
          Gcf(srtso4) = Gci(srtso4)! - (Mkf(nuc_bin,srtso4)-mold)
                                   !PSSA decide Gc as a diagnostic way
+
 
 C there is a chance that Gcf will go less than zero because we are artificially growing
 C particles into the first size bin.  don't let it go less than zero.
