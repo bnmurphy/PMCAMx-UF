@@ -423,6 +423,7 @@ $(PSSA)/eznh3.o \
 $(PSSA)/ezwatereqm.o \
 $(PSSA)/getNucRate.o \
 $(PSSA)/napa_nucl.o \
+$(PSSA)/amine_nucl.o \
 $(PSSA)/vehk_nucl.o \
 $(PSSA)/mnfix_PSSA.o \
 $(PSSA)/waterso4.o \
@@ -1528,6 +1529,8 @@ $(PSSA)/mnfix_PSSA.o	  : $(PSSA)/mnfix_PSSA.f                               \
 			  $(INC)/sizecode.COM
 
 $(PSSA)/napa_nucl.o	  : $(PSSA)/napa_nucl.f                          
+
+$(PSSA)/amine_nucl.o	  : $(PSSA)/amine_nucl.f                          
 
 $(PSSA)/nucleation.o	  : $(PSSA)/nucleation.f                               \
 			  $(INC)/sizecode.COM

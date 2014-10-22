@@ -561,7 +561,7 @@ c
           read(record(21:80),*) idphot2(n),idphot3(n),phtscl(n)
         enddo
         write(idiag,'(a)') 'The secondary photolysis reactions are' 
-        write(idiag,'(i6,a,i6,a,1pe10.3)')  
+        write(idiag,'(i6,a,i6,a,1pe12.3)')  
      &    (idphot2(n),' =',idphot3(n),' *',phtscl(n),n=1,nphot2)
       endif
       nphot = nphot1 + nphot2
@@ -627,7 +627,7 @@ c
       write(idiag,'(a)') 'The state species are'
       write(idiag,'(a)') record(:istrln(record))
       do l=1,ngas
-        read(ichem,'(5x,a10,2e10.0,4f10.0)')
+        read(ichem,'(5x,a10,2e10.1,4f10.0)')
      &             spname(l),bdnl(l),henry0(l),tfact(l),
      &             diffrat(l),f0(l),rscale(l)
         rscale(l) = amin1(1.,rscale(l))
@@ -687,7 +687,7 @@ c
         write(idiag,'(a)') record(:istrln(record))
         if (idmech.EQ.6) then
           do iaero = 1, naero
-            read(ichem,'(5x,a10,e10.0,f10.0)')
+            read(ichem,'(5x,a10,e12.1,f10.0)')
      &           tmpnam,bdnl_tmp,roprt_tmp
             nl=istrln(tmpnam)
             do isec = 1, nsec_c
@@ -703,13 +703,13 @@ c
               roprt(l) = roprt_tmp * 1.e6
               dcut(l,1) = dsec_i(isec)
               dcut(l,2) = dsec_i(isec+1)
-              write(idiag,'(i3,2x,a10,e10.2,3f10.2)')
+              write(idiag,'(i3,2x,a10,e12.2,3f10.2)')
      &           l,spname(l),bdnl(l),roprt_tmp,(dcut(l,m),m=1,2)
             enddo
           enddo
         else
           do l = ngas+1,nspec
-            read(ichem,'(5x,a10,e10.0,f10.0)')
+            read(ichem,'(5x,a10,e12.1,f10.0)')
      &         spname(l),bdnl(l),roprt(l)
             dcut(l,1) = 0.04
             dcut(l,2) = 2.50

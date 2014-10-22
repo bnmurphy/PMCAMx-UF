@@ -113,8 +113,8 @@ cjgj      data molwt/96.,58.45,18.,18./ ! The 2nd is NaCl
       data Sv /42.88,42.88,42.88,42.88/
 
 C Flag for which nucleation parameterizations to use
-      integer bin_nuc, tern_nuc   !flags for binary and ternary nuc
-      parameter(bin_nuc=1, tern_nuc=1) ! 1 = on
+      integer bin_nuc, tern_nuc, amine_nuc   !flags for binary and ternary nuc
+      parameter(bin_nuc=1, tern_nuc=1, amine_nuc=1) ! 1 = on
 
 cdbg	  double precision NH3ppt_o
 cdbg	  double precision h2so4_print
@@ -133,13 +133,11 @@ C Make Common Variable List for Amine Nucleation Lookup Table
       parameter(amine_nuc_nH2SO4=12, amine_nuc_nDMA=11,
      &          amine_nuc_nCS=6,   amine_nuc_nTEMP=15)
 
-      doube precision  
-     &  amine_nuc_tbl_H2SO4, amine_nuc_tbl_DMA,
-     &  amine_nuc_tbl_CS, amine_nuc_tbl_TEMP,amine_nuc_tbl_J
+      double precision  amine_nuc_tbl_H2SO4, amine_nuc_tbl_DMA,
+     &                  amine_nuc_tbl_CS, amine_nuc_tbl_TEMP,
+     &                  amine_nuc_tbl_J
 
-      common /amine_nuc/ amine_nuc_nH2SO4, amine_nuc_nDMA,
-     &                   amine_nuc_nCS,    amine_nuc_nTEMP,
-     &                   amine_nuc_tbl_H2SO4, amine_nuc_tbl_DMA,
+      common /amine_nuc/ amine_nuc_tbl_H2SO4, amine_nuc_tbl_DMA,
      &                   amine_nuc_tbl_CS, amine_nuc_tbl_TEMP,
      &                   amine_nuc_tbl_J
 

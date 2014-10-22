@@ -45,8 +45,6 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
 C-----VARIABLE DECLARATIONS---------------------------------------------
 
       integer nflag ! a flag for nucleation type by jgj 12/14/07
-cdbg      real nh3ppt   ! gas phase ammonia in pptv
-cdbg      real h2so4    ! gas phase h2so4 in molec cc-1
       double precision nh3ppt   ! gas phase ammonia in pptv
       double precision dmappt   ! gas phase dimethyl amine in pptv
       double precision h2so4    ! gas phase h2so4 in molec cc-1
@@ -65,6 +63,8 @@ cdbg      real h2so4    ! gas phase h2so4 in molec cc-1
       double precision mold     ! saved mass in first bin
       double precision mnuc     !mass of nucleation
       double precision cs       ! condensation sink [s-1]
+      double precision d_dma    ! consumed dimethyl amine by the nucleation
+                                ! process (kg m-3)
 
 C-----EXTERNAL FUNCTIONS------------------------------------------------
 
@@ -98,7 +98,7 @@ C     and get the nucleation rate and critical cluster size
 
             !Update DMA Concentration
             d_dma = 0.48 * (4.d0/3.d0*pi*(rnuc*1D-9)**3)*1350.d0*fn*1.e6*dt !kg m-3
-            dmappt = dmappt - d_dma/0.045 / (pres/(8.314*temp) * 1.e9 !ppt
+            dmappt = dmappt - d_dma/0.045 / (pres/(8.314*temp)) * 1.e12 !pptv
 
             Mkf(nuc_bin,srtso4) = Mki(nuc_bin,srtso4)+0.8144*fn*mnuc*boxvol*dt
 
