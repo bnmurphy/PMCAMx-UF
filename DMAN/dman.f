@@ -263,15 +263,10 @@ cPMCAMx        else
         Gc(srtnh3)=boxmass*ygas(mgnh3)*1.0d-12*gmw(srtnh3)/28.9
 cPMCAMx        endif
 
-C	Determine condensational driving force for mass transfer
-C	of sulfate and ammonia between gas and aerosol
-C	Sulfate condenstaion should be disabled here; assume PSSA
-C	for sulfate. -> Call cond_nuc as well
         Call so4cond(Nk,Mk,Gc,Nkout,Mkout,Gcout,dt,ichm,jchm,kchm,
      &              iflagez) 
-
-                                              
-        if (iflagez.eq.1) then 		!Only ammonia
+                                                           !Only ammonia
+        if (iflagez.eq.1) then
           call eznh3(Gc,Mk,Nk,Gcout,Mkout,Nkout,ichm,jchm,kchm)
         endif
 
@@ -361,7 +356,6 @@ cdbg      endif
                                               ! [=] kg box-1 s-1
 
       !Call Pseudo Steady State condensation and nucleation
-      !for Sulfuric Acid Condensation and Nucleation
       if (inucl .eq. 1) then
         call cond_nuc(Nk,Mk,Gc,Nkout,Mkout,Gcout,H2SO4rate,dt,
      &   ichm,jchm,kchm)
@@ -369,7 +363,7 @@ cdbg      endif
 
       do i=1,ibins
         do j=1,icomp
-          Mk(i,j) = Mkout(i,j)
+          Mk(i,j)=Mkout(i,j)
         enddo
         Nk(i)=Nkout(i)
       enddo
@@ -406,7 +400,7 @@ cdbg      endif
 c
         do i=1,ibins
           do j=1, icomp
-            Mk(i,j) = Mkout(i,j)   
+            Mk(i,j)=Mkout(i,j)   
           enddo
           Nk(i)=Nkout(i)
         enddo
@@ -493,13 +487,6 @@ cPMCAMx      kcount = kcount +1
       !Return gas concentrations
       ygas(mgsvi)=Gc(srtso4)*1.0d+12/boxmass*28.9/gmw(srtso4)
       ygas(mgnh3)=Gc(srtnh3)*1.0d+12/boxmass*28.9/gmw(srtnh3)
-
-CBNM
-C	  Enhance the growth predicted for ultra-fine particles (size
-C	  sections less than ~25 nm. This work is in collaboration with
-C	  Ilona.
-C	  if (i.le.15) Mk(i,j) = (Mk(i,j)-Mki(i,j))*2 + Mki(i,j)
-CBNM
 
       do i=1,ibins
         Nki(i)=Nk(i)

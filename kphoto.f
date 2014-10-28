@@ -1,4 +1,4 @@
-      subroutine kphoto(iozon,ialb,ihaze,hght,zenith,fcloud,cldtrns,
+      subroutine kphoto(iozon,ialb,ihaze,hght,zenith,fcld,cldtrns,
      &                  ldark,iabov)
 c 
 c-----CAMx v4.02 030709
@@ -36,6 +36,7 @@ c
       include "camx.prm"
       include "chmstry.com"
       logical ldark
+       real cldtrns
 c
       data deg2rad /0.01745329/
 c
@@ -102,16 +103,30 @@ c-----Cloud coverage adjustment
 c
       zenang = amin1(zenith,60.0)
       zenang = deg2rad*zenang
-      if (iabov.eq.1) then
-        cldrat = 1. + (1. - cldtrns)*cos(zenang)
-      else
-        cldrat = 1.6*cldtrns*cos(zenang)
-      endif
-      coefcld = 1. + fcloud*(cldrat - 1.)
-c
+c commented off by Elham
+c      if (iabov.eq.1) then
+c        cldrat = 1. + (1. - cldtrns)*cos(zenang)
+c      else
+c        cldrat = 1.6*cldtrns*cos(zenang)
+c      endif
+c      coefcld = 1. + fcloud*(cldrat - 1.)
+cend of commenting-off by Elham
+
+c added by Elham
+c        if( cldtrns.lt.1) then
+c       write(*,*)'Elham.cldtrns.kphoto',cldtrns
+c       endif
+
+c       print *,'Eli.rk.before', rk 
       do irxn = 1,nphot1
-        rk(idphot1(irxn)) = rk(idphot1(irxn))*coefcld
+        rk(idphot1(irxn)) = rk(idphot1(irxn))*cldtrns
       enddo
+c      print *,'Eli.rk.after', rk
+c end of add by Elham
+c       print *,'the energy transmision is:',cldtrns
+c      do irxn = 1,nphot1
+c        rk(idphot1(irxn)) = rk(idphot1(irxn))*coefcld
+c      enddo
 c
 c-----Set secondary photolysis rates as ratios to primary rates
 c

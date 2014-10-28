@@ -10,8 +10,8 @@ core.*
 *.class
 *.dll
 *.exe
-**/*.o
 *.o
+**/*.o
 *.so
 
 # Packages

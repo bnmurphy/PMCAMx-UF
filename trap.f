@@ -8,7 +8,7 @@ c
 c-----CAMx v4.02 030709
 c
 c     TRAP solves the chemical reaction ODEs for a given time step
-c     using the Crank-Nicolson method and Euler's method
+c     using the Crank-Nicolson method and Euler''s method
 c     ctmp(nspec+1) is used to store unused species
 c                          
 c     Copyright 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
@@ -127,7 +127,6 @@ c
 c-----Save initial sulfuric acid concentration by jgj 1/9/2008
 c
       h2so4_i = conc(ksulf)
-      !print *,'		TRAP: Sulfuric Acid Mixing Ratio(ppm) =',conc(ksulf)
 
 c-----Mass of NO3 and N2O5 goes in NO2 because steady state used 
 c 

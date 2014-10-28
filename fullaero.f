@@ -187,7 +187,16 @@ c
           moxid0(knsec,naers) = 0.0
         enddo
       enddo
-
+c     added by LA
+c      if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c      write(*,*)
+c      write(*,*)'lwc_c=',lwc_c
+c      write(*,*)'aqcwmin=',aqcwmin
+c      write(*,*)'tempk=',tempk
+c      write(*,*)'aqtamin=',aqtamin
+c      write(*,*)'laq=',laq
+c      endif
+c     end LA
       if ( lwc_c.ge.aqcwmin .and. tempk.ge.aqtamin .and. laq ) then
   
        !=====================================================
@@ -371,6 +380,12 @@ cdbg        write(*,*)'Coord.=',ich,jch,kch
           aerosol(knsec,nahso5) = 0.0
           aerosol(knsec,nahmsa) = 0.0
         enddo
+c     added by LA
+c      if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c      write(*,*)
+c      write(*,*)'aerosol=',aerosol
+c      endif
+c     end LA
 c
 ckf
 c        Nitrogen mass balance (convert n2o5 to nitrate)
@@ -378,13 +393,10 @@ c
 ckf
          n2o5nit = cncrad(3)*prs*101325*62./8.314/tempk
 	 cncrad(3) = 0.0
-ckf
-
 ckf        
  	 do knsec=1,nsect
 	   aerosol(knsec,nan)    = aerosol(knsec,nan)+fdist(knsec)*n2o5nit
 	 enddo
-	 
          nitbef = 0.0
 	 do i =1, nsect
 	 nitbef = nitbef+aerosol(i,nan)*14./62.
@@ -406,6 +418,12 @@ c
           arsl(knsec,nao) = aerosol(knsec,nao) ! primary organics
           arsl(knsec,nar) = aerosol(knsec,nar) ! crustal
         enddo
+c     added by LA
+c      if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c      write(*,*)
+c      write(*,*)'arsl=',arsl
+c      endif
+c     end LA
 c
 c     added by LA
 c        write(*,*)
@@ -472,7 +490,7 @@ c     end added by LA
 	 nitaf = nitaf+aerosol(i,nan)*14./62.
 	 enddo
 	 nitaf = nitaf+(14*prs/(8.314e-5*tempk))*(gas(ngn)+gas(nghno2)
-     &           +gas(ngno3)+gas(ngno)+gas(ngno2)+gas(ngpan))    
+     & +gas(ngno3)+gas(ngno)+gas(ngno2)+gas(ngpan))    
 	 nitbal = nitaf/nitbef
 	 
 c	 write(*,*) nitbal
@@ -571,10 +589,6 @@ c
 c     map con to q [ugr/m3]  gas in ppm
 c     For number conc., q [#/cm3]
 c
-c     added by LA
-c        write(*,*)
-c        write(*,*)'nsp=',nsp
-c     end added by LA
         do knsec=1,nsec
           q((knsec-1)*nsp+kcl+1)=con(ksoa1_c+(knsec-1))
           q((knsec-1)*nsp+kcl+2)=con(ksoa2_c+(knsec-1))
@@ -597,19 +611,26 @@ c
           q((knsec-1)*nsp+knum)=con(knum_c+(knsec-1))
                      ! Number concentration jgj 2/28/06
         enddo
-
 c     added by LA
+c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
 c        write(*,*)
-c        write(*,*)'q bef CAMx2so4cond=',q
+c        write(*,*)'bef CAMx2so4cond con=',con
+c        write(*,*)
+c        write(*,*)'bef CAMx2so4cond q=',q
+c        write(*,*)
+c        write(*,*)'bef CAMx2so4cond moxid0=',moxid0
+c        endif
 c     end added by LA
-
         if (iaqflag.eq.1) then
           call CAMx2so4cond(q,t0,t1,tempk,pressure,moxid0,ich,jch,kch)
         endif
-
 c     added by LA
+c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
 c        write(*,*)
-c        write(*,*)'q aft CAMx2so4cond=',q
+c        write(*,*)'aft CAMx2so4cond q=',q
+c        write(*,*)
+c        write(*,*)'aft CAMx2so4cond moxid0=',moxid0
+c        endif
 c     end added by LA
 cbk   SOAP has been merged with inorganic aerosol module - bkoo (03/09/03)
 cbk        if (lsoap) then
@@ -632,6 +653,12 @@ c
         q(naer+ihno3)  = con(khno3_c)
         q(naer+ihcl)   = con(khcl_c)
 c
+c     added by LA
+c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c        write(*,*)
+c        write(*,*)'after CAMx2so4cond and defining gases q=',q
+c        endif
+c     end LA
         if (modeaero.eq.1) then     ! call SOAP only
 cjgj
 c     Currently, soap is turned off.
@@ -659,10 +686,18 @@ cjgj          call aerchem(chaero,q,t0,t1,lfrst,ierr)
 c
 cjgj
 c     added by LA
-c        write(*,*)'Calling CAMx2dman'
+c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c           write(*,*)
+c           write(*,*)'bef CAMx2dman q=',q
+c        endif
 c     end added by LA
           call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch) 
-
+c     added by LA
+c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c           write(*,*)
+c           write(*,*)'aft CAMx2dman q=',q
+c        endif
+c     end added by LA
         endif
 c     added by LA
 c        write(*,*)
@@ -748,6 +783,12 @@ cbk      endif
         con(khno3_c) =q(naer+ihno3)
         con(khcl_c)  =q(naer+ihcl)
 c
+c     added by LA
+c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
+c           write(*,*)
+c           write(*,*)'aft CAMx2dman anbd remapping con=',con
+c        endif
+c     end added by LA
       endif
 c
 c      if ( .not. lsoap .or. .not.lcond ) then

@@ -89,6 +89,8 @@ cvtwind.o \
 dateerr.o \
 depsmry.o \
 diffus.o \
+drvtuv.o \
+tuv.o \
 CAMx2dman.o \
 CAMx2so4cond.o \
 drydep.o \
@@ -525,6 +527,15 @@ diffus.o 		: diffus.f                                             \
                         $(INC)/camx.prm $(INC)/filunit.com $(INC)/bndary.com   \
                         $(INC)/chmstry.com $(INC)/tracer.com $(INC)/procan.com
 
+
+drvtuv.o 		: drvtuv.f                                             \
+                        $(INC)/camx.prm $(INC)/camx_aero.inc $(INC)/flags.com  \
+                        $(INC)/chmstry.com $(INC)/section.inc
+
+
+tuv.o 			: tuv.f   
+
+
 drydep.o 		: drydep.f                                             \
                         $(INC)/camx.prm $(INC)/camx.com $(INC)/bndary.com      \
                         $(INC)/deposit.com $(INC)/chmstry.com                  \
@@ -545,7 +556,7 @@ emiss.o 		: emiss.f                                              \
 emistrns.o 		: emistrns.f                                           \
                         $(INC)/camx.prm $(INC)/camx.com $(INC)/camxfld.com     \
                         $(INC)/chmstry.com $(INC)/grid.com $(INC)/flags.com    \
-                        $(INC)/filunit.com $(INC)/ptemiss.com                  \
+                        $(INC)/filunit.com $(INC)/ptemiss.com $(INC)/ahomap.com \
                         $(INC)/bndary.com $(INC)/procan.com                    \
                         $(INC)/tracer.com $(INC)/rtracchm.com                  \
 			$(INC)/section.inc

@@ -50,8 +50,7 @@ c
       include 'flags.com'
       include 'filunit.com'
       include 'section.inc'
-      
-
+      include 'ahomap.com'
 c
 c======================== Process Analysis Begin ====================================
 c
@@ -65,14 +64,14 @@ c
       include 'tracer.com'
       include 'rtracchm.com'
 c
-c      real*8 ardum(MXTRSP), ptdum(MXTRSP), fluxdum(MXTRSP*11)
-c      real depdum(MXCOLA,MXROWA,3*MXSPEC)
-c      data ardum /MXTRSP*0.0/
-c      data ptdum /MXTRSP*0.0/
-c      data fluxdum /MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,
-c     &              MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,
-c     &              MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0/
-      real, dimension(MXCOL1, MXROW1, MXLAY1, MXSPEC) :: sconc
+      real*8 ardum(MXTRSP), ptdum(MXTRSP), fluxdum(MXTRSP*11)
+      real depdum(MXCOLA,MXROWA,3*MXSPEC)
+      data ardum /MXTRSP*0.0/
+      data ptdum /MXTRSP*0.0/
+      data fluxdum /MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,
+     &              MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,
+     &              MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0/
+      dimension sconc(ncol(1),nrow(1),nlay(1),nspec)
                   ! For saving concentrations before calling emiss
       
 c
@@ -137,7 +136,7 @@ cdbg      call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,spname,12)
 c
 cdbg      call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,spname,13)
 cdbg      write(*,*)'before numconv'
-      call numconv(conc(1),ncol(1),nrow(1),nlay(1),sconc,nspec,2)
+      call numconv(conc(1),ncol(1),nrow(1),nlay(1),sconc,nspec,3)
 cdbg      write(*,*)'after numconv after emiss'
 cdbg      call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,spname,14)
                            ! by jgj 2/17/06
@@ -394,6 +393,58 @@ c
         call flush(6)
         call flush(iout)
       endif
+cadded from ver 6 by Elham
+c  --- call routine to do haze adjustment ---
+c
+c     added by LA
+c      do ispc = 1,600
+c         indx = 2 + 150 + (ispc-1)*150*162
+c         write(*,*)'bef drtuv ispc =',ispc
+c         write(*,*)'conc(i=2,j=2,k=1) =',conc(indx)
+c      enddo   
+c     end LA
+         if( lchem ) then
+c          print*,'ELHAM,lchem:', lchem
+c           print *,'Elham,iproc_id:',iproc_id
+           if( iproc_id .LE. 1 ) then
+              write(*,'(a20,$)') 'TUV ......'
+           endif
+           write(iout,'(a20,$)') 'TUV ......'
+           call flush(6)
+           call drvtuv(igrd,ncol(igrd),nrow(igrd),nlay(igrd),
+     &                 nspec,time,date,itzon,
+     &                 idfin(iptr2d(igrd)),
+     &                 cellat(iptr2d(igrd)),cellon(iptr2d(igrd)),
+     &                 height(iptr3d(igrd)),press(iptr3d(igrd)), 
+     &                 tsurf(iptr2d(igrd)),tempk(iptr3d(igrd)),
+     &                 water(iptr3d(igrd)),conc(iptr4d(igrd)),
+     &                 cod(iptr3d(igrd)),icdalb(iptr2d(igrd)),
+     &                 cldtrns(iptr3d(igrd)))
+      
+c      print *, 'igrd:',igrd,'mzp',mzp
+c      print *,'iptr2d:',iptr2d     
+c        if(cldtrns(iptr3d(igrd)).gt.1)
+c      print *,'Elham.emistrns.cldtrns:',cldtrns(56+(129-1)*150) ! Hyytila grid cell
+c      print *, 'Elham.emistrns.time:',time
+c        endif
+c      print *, 'Elham:date:',date 
+
+    
+c           if( iproc_id .LE. 1 ) then
+c              write(*,'(a)') '   Done'
+c           endif
+           write(iout,'(a)') '   Done'
+           call flush(6)
+           call flush(iout)
+c     added by LA
+c           write(*,*)'Gone through drvtuv'
+c           do ispc = 1,600
+c              indx = 2 + 150 + (ispc-1)*150*162
+c              write(*,*)'aft drtuv ispc =',ispc
+c              write(*,*)'conc(i=2,j=2,k=1) =',conc(indx)
+c           enddo   
+c     end LA    
+        endif
 c
 cdbg      write(*,*)'at the end of emistrns'
 cdbg      call numcheck(conc,ncol(igrd),nrow(igrd),nlay(igrd),nspec)
