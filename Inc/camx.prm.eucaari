@@ -119,7 +119,7 @@ c
       integer   NSPNAM
       integer   NRADNM
 c
-      parameter ( MXSPEC  =   637 )
+      parameter ( MXSPEC  =   800 ) !Changed from 637
       parameter ( MXRADCL =    12 )
       parameter ( MXPHT1  =     6 )
       parameter ( MXPHT2  =    10 )
@@ -130,7 +130,7 @@ c
 c cf      parameter ( PRESLO  = 126.0 )
       parameter ( PRESLO  = 80.0 )      
       parameter ( PRESHI  = 1100. )
-      parameter ( MXRXN   =   100 )
+      parameter ( MXRXN   =   600 )
       parameter ( NSPNAM  =   701 )
       parameter ( NRADNM  =    26 )
 c

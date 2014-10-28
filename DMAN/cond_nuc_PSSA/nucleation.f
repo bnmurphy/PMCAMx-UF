@@ -47,6 +47,7 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       integer nflag ! a flag for nucleation type by jgj 12/14/07
       double precision nh3ppt   ! gas phase ammonia in pptv
       double precision dmappt   ! gas phase dimethyl amine in pptv
+      double precision dma_molec! gas phase dimethyl amine in molec cm-3
       double precision h2so4    ! gas phase h2so4 in molec cc-1
       double precision fn       ! nucleation rate cm-3 s-1
       double precision rnuc     ! critical nucleation radius [nm]
@@ -80,6 +81,7 @@ C-----CODE--------------------------------------------------------------
 
       h2so4 = Gci(srtso4)/boxvol*1000.d0/98.d0*6.022d23
       nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
+      dma_molec = dmappt*1.e-18 * pres/8.314/temp * 6.022d23 !molec cm-3
 
       fn = 0.d0
       rnuc = 0.d0
@@ -92,11 +94,13 @@ cdbg      print*,'h2so4',h2so4,'nh3ppt',nh3ppt
 C     if requirements for nucleation are met, call nucleation subroutines
 C     and get the nucleation rate and critical cluster size
       if (h2so4.gt.1.d4) then
-         if (amine_nuc.eq.1.and.dmappt.gt.0.001) then
-            call amine_nucl(temp,cs,h2so4,dmappt,fn,rnuc) !amine nuc
+         if (amine_nuc.eq.1.and.dma_molec.gt.1.e4) then
+            call amine_nucl(temp,cs,h2so4,dma_molec,fn,rnuc) !amine nuc
             nflag=3 !Amine Nucleation Called, BNM and JJ 10/17/14
 
             !Update DMA Concentration
+	    !Check the 0.48 factor. It should be the mass fraction of DMA in
+	    !the nulceated particles.
             d_dma = 0.48 * (4.d0/3.d0*pi*(rnuc*1D-9)**3)*1350.d0*fn*1.e6*dt !kg m-3
             dmappt = dmappt - d_dma/0.045 / (pres/(8.314*temp)) * 1.e12 !pptv
 
@@ -206,13 +210,13 @@ cdbg         print*,'nuc_bin',nuc_bin
           
          endif
          Nkf(nuc_bin) = Nki(nuc_bin)+fn*boxvol*dt
-cdbg         print*,'Nk_NUUUC',Nki(nuc_bin),Nkf(nuc_bin)
+cdbg         print*,'Nk_NUC',Nki(nuc_bin),Nkf(nuc_bin)
          Gcf(srtso4) = Gci(srtso4)! - (Mkf(nuc_bin,srtso4)-mold)
                                   !PSSA decide Gc as a diagnostic way
 
 
 C there is a chance that Gcf will go less than zero because we are artificially growing
-C particles into the first size bin.  don't let it go less than zero.
+C particles into the first size bin.  don''t let it go less than zero.
 c         if (Gcf(srtso4).lt.0.d0)then
 c            Mkf(nuc_bin,srtso4) = Mki(nuc_bin,srtso4) + 
 c     &           Gci(srtso4)*96./98.

@@ -335,7 +335,7 @@ c
      &             'BZO       ','BZNO      '/
 c
 c     Chemical Mechanism Specs
-      data mchgas   / 34, 24, 25, 34, 56, 34,  0, 0, 0, 0 /
+      data mchgas   / 34, 24, 25, 34, 56, 35,  0, 0, 0, 0 /
 cjgj      data mchaero  /  0,  0,  0, 16,  0, 13,  0, 0, 0, 0 /
       data mchaero  /  0,  0,  0, 16,  0, 14,  0, 0, 0, 0 /
       data mchrad   / 14, 12, 12, 12, 18, 12,  0, 0, 0, 0 /
@@ -875,6 +875,12 @@ c
 c-----Populate rate constant lookup table
 c
         call exptbl(rxntyp,rxnord,rxnpar)
+
+c
+c-----Read Amine Nucleation Rate Lookup Table
+c
+        call read_amine_nuc_table
+
 c
 c-----Provide diagnostic info for checking rate expressions
 c

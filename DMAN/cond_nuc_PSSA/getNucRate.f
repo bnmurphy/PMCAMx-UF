@@ -43,6 +43,7 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
 
       double precision nh3ppt   ! gas phase ammonia in pptv
       double precision dmappt   ! gas phase ammonia in pptv
+      double precision dma_molec! gas phase ammonia in molec cm-3
       double precision h2so4    ! gas phase h2so4 in molec cc-1
       double precision cs       ! condesnation sink [s-1]
 
@@ -55,6 +56,7 @@ C-----CODE--------------------------------------------------------------
       !Convert Gas concentrations from kg/(grid cell) to...
       h2so4  = Gci(srtso4)/boxvol*1000.d0/98.d0*6.022d23 ![molec cm-3]
       nh3ppt = (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4)) ![ppt]
+      dma_molec = dmappt*1.e-18 * pres/8.314/temp * 6.022d23 !molec cm-3
 
       fn = 0.d0
       rnuc = 0.d0
@@ -62,8 +64,8 @@ C-----CODE--------------------------------------------------------------
 C     if requirements for nucleation are met, call nucleation subroutines
 C     and get the nucleation rate and critical cluster size
       if (h2so4.gt.1.d4) then
-         if (amine_nuc.eq.1.and.dmappt.gt.0.001) then
-            call amine_nucl(temp,cs,h2so4,dmappt,fn,rnuc) !amine nuc
+         if (amine_nuc.eq.1.and.dma_molec.gt.1.e4) then
+            call amine_nucl(temp,cs,h2so4,dma_molec,fn,rnuc) !amine nuc
             nflg=.true.
 	 elseif ((nh3ppt.gt.0.1).and.(tern_nuc.eq.1)) then
 c            print*, 'napari'

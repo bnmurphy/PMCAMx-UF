@@ -133,9 +133,12 @@ C Make Common Variable List for Amine Nucleation Lookup Table
       parameter(amine_nuc_nH2SO4=12, amine_nuc_nDMA=11,
      &          amine_nuc_nCS=6,   amine_nuc_nTEMP=15)
 
-      double precision  amine_nuc_tbl_H2SO4, amine_nuc_tbl_DMA,
-     &                  amine_nuc_tbl_CS, amine_nuc_tbl_TEMP,
-     &                  amine_nuc_tbl_J
+      double precision  amine_nuc_tbl_H2SO4(amine_nuc_nH2SO4), 
+     &                  amine_nuc_tbl_DMA(amine_nuc_nDMA),
+     &                  amine_nuc_tbl_CS(amine_nuc_nCS), 
+     &                  amine_nuc_tbl_TEMP(amine_nuc_nTEMP),
+     &                  amine_nuc_tbl_J(amine_nuc_nTEMP,amine_nuc_nCS,
+     &                                  amine_nuc_nH2SO4,amine_nuc_nDMA)
 
       common /amine_nuc/ amine_nuc_tbl_H2SO4, amine_nuc_tbl_DMA,
      &                   amine_nuc_tbl_CS, amine_nuc_tbl_TEMP,
