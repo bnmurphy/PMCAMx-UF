@@ -256,7 +256,9 @@ c     ADD THE MASS CHANGE TO THE CORRESPONDING SECTION
 c
 c      do isect=5, 7  ! for sections 0.1 to 10 um
 c      do isect=4, 6  ! for sections 0.04 to 40 um
-      do isect=27, 35  ! for sections 0.0008 to 40 um
+      do isect=27, 35  ! for activation diameter to user-defined VSRM cut-point
+                       ! In this case, 0.08 to 2.5 um  (check
+		       ! droppar.inc for user definitions)
       aerosol(isect,nan)=aerosol(isect,nan)+dnit1*fdist2(isect)    ! NITRATE (aq) in ug/m3
       aerosol(isect,nac)=aerosol(isect,nac)+dchlor1*fdist2(isect)  ! CHLORIDE (aq) in ug/m3
       aerosol(isect,naa)=aerosol(isect,naa)+dammon1*fdist2(isect)  ! AMMONIUM (aq) in ug/m3   
@@ -267,7 +269,9 @@ c      do isect=4, 6  ! for sections 0.04 to 40 um
 c
 c      do isect=8, 10 ! for sections 0.1 to 10 um
 c      do isect=7, 8  ! for sections 0.04 to 40 um
-      do isect=36, 41  ! for sections 0.04 to 40 um
+      do isect=36, 43  ! for user-defined VSRM cut-point through
+                       ! the end of the size distribution
+		       ! In this case, 2.5 to 40 um. 
       aerosol(isect,nan)=aerosol(isect,nan)+dnit2*fdist2(isect)    ! NITRATE (aq) in ug/m3
       aerosol(isect,nac)=aerosol(isect,nac)+dchlor2*fdist2(isect)  ! CHLORIDE (aq) in ug/m3
       aerosol(isect,naa)=aerosol(isect,naa)+dammon2*fdist2(isect)  ! AMMONIUM (aq) in ug/m3   

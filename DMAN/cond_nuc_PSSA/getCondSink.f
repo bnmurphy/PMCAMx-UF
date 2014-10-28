@@ -78,14 +78,6 @@ C     get some parameters
       mu=2.5277e-7*temp**0.75302
       mfp=2.0*mu/(pres*sqrt(8.0*0.0289/(pi*R*temp)))  !S&P eqn 8.6
       Di=gasdiff(temp,pres,98.0,Sv(spec))
-cdbg      print*,'Di',Di
-cdbg      print*,'In getCondSink'
-cdbg      print*,'xk='
-cdbg      do k=1,ibins+1
-cdbg         write(*,*)xk(k)
-cdbg      enddo
-cdbg      print*,'temp=',temp
-cdbg      print*,'pres=',pres
 C     get size dependent values
       do k=1,ibins
          if (Nko(k) .gt. Neps) then

@@ -2,6 +2,7 @@
      &                H2O,atm,O2,CH4,H2,conc,cncrad,avgrad,tcell,
      &                sddm,nfam,nsen,ddmjac,lddm,nirrrxn,titrt,rrxn_irr,
      &                ldoirr,dsulfdt) !12/13/07 by jgj
+
 cjgj     &                ldoirr)
 c
 c-----CAMx v4.02 030709
@@ -126,7 +127,7 @@ c
 c-----Save initial sulfuric acid concentration by jgj 1/9/2008
 c
       h2so4_i = conc(ksulf)
-      print *,'		TRAP: Sulfuric Acid Mixing Ratio(ppm) =',conc(ksulf)
+      !print *,'		TRAP: Sulfuric Acid Mixing Ratio(ppm) =',conc(ksulf)
 
 c-----Mass of NO3 and N2O5 goes in NO2 because steady state used 
 c 
@@ -259,15 +260,15 @@ c
 c
 c-----Compute reaction rate
 c
-      call rxnrate(H2O,atm,O2,CH4,H2,cncrad,ctmp,rrxn)
+      call rxnrate6(H2O,atm,O2,CH4,H2,cncrad,ctmp,rrxn)
 c
 c-----Solve for radical species concentrations
 c
-      call radslvr(ldark,H2O,atm,O2,CH4,H2,cncrad,ctmp,rrxn)
+      call radslvr6(ldark,H2O,atm,O2,CH4,H2,cncrad,ctmp,rrxn)
 c
 c-----Get rate and Jacobian for fast state species
 c
-      call ratejac(nstrt,neq1,cncrad,ctmp,rrxn,rate,rloss,
+      call ratejac6(nstrt,neq1,cncrad,ctmp,rrxn,rate,rloss,
      &             xjac)
       do i=nstrt,neq1
         do j=nstrt,neq1
@@ -333,11 +334,11 @@ c
 c
 c-----Compute reaction rate
 c
-      call rxnrate(H2O,atm,O2,CH4,H2,cncrad,ctmp,rrxn)
+      call rxnrate6(H2O,atm,O2,CH4,H2,cncrad,ctmp,rrxn)
 c
 c-----Get rates for slow species
 c
-      call rateslow(neq1,rrxn,rate)
+      call rateslo6(neq1,rrxn,rate)
 c
 c======================== DDM Begin =======================
 c
@@ -361,7 +362,7 @@ c
         call ddmchem (sddm,nfam,nsen,nrad,ngas,nr,nf,ns,nr+nf,nf+ns,
      &                nr+nf+ns,nrad+ngas,
      &                nreact,y,prod,stmp,ipvt,djac,amx,bmx,cmx,lzero,
-     &                dt,WT,cncrad,ctmp,conc,bdnl,rrxn,ddmjac,
+     &                dt,WT,cncrad,ctmp,conc,bdnl,rrxn,ddmjac6,
      &                knxoy,kno3,kn2o5,ko1d,ko,ierr,ldark)
 c
         if (ierr.ne.0) goto 900

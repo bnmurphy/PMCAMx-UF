@@ -53,13 +53,6 @@ c-----Read 1st BC header record and check inputs
 c
       rewind(ibc)
       read(ibc) ifile,note,nseg,nbcspc,idat1,tim1,idat2,tim2
-c     added by LA
-      write(*,*)'In bndprep.f:'
-      write(*,*)'idat1: ',idat1
-      write(*,*)'idat2: ',idat2
-      write(*,*)'tim1: ',tim1
-      write(*,*)'tim2: ',tim2
-c     end added by LA
       if(INT(tim2) .EQ. 24) then
         idat2 = idat2 + 1
         tim2 = 0.
@@ -72,9 +65,6 @@ c     end added by LA
            endif
         endif
       endif
-c     added by LA
-      write(*,*)'idat2: ',idat2
-c     end added by LA
       write(infil,'(10a1)') (ifile(n),n=1,10)
       if (infil.ne.bcfil) then
         write(iout,'(//,a)') 'ERROR in BNDPREP:'

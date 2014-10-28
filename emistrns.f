@@ -36,17 +36,22 @@ c
 c     Called by:
 c        CAMx
 c        NESTING
-c
+c  
+      
+      integer, intent(in):: igrd
+      
       include 'camx.prm'
       include 'camx.com'
       include 'camxfld.com'
-      include 'chmstry.com'
       include 'grid.com'
-      include 'flags.com'
-      include 'filunit.com'
       include "ptemiss.com"
       include "bndary.com"
+      include 'chmstry.com'
+      include 'flags.com'
+      include 'filunit.com'
       include 'section.inc'
+      
+
 c
 c======================== Process Analysis Begin ====================================
 c
@@ -60,15 +65,16 @@ c
       include 'tracer.com'
       include 'rtracchm.com'
 c
-      real*8 ardum(MXTRSP), ptdum(MXTRSP), fluxdum(MXTRSP*11)
-      real depdum(MXCOLA,MXROWA,3*MXSPEC)
-      data ardum /MXTRSP*0.0/
-      data ptdum /MXTRSP*0.0/
-      data fluxdum /MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,
-     &              MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,
-     &              MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0/
-      dimension sconc(ncol(1),nrow(1),nlay(1),nspec) 
+c      real*8 ardum(MXTRSP), ptdum(MXTRSP), fluxdum(MXTRSP*11)
+c      real depdum(MXCOLA,MXROWA,3*MXSPEC)
+c      data ardum /MXTRSP*0.0/
+c      data ptdum /MXTRSP*0.0/
+c      data fluxdum /MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,
+c     &              MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,
+c     &              MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0/
+      real, dimension(MXCOL1, MXROW1, MXLAY1, MXSPEC) :: sconc
                   ! For saving concentrations before calling emiss
+      
 c
 c========================= Source Apportion End ========================
 c

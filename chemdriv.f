@@ -217,9 +217,14 @@ cdbg      write(*,*)'after checkconc in chemdriv'
 
 c
       igrdchm = igrd
+
+cEB Add openMP
+cc$OMP PARALLEL
+cc$OMP DO
       do 91 k = 1,nlay
         write(*,*) 'Layer=',k
 c
+
         do 90 j = 2,nrow-1
           i1 = 2
           i2 = ncol-1
@@ -459,6 +464,7 @@ cdbg                 endif !dbg
      &             avgrad,tcell,
      &             sddm,nddmsp,ngas,ddmjac6,lddm,nirrrxn,titrt,rrxn_irr,
      &             lirr,dsulfdt) ! to get sulfuric acid production rate
+
 cjgj     &             lirr)
 cdbg                 if ((i.eq.65).and.(j.eq.51).and.(k.eq.1)) then
 cdbg                 if (k.eq.1) then
@@ -786,8 +792,13 @@ c     end added by LA
 c
   89      continue
   90    continue
+
+
 c
   91  continue
+cEB end the OpenMP implementation
+cc$OMP END DO
+cc$OMP END PARALLEL
 c
 c     if fullaero was called
 c     - reset aero_dt 

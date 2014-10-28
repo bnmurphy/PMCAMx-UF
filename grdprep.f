@@ -1,4 +1,4 @@
-      subroutine grdprep(nx,ny,cellon,cellat,mapscl)
+      subroutine grdprep(nx,ny,cellon,cellat,mapscl)  !,iout)
 c     
 c---- CAMx v4.51 080522
 c     
@@ -35,6 +35,8 @@ c
       include 'camx.prm'
       include 'grid.com'
       include 'flags.com'
+
+      integer domlen_vec2d, iout
 
 c     
       real cellon(nx,ny), cellat(nx,ny), mapscl(nx,ny)
@@ -91,6 +93,8 @@ c*****Modified by Pavan
 c*****
       else if ( LPOLAR ) then
 
+        !write(iout, *) "Ben: print lon/lat's for outermost domain"
+         
          gs = 1.0e3 * delx
          deltay(1) = 1.0e3 * dely
 
@@ -122,6 +126,7 @@ c--------------Calculate the distortion factor for each cell:
                dy = deg2km * (eLat - wLat)               
                mapscl(I,J) = delx / sqrt(dx**2 + dy**2)
                
+               !write(iout, '(2(E14.6,1X))') cellon(i,j), cellat(i,j)
             end do            
          end do
 c*****

@@ -30,6 +30,7 @@ c     tmass ; total mass concentration before doing individual prcesses
 c     iflag ; 0 = initial condition, implement the organinc distribution
 c           ; 1 = Do not implement the initial condition
 c           ; 2 = called by emistrns. Accumulate number concentration
+c           ; 3 = called by emistrns if emissions are already size resolved
 c
 c     Called by:
 c     CAMx
@@ -130,7 +131,7 @@ cnotime            if ((time.ge.600).and.(time.lt.1800)) then !Only daytime
                      if ((iflag.eq.0).or.(iflag.eq.1)) then
                         mass2 = mass2 + conc(i,j,k,lmod)
                         conc(i,j,k,lmod) = 0.
-                     else !for emission
+                     elseif (iflag.eq.2) then !for emission
                         mass2 = mass2 + (conc(i,j,k,lmod)
      &                     - sconc(i,j,k,lmod))
                         conc(i,j,k,lmod) = sconc(i,j,k,lmod)
@@ -144,7 +145,7 @@ cnotime            if ((time.ge.600).and.(time.lt.1800)) then !Only daytime
                      lmod = ngas + (iarspc-1)*nsec + isec
                      if ((iflag.eq.0).or.(iflag.eq.1)) then
                         conc(i,j,k,lmod) = mass2 * dist(ii)
-                     else !for emission
+                     elseif (iflag.eq.2) then !for emission
                         conc(i,j,k,lmod) = sconc(i,j,k,lmod) 
      &                    + (mass2 * dist(ii))
                      endif
@@ -162,7 +163,7 @@ c
                if ((iflag.eq.0).or.(iflag.eq.1)) then
                   mass2 = mass2 + conc(i,j,k,lmod)
                   conc(i,j,k,lmod) = 0.
-               else !for emission
+               elseif (iflag.eq.2) then !for emission
                   mass2 = mass2 + (conc(i,j,k,lmod)
      &               - sconc(i,j,k,lmod))
                   conc(i,j,k,lmod) = sconc(i,j,k,lmod)
@@ -176,7 +177,7 @@ c
                lmod = ngas + (iarspc-1)*nsec + isec
                if ((iflag.eq.0).or.(iflag.eq.1)) then
                   conc(i,j,k,lmod) = mass2 * dist2(ii)
-               else !for emission
+               elseif (iflag.eq.2) then !for emission
                   conc(i,j,k,lmod) = sconc(i,j,k,lmod) 
      &              + (mass2 * dist2(ii))
                endif
@@ -190,7 +191,7 @@ c     which corresponds from 2.6 um to 10.4 um
                if ((iflag.eq.0).or.(iflag.eq.1)) then
                   mass2 = mass2 + conc(i,j,k,lmod)
                   conc(i,j,k,lmod) = 0.
-               else !for emission
+               elseif (iflag.eq.2) then !for emission
                   mass2 = mass2 + (conc(i,j,k,lmod)
      &               - sconc(i,j,k,lmod))
                   conc(i,j,k,lmod) = sconc(i,j,k,lmod)
@@ -204,7 +205,7 @@ c     which corresponds from 2.6 um to 10.4 um
                lmod = ngas + (iarspc-1)*nsec + isec
                if ((iflag.eq.0).or.(iflag.eq.1)) then
                   conc(i,j,k,lmod) = mass2 * dist3(ii)
-               else !for emission
+               elseif (iflag.eq.2) then !for emission
                   conc(i,j,k,lmod) = sconc(i,j,k,lmod) 
      &              + (mass2 * dist3(ii))
                endif
@@ -220,7 +221,7 @@ c
                   if ((iflag.eq.0).or.(iflag.eq.1)) then
                      mass2 = mass2 + conc(i,j,k,lmod)
                      conc(i,j,k,lmod) = 0.
-                  else !for emission
+                  elseif (iflag.eq.2) then !for emission
                      mass2 = mass2 + (conc(i,j,k,lmod)
      &                  - sconc(i,j,k,lmod))
                      conc(i,j,k,lmod) = sconc(i,j,k,lmod)
@@ -234,7 +235,7 @@ c
                   lmod = ngas + (iarspc-1)*nsec + isec
                   if ((iflag.eq.0).or.(iflag.eq.1)) then
                      conc(i,j,k,lmod) = mass2 * dist4(ii)
-                  else !for emission
+                  elseif (iflag.eq.2) then !for emission
                      conc(i,j,k,lmod) = sconc(i,j,k,lmod) 
      &                 + (mass2 * dist4(ii))
                   endif
@@ -249,7 +250,7 @@ c
                   if ((iflag.eq.0).or.(iflag.eq.1)) then
                      mass2 = mass2 + conc(i,j,k,lmod)
                      conc(i,j,k,lmod) = 0.
-                  else !for emission
+                  elseif (iflag.eq.2) then !for emission
                      mass2 = mass2 + (conc(i,j,k,lmod)
      &                  - sconc(i,j,k,lmod))
                      conc(i,j,k,lmod) = sconc(i,j,k,lmod)
@@ -263,7 +264,7 @@ c
                  lmod = ngas + (iarspc-1)*nsec + isec
                  if ((iflag.eq.0).or.(iflag.eq.1)) then
                     conc(i,j,k,lmod) = mass2 * dist5(ii)
-                 else !for emission
+                 elseif (iflag.eq.2) then !for emission
                     conc(i,j,k,lmod) = sconc(i,j,k,lmod) 
      &                + (mass2 * dist5(ii))
                  endif
@@ -546,3 +547,4 @@ c
 
        return
        end
+

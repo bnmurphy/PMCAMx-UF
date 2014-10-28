@@ -52,13 +52,11 @@ default:
 
 # Pavan Nandan Racherla (pavanracherla@cmu.edu) removed the -ipo flag, which performs inter procedural optimizations.
 # Date: Oct 1 2008.
-PMCAMx.exe:
+PMCAMx:
 	@rm -f $(INC)/camx.prm
 	@csh chktracer camx.prm.$(DOMAIN) PMCAMx.exe
 	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC="ifort" FLGS="-I$(INC) -O2 -fpe3 -traceback -align dcommons -extend_source -convert big_endian -mcmodel=medium -i-dynamic" TARGT="PMCAMx.exe" DUM=dummy
-#	make model FC="pgf90" FLGS="-I$(INC) -g -tp k8-64 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl, -mcmodel=medium" TARGT="PMCAMx.exe" DUM=dummy
-#	make model FC="pgf90" FLGS="-I$(INC) -O2 -tp p6 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl,-Bstatic" TARGT="PMCAMx.exe" DUM=dummy
+	make model FC="ifort" FLGS="-I$(INC) -pg -O2 -openmp -fpe3 -reentrancy threaded -CB -traceback -parallel -par-threshold100 -par-repor3 -align dcommons -extend_source -convert big_endian -mcmodel=medium -shared-intel" TARGT="PMCAMx.exe" DUM=dummy
 
 clean:	
 	rm -f $(OBJCTS) dummy*.o
@@ -460,7 +458,7 @@ CAMx.o 			: CAMx.f                                               \
                         $(INC)/camx.prm $(INC)/camx.com $(INC)/camxfld.com     \
                         $(INC)/grid.com $(INC)/ptemiss.com $(INC)/bndary.com   \
                         $(INC)/chmstry.com $(INC)/flags.com $(INC)/ahomap.com  \
-                        $(INC)/filunit.com $(INC)/tracer.com                   \
+                        $(INC)/filunit.com $(INC)/tracer.com $(INC)/section.inc\
                         $(INC)/rtracchm.com $(INC)/procan.com
 
 aerochem.o 		: aerochem.f                                           \
@@ -549,7 +547,8 @@ emistrns.o 		: emistrns.f                                           \
                         $(INC)/chmstry.com $(INC)/grid.com $(INC)/flags.com    \
                         $(INC)/filunit.com $(INC)/ptemiss.com                  \
                         $(INC)/bndary.com $(INC)/procan.com                    \
-                        $(INC)/tracer.com $(INC)/rtracchm.com
+                        $(INC)/tracer.com $(INC)/rtracchm.com                  \
+			$(INC)/section.inc
 
 exptbl.o 		: exptbl.f                                             \
                         $(INC)/camx.prm $(INC)/chmstry.com

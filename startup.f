@@ -1062,10 +1062,10 @@ c
 
 c-----Pavan (Pavan_Nandan_Racherla@alumni.cmu.edu)
 c-----Updated Oct 10 2008
-      write(iout, *) "Pavan: print lon/lat's for outermost domain"
-      do domlen_vec2d = 1, mxvec2d
-         write(iout, '(2(E14.6,1X))') cellon(domlen_vec2d), cellat(domlen_vec2d)
-      end do
+      !write(iout, *) "Pavan: print lon/lat's for outermost domain"
+      !do domlen_vec2d = 1, mxvec2d
+      !   write(iout, '(2(E14.6,1X))') cellon(domlen_vec2d), cellat(domlen_vec2d)
+      !end do
 c
 c-----Calculate nested grid mapping parameters
 c

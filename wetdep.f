@@ -399,9 +399,10 @@ c
 c-----Calculate scavenging for particulate species
 c
             if (naero .gt. 0) then
-c->   calculate wet diameter - bkoo (11/05/03)
               if (kph2o.ne.nspec+1) then ! mechanism 4
                 isempty = 1
+                !calculate wet diameter - bkoo (11/05/03)
+                !First estimate total dry mass and density
                 qt = 0.0
                 roprta = 0.0
                 do l = ngas+1,nspec
@@ -411,13 +412,28 @@ c->   calculate wet diameter - bkoo (11/05/03)
                     roprta = roprta + conc(i,j,k,l) / roprt(l)
                   endif
                 enddo
+
+                !Add water to the mass and density to calculate wet
+                !particle properties
+                ! rfin ->
+                ! diadep -> log-mean diameter of each bin 
                 rfin = 0.
                 if (isempty.eq.0) then ! avoid empty particles
                   roprta = ( qt + conc(i,j,k,kph2o) ) / ( roprta + 
      &                       conc(i,j,k,kph2o) / roprt(kph2o) )
+                  !Calculate scavening for fine particles
                   do isec = 1, nsecfin
                     psize = ( 1. + conc(i,j,k,kph2o) / qt )**0.33333
      &                     * diadep(isec) * 1.e-6
+
+                    ! rr -> precip rate (mm/hr)
+                    ! The zeros correspond to:
+                    !    1-species conc; 2-init conc in rain
+                    !    3-Hlaw; 4-Hlaw T dependence; 5-H2O/gas
+                    !    diffusivity
+                    ! psize - Particle diameter (m)
+                    ! roprta - density (g/m3)
+                    ! ascav  - aerosol scavenging rate (1/s)
                     call scavrat(.true.,lcloud,lfreez,rr(k),
      &                       tempk(i,j,k),cwc(i,j,k),depth(i,j,k),
      &                       rhoair,0.,0.,0.,0.,0.,psize,roprta,hlaw,
@@ -425,6 +441,7 @@ c->   calculate wet diameter - bkoo (11/05/03)
                     rfin = rfin + (1.-exp(-ascav*deltat)) * wfdep(isec)
                   enddo
                 endif
+                !Calculate scavenging for coarse particles
                 do l = ngas+1,nspec
                   if (dcut(l,2).lt.2.51) then
                     delr(l) = rfin
