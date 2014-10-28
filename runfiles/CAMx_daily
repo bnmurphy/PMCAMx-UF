@@ -1,8 +1,41 @@
+#!/bin/csh
+#
+#   Script to Run PMCAMx for Europe May 01-29, 2008 test case
+#
+#set INPUT  = "/home/christos/Research/ICEHT/eucaari"
+#set INPUT2 = "/home/christos/Research/ICEHT/ufeu/inputs"
+set INPUT  = "/nobackup/global/x_benmu/PMCAMx_Input/May_Europe"
+set INPUT2 = "/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/ufeu/inputs"
+
+set DATE    = $1
+set DATE2   = $2
+@ DATE3   = $DATE2 + 121
+@ DATE4   = $DATE2 + 120
+#
+set RUN     = "PMCAMxUF_Base"
+set OUTPUT  = "/nobackup/global/x_benmu/PMCAMx_Output/$RUN"
+#
+if ($DATE == "01") then
+  mkdir -p $OUTPUT
+  set RST  = "false"
+  set RSTF = ""
+else
+  set RST  = "true"
+  set RSTF = $OUTPUT/Eucaari.May.$DATE4.$RUN.inst.2
+endif 
+echo $OUTPUT/Eucaari.May.$DATE4.$RUN.inst.2
+#
+date 
+#
+#  --- Create the input file (always called CAMx.in)
+#
+rm -f ../CAMx.in
+cat << ieof > ../CAMx.in
 CAMx Version       |VERSION4.0 
 Run Message        |PMCAMx v4.0 Europe PM Test Run May 01-29 2008
-Root output name   |/nobackup/global/x_benmu/PMCAMx_Output/PMCAMxUF_OMP_Chem/Eucaari.May.122.PMCAMxUF_OMP_Chem
-Start yr/mo/dy/hr  |08 05 01 0000.
-End   yr/mo/dy/hr  |08 05 01 2400.
+Root output name   |$OUTPUT/Eucaari.May.$DATE3.$RUN
+Start yr/mo/dy/hr  |08 05 $DATE 0000.
+End   yr/mo/dy/hr  |08 05 $DATE 2400.
 DT:max,met,ems,out |5. 60. 60. 60.
 nx,ny,nz           |150   162   14
 sCoordinate ID     |POLAR
@@ -116,7 +149,7 @@ Avg output species |615
 # nested grids     |0
 SMOLAR,BOTT, PPM?  |PPM
 Chemistry solver   |CMC
-Restart            |false
+Restart            |$RST
 Chemistry          |true
 Dry dep            |true
 Wet dep            |true
@@ -128,18 +161,34 @@ Treat point emiss  |false
 3-D average file   |false
 Source Apportion   |false
 Chemparam          |CAMx4.chemparam.6
-Photolysis rates   |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/photolysis_rates/tuv_euro_ps2str_S99.080501.txt
-Landuse            |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/Metfields/lu_d02.bin
-Height/pressure    |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/Metfields/zp_d02.20080501.bin
-Wind               |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/Metfields/uv_d02.20080501.bin
-Temperature        |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/Metfields/tp_d02.20080501.bin
-Water vapor        |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/Metfields/qa_d02.20080501.bin
-Cloud/rain         |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/cr_files/cr_patched/cr_d02.20080501.patched.bin
-Vertical diffsvty  |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/Metfields/kv_d02.20080501.patched.bin
-Initial conditions |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/IC_BC_TCs/ICs43_Eucaari_2.bin
-Boundary conditions|/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/IC_BC_TCs/BCs43_Eucaari_2_edges.bin
-Top concentration  |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/IC_BC_TCs/TCs43_Eucaari_2.txt
-Albedo/haze/ozone  |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/ahomap/ahomap.monthEU.080501
+Photolysis rates   |$INPUT/photolysis_rates/tuv_euro_ps2str_S99.0805$DATE.txt
+Landuse            |$INPUT/Metfields/lu_d02.bin
+Height/pressure    |$INPUT/Metfields/zp_d02.200805$DATE.bin
+Wind               |$INPUT/Metfields/uv_d02.200805$DATE.bin
+Temperature        |$INPUT/Metfields/tp_d02.200805$DATE.bin
+Water vapor        |$INPUT/Metfields/qa_d02.200805$DATE.bin
+Cloud/rain         |$INPUT/cr_files/cr_patched/cr_d02.200805$DATE.patched.bin
+Vertical diffsvty  |$INPUT/Metfields/kv_d02.200805$DATE.patched.bin
+Initial conditions |$INPUT/IC_BC_TCs/ICs43_Eucaari_2.bin
+Boundary conditions|$INPUT/IC_BC_TCs/BCs43_Eucaari_2_edges.bin
+Top concentration  |$INPUT/IC_BC_TCs/TCs43_Eucaari_2.txt
+Albedo/haze/ozone  |$INPUT/ahomap/ahomap.monthEU.0805$DATE
 Point emiss        |
-Area emiss         |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/ufeu_emiss/emnnum.080501.bin
-Restart file name  |
+Area emiss         |$INPUT/ufeu_emiss/emnnum.0805$DATE.bin
+Restart file name  |$RSTF
+ieof
+#
+#  --- Execute the model ---
+#
+cd ../
+/usr/bin/time ./PMCAMx.exe
+
+
+#setenv OMP_NUM_THREADS 16
+#setenv OMP_STACKSIZE 1024M
+#amplxe-cl -c hotspots -result-dir ${OUTPUT}/Vtune/Hotspots_$DATE -- ./PMCAMx.exe
+
+
+date 
+#
+
