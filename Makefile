@@ -52,7 +52,7 @@ default:
 
 # Pavan Nandan Racherla (pavanracherla@cmu.edu) removed the -ipo flag, which performs inter procedural optimizations.
 # Date: Oct 1 2008.
-PMCAMx.exe:
+PMCAMx:
 	@rm -f $(INC)/camx.prm
 	@csh chktracer camx.prm.$(DOMAIN) PMCAMx.exe
 	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
