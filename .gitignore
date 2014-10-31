@@ -4,6 +4,7 @@ inputs/**
 .*.swp
 .*.swo
 core.*
+slurm-*
 
 # Compiled Source
 *.com

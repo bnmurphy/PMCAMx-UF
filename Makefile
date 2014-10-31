@@ -56,7 +56,7 @@ PMCAMx:
 	@rm -f $(INC)/camx.prm
 	@csh chktracer camx.prm.$(DOMAIN) PMCAMx.exe
 	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC="ifort" FLGS="-I$(INC) -pg -O2 -openmp -fpe3 -reentrancy threaded -CB -traceback -parallel -par-threshold100 -par-repor3 -align dcommons -extend_source -convert big_endian -mcmodel=medium -shared-intel" TARGT="PMCAMx.exe" DUM=dummy
+	make model FC="ifort" FLGS="-I$(INC) -g -O2 -openmp -fpe3 -reentrancy threaded -CB -traceback -parallel -par-threshold100 -par-repor3 -align dcommons -extend_source -convert big_endian -mcmodel=medium -shared-intel" TARGT="PMCAMx.exe" DUM=dummy
 
 clean:	
 	rm -f $(OBJCTS) dummy*.o

@@ -197,6 +197,8 @@ c      write(*,*)'aqtamin=',aqtamin
 c      write(*,*)'laq=',laq
 c      endif
 c     end LA
+      
+      !Test if Aqueous Phase Chemistry is Called
       if ( lwc_c.ge.aqcwmin .and. tempk.ge.aqtamin .and. laq ) then
   
        !=====================================================
@@ -534,6 +536,7 @@ cdbg              write(*,*)aerosol(knsec,na4)
 cdbg           enddo
 cdbg        endif
 
+        !Populate temporary moxid0 array for CAMx2SO4cond
         do knsec=1,nsect
 cjgj          con(kph2o_c+(knsec-1)) = aerosol(knsec,naw)
 cjgj          con(kpnh4_c+(knsec-1)) = aerosol(knsec,naa)
@@ -561,8 +564,8 @@ C	  if (knsec.le.15) then 	!Size-Section with Upper-Limit at 25.6 nm
 C	    moxid0(knsec,na4) = moxid0(knsec,na4) * 4
 C	  endif
 CBNM
-
         enddo
+
         iaqflag = 1
        endif  !RADM or VSRM?
        modeaero = 1
@@ -570,18 +573,24 @@ CBNM
 c     RADM or VSRM -> call AER even if the aqueous module is called
 c     OVSR         -> call SOAP alone if the aqueous module is called
 c
+      !modeaero = 0: No aqueous phase chemistry is called
+      !modeaero = 1: aqueous chemistry happened; and organics are processed
+      !              this will probably be the value in most PMCAMx versions
+      !              if aqueous chemistry is called.
+      !modeaero = 2: aqueous chemistry happened but organics are not treated
       if (laero) then
         if ( chaq.eq.'OVSR' .and. modeaero.eq.1 ) then
-          modeaero = 1
+          modeaero = 1 !If there IS a cloud and you want aerosols
         else
-          modeaero = 2
+          modeaero = 2 !If there is no cloud and you want aerosols
         endif
       endif
 c
 c     if neither aqchem nor aerchem is called we don''t call soap
 c     - should we??? 
 c
-      if (modeaero.ne.0) then
+      !!!!!
+      if (modeaero.ne.0) then  !there are aerosols
         do kk=1,ntotal
           q(kk)=0.d0
         enddo
@@ -611,16 +620,6 @@ c
           q((knsec-1)*nsp+knum)=con(knum_c+(knsec-1))
                      ! Number concentration jgj 2/28/06
         enddo
-c     added by LA
-c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
-c        write(*,*)
-c        write(*,*)'bef CAMx2so4cond con=',con
-c        write(*,*)
-c        write(*,*)'bef CAMx2so4cond q=',q
-c        write(*,*)
-c        write(*,*)'bef CAMx2so4cond moxid0=',moxid0
-c        endif
-c     end added by LA
         if (iaqflag.eq.1) then
           call CAMx2so4cond(q,t0,t1,tempk,pressure,moxid0,ich,jch,kch)
         endif
@@ -789,7 +788,7 @@ c           write(*,*)
 c           write(*,*)'aft CAMx2dman anbd remapping con=',con
 c        endif
 c     end added by LA
-      endif
+      endif  !modeaero != 0??
 c
 c      if ( .not. lsoap .or. .not.lcond ) then
 cbk   SOAP has been merged with inorganic aerosol module - bkoo (03/09/03)
