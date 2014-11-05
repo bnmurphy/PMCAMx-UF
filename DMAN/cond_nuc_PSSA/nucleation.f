@@ -99,12 +99,10 @@ C     and get the nucleation rate and critical cluster size
             nflag=3 !Amine Nucleation Called, BNM and JJ 10/17/14
 
             !Update DMA Concentration
-	    !Check the 0.48 factor. It should be the mass fraction of DMA in
+	    !The 0.31 factor should be the mass fraction of DMA in
 	    !the nulceated particles.
-            d_dma = 0.48 * (4.d0/3.d0*pi*(rnuc*1D-9)**3)*1350.d0*fn*1.e6*dt !kg m-3
+            d_dma = 0.31 * (4.d0/3.d0*pi*(rnuc*1D-9)**3)*1350.d0*fn*1.e6*dt !kg m-3
             dmappt = dmappt - d_dma/0.045 / (pres/(8.314*temp)) * 1.e12 !pptv
-
-            Mkf(nuc_bin,srtso4) = Mki(nuc_bin,srtso4)+0.8144*fn*mnuc*boxvol*dt
 
          elseif (nh3ppt.gt.0.1.and.tern_nuc.eq.1) then
             call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
