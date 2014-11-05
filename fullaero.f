@@ -539,15 +539,15 @@ cjgj          con(kpcl_c+(knsec-1))  = aerosol(knsec,nac)
 cjgj          con(kpoc_c+(knsec-1))  = aerosol(knsec,nao)
 cjgj          con(kpec_c+(knsec-1))  = aerosol(knsec,nae)
 cjgj          con(kcrst_c+(knsec-1)) = aerosol(knsec,nar)
-          moxid0(knsec,kph2o_c) = aerosol(knsec,naw) - arsl(knsec,naw)
-          moxid0(knsec,kpnh4_c) = aerosol(knsec,naa) - arsl(knsec,naa)
-          moxid0(knsec,kpso4_c) = aerosol(knsec,na4) - arsl(knsec,na4)
-          moxid0(knsec,kpno3_c) = aerosol(knsec,nan) - arsl(knsec,nan)
-          moxid0(knsec,kna_c) = aerosol(knsec,nas) - arsl(knsec,nas)
-          moxid0(knsec,kpcl_c) = aerosol(knsec,nac) - arsl(knsec,nac)
-          moxid0(knsec,kpoc_c) = aerosol(knsec,nao) - arsl(knsec,nao)
-          moxid0(knsec,kpec_c) = aerosol(knsec,nae) - arsl(knsec,nae)
-          moxid0(knsec,kcrst_c) = aerosol(knsec,nar) - arsl(knsec,nar)
+          moxid0(knsec,naw) = aerosol(knsec,naw) - arsl(knsec,naw)
+          moxid0(knsec,naa) = aerosol(knsec,naa) - arsl(knsec,naa)
+          moxid0(knsec,na4) = aerosol(knsec,na4) - arsl(knsec,na4)
+          moxid0(knsec,nan) = aerosol(knsec,nan) - arsl(knsec,nan)
+          moxid0(knsec,nas) = aerosol(knsec,nas) - arsl(knsec,nas)
+          moxid0(knsec,nac) = aerosol(knsec,nac) - arsl(knsec,nac)
+          moxid0(knsec,nao) = aerosol(knsec,nao) - arsl(knsec,nao)
+          moxid0(knsec,nae) = aerosol(knsec,nae) - arsl(knsec,nae)
+          moxid0(knsec,nar) = aerosol(knsec,nar) - arsl(knsec,nar)
         enddo
        iaqflag = 1
        endif
@@ -556,6 +556,9 @@ cjgj          con(kcrst_c+(knsec-1)) = aerosol(knsec,nar)
 c     RADM or VSRM -> call AER even if the aqueous module is called
 c     OVSR         -> call SOAP alone if the aqueous module is called
 c
+      !modeaero = 0: If not inside a cloud
+      !modeaero = 1: If inside a cloud
+      
       if (laero) then
         if ( chaq.eq.'OVSR' .and. modeaero.eq.1 ) then
           modeaero = 1
@@ -563,6 +566,11 @@ c
           modeaero = 2
         endif
       endif
+
+      !modeaero = 0: If no aerosols and not inside cloud
+      !modeaero = 1: If aerosol and inside a cloud
+      !modeaero = 2: If aerosol and outside cloud
+
 c
 c     if neither aqchem nor aerchem is called we don''t call soap
 c     - should we??? 
@@ -597,27 +605,14 @@ c
           q((knsec-1)*nsp+knum)=con(knum_c+(knsec-1))
                      ! Number concentration jgj 2/28/06
         enddo
-c     added by LA
-c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
-c        write(*,*)
-c        write(*,*)'bef CAMx2so4cond con=',con
-c        write(*,*)
-c        write(*,*)'bef CAMx2so4cond q=',q
-c        write(*,*)
-c        write(*,*)'bef CAMx2so4cond moxid0=',moxid0
-c        endif
-c     end added by LA
+
+	!If aqueous chemistry was called, then condense components
+	!with respect to those driving forces, which are stored in 
+	!moxid0.
         if (iaqflag.eq.1) then
           call CAMx2so4cond(q,t0,t1,tempk,pressure,moxid0,ich,jch,kch)
         endif
-c     added by LA
-c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
-c        write(*,*)
-c        write(*,*)'aft CAMx2so4cond q=',q
-c        write(*,*)
-c        write(*,*)'aft CAMx2so4cond moxid0=',moxid0
-c        endif
-c     end added by LA
+
 cbk   SOAP has been merged with inorganic aerosol module - bkoo (03/09/03)
 cbk        if (lsoap) then
 cbk   	  q(naer+icg1)    =0.d0
@@ -640,14 +635,8 @@ c
         q(naer+ihno3)  = con(khno3_c)
         q(naer+ihcl)   = con(khcl_c)
         q(naer+idma)   = con(kamine_c)
-c
-c     added by LA
-c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
-c        write(*,*)
-c        write(*,*)'after CAMx2so4cond and defining gases q=',q
-c        endif
-c     end LA
-        if (modeaero.eq.1) then     ! call SOAP only
+        
+	if (modeaero.eq.1) then     ! call SOAP only
 cjgj
 c     Currently, soap is turned off.
 c
@@ -673,24 +662,10 @@ cjgj          call aerchem(chaero,q,t0,t1,lfrst,ierr)
         pressure=pres
 c
 cjgj
-c     added by LA
-c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
-c           write(*,*)
-c           write(*,*)'bef CAMx2dman q=',q
-c        endif
-c     end added by LA
           call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch) 
-c     added by LA
-c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
-c           write(*,*)
-c           write(*,*)'aft CAMx2dman q=',q
-c        endif
-c     end added by LA
         endif
-c     added by LA
-c        write(*,*)
-c        write(*,*)'q aft CAMx2dman=',q
-c     end added by LA
+
+
 c
 c     map q back to con 
 c

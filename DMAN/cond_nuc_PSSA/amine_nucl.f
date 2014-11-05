@@ -53,10 +53,10 @@ C
       dma  = dma_i  !molec cm-3
        
       !Limit All Values to Upper Bound on Lookup Table
-      tmp = max(min(tmp,320.0),180.0)
-      cs   = max(min(cs,2.0e-1),1.0e-5)
-      cna  = max(min(cna,3.16e9),1.e4)
-      dma  = max(min(dma,1.0e9),1.e4)
+      tmp = max(min(tmp,319.9),180.1)
+      cs   = max(min(cs,1.99e-1),1.01e-5)
+      cna  = max(min(cna,3.15e9),1.01e4)
+      dma  = max(min(dma,0.99e9),1.01e4)
 
       !Locate the lower-bound indices of all the 
       !independent variables
@@ -176,7 +176,7 @@ c========================================================
       IMPLICIT NONE
 
       INTEGER j,n
-      REAL x,xx(n)
+      DOUBLE PRECISION x,xx(n)
       INTEGER jl,jm,ju
       jl=0
       ju=n+1
