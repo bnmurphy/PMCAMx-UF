@@ -5,11 +5,11 @@ C     **************************************************
 
 C     WRITTEN BY Jeff Pierce, April 2007
 
+C     UPDATED BY Ben Murphy & Jan Julin, October-November 2014
+
 C     This subroutine calls the Vehkamaki 2002 and Napari 2002 nucleation
-C     parameterizations and gets the binary and ternary nucleation rates.
-C     The number of particles added to the first size bin is calculated
-C     by comparing the growth rate of the new particles to the coagulation
-C     sink.
+C     parameterizations and the amine nucleation routine based on the 
+C     Atmospheric Cluster Dynamic Code (ACDC)and gets the nucleation rates.
 
 C-----INPUTS------------------------------------------------------------
 
@@ -44,7 +44,6 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
 
 C-----VARIABLE DECLARATIONS---------------------------------------------
 
-      integer nflag ! a flag for nucleation type by jgj 12/14/07
       double precision nh3ppt   ! gas phase ammonia in pptv
       double precision dmappt   ! gas phase dimethyl amine in pptv
       double precision dma_molec! gas phase dimethyl amine in molec cm-3
@@ -66,6 +65,8 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision cs       ! condensation sink [s-1]
       double precision d_dma    ! consumed dimethyl amine by the nucleation
                                 ! process (kg m-3)
+      double precision mfrac(icomp) ! fraction of the nucleated mass that will be assigned
+                                    ! to each icomp species (passed to nucMassUpdate)
 
 C-----EXTERNAL FUNCTIONS------------------------------------------------
 
@@ -87,7 +88,10 @@ C-----CODE--------------------------------------------------------------
       rnuc = 0.d0
       gtime = 0.d0
 
-      nflag = 0
+      ! if no nucleation occurs the final arrays will be same as the initial arrays
+      Mkf=Mki
+      Nkf=Nki
+      Gcf=Gci
 
 cdbg      print*,'h2so4',h2so4,'nh3ppt',nh3ppt
 
@@ -96,27 +100,47 @@ C     and get the nucleation rate and critical cluster size
       if (h2so4.gt.1.d4) then
          if (amine_nuc.eq.1.and.dma_molec.gt.1.e4) then
             call amine_nucl(temp,cs,h2so4,dma_molec,fn,rnuc) !amine nuc
-            nflag=3 !Amine Nucleation Called, BNM and JJ 10/17/14
 
             !Update DMA Concentration
 	    !The 0.31 factor should be the mass fraction of DMA in
-	    !the nulceated particles.
+	    !the nucleated particles.
             d_dma = 0.31 * (4.d0/3.d0*pi*(rnuc*1D-9)**3)*1350.d0*fn*1.e6*dt !kg m-3
             dmappt = dmappt - d_dma/0.045 / (pres/(8.314*temp)) * 1.e12 !pptv
 
+            if (fn.gt.0.d0) then
+               !update mass and number
+               !nuclei consist of sulfate and amine compounds
+	       !assume them to be like ammonium bisulfate
+	       !even though they should be bigger and look more organic
+               mfrac = (/0.8144, 0.0, 0.1856, 0.0/)
+               call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+            endif
+
          elseif (nh3ppt.gt.0.1.and.tern_nuc.eq.1) then
             call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
-            nflag=1 !ternary nucleation called, jgj 12/14/07
+            
+            if (fn.gt.0.d0) then
+               !update mass and number
+               !nuclei are assumed as ammonium bisulfte
+               mfrac = (/0.8144, 0.0, 0.1856, 0.0/)
+               call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+            endif
 
          elseif (bin_nuc.eq.1) then
             call vehk_nucl(temp,rh,h2so4,fn,rnuc) !binary nuc
-            nflag=2 !binary nucleation called, jgj 12/14/07
+
+            if (fn.gt.0.d0) then
+               !update mass and number
+               !nuclei are assumed to be sulfuric acid
+               mfrac = (/1.0, 0.0, 0.0, 0.0/)
+               call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+            endif
          endif    
       endif
 
 C     if nucleation occured, see how many particles grow to join the first size
 C     section
-      if (fn.gt.0.d0) then
+c$$$      if (fn.gt.0.d0) then
 cdbg         print*, 'entered fn'
 cdbg         print*, 'fn', fn, 'rnuc',rnuc
          ! get the time it takes to grow to first size bin
@@ -168,49 +192,9 @@ Cjrp         frac = exp(-ltc*gtime)
 Cjrp         print*,'frac', frac
 Cjrpc         frac = 1.d0
 
-         mnuc = (4.d0/3.d0*pi*(rnuc*1D-9)**3)*1350.d0
-         if (mnuc.lt.xk(1))then
-            print*,'mnuc < xk(1) in nucleation',mnuc
-            stop
-         endif
-         nuc_bin = 1
-         do while (mnuc .gt. xk(nuc_bin+1))
-            nuc_bin = nuc_bin + 1
-         enddo
-cdbg         print*,'nuc_bin',nuc_bin
-
-         mold = Mki(nuc_bin,srtso4)
-         if (nflag.eq.1) then
-           !nuclei are assumed as ammonium bisulfte
-           Mkf(nuc_bin,srtso4) = Mki(nuc_bin,srtso4)+0.8144*fn*mnuc*boxvol*dt
-           Mkf(nuc_bin,srtnh4) = Mki(nuc_bin,srtnh4)+0.1856*fn*mnuc*boxvol*dt
-           !Save other components. by jgj 1/8/2008
-           Mkf(nuc_bin,srtna) = Mki(nuc_bin,srtna)
-           Mkf(nuc_bin,srth2o) = Mki(nuc_bin,srth2o)
-
-         elseif (nflag.eq.2) then
-           !nuclei are assumed to be sulfuric acid
-           Mkf(nuc_bin,srtso4) = Mki(nuc_bin,srtso4)+fn*mnuc*boxvol*dt
-           !Save other components. by jgj 1/8/2008
-           Mkf(nuc_bin,srtna) = Mki(nuc_bin,srtna)
-           Mkf(nuc_bin,srtnh4) = Mki(nuc_bin,srtnh4)
-           Mkf(nuc_bin,srth2o) = Mki(nuc_bin,srth2o)
-          
-	 elseif (nflag.eq.3) then
-	   !nuclei consist of sulfate and amine compounds
-	   !assume them to be like ammonium bisulfate
-	   !even though they should be bigger and look more organic
-           Mkf(nuc_bin,srtso4) = Mki(nuc_bin,srtso4)+0.8144*fn*mnuc*boxvol*dt
-           Mkf(nuc_bin,srtnh4) = Mki(nuc_bin,srtnh4)+0.1856*fn*mnuc*boxvol*dt
-           !Save other components. by jgj 1/8/2008
-           Mkf(nuc_bin,srtna) = Mki(nuc_bin,srtna)
-           Mkf(nuc_bin,srth2o) = Mki(nuc_bin,srth2o)
-          
-         endif
-         Nkf(nuc_bin) = Nki(nuc_bin)+fn*boxvol*dt
 cdbg         print*,'Nk_NUC',Nki(nuc_bin),Nkf(nuc_bin)
-         Gcf(srtso4) = Gci(srtso4)! - (Mkf(nuc_bin,srtso4)-mold)
-                                  !PSSA decide Gc as a diagnostic way
+c$$$         Gcf(srtso4) = Gci(srtso4)! - (Mkf(nuc_bin,srtso4)-mold)
+c$$$                                  !PSSA decide Gc as a diagnostic way
 
 
 C there is a chance that Gcf will go less than zero because we are artificially growing
@@ -223,18 +207,7 @@ c            Gcf(srtso4) = 0.d0
 c            print*,'used up h2so4 in nuc subroutine'
 c         endif
 
-      endif
-
-      do k=1,ibins
-         if (k .ne. nuc_bin)then
-            Nkf(k) = Nki(k)
-            do i=1,icomp
-               Mkf(k,i) = Mki(k,i)
-            enddo
-         endif
-      enddo
-
-         
+c$$$      endif
 
       RETURN
       END
