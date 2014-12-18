@@ -135,7 +135,7 @@ c        amine_nuc_tbl_TEMP  - temperature [K]
 c        amine_nuc_tbl_J     - Nucleation Rate [Particles cm-3 s-1]
 c            
 c     Called by:
-c        CHMPREP
+c        READCHM
 c
       include 'sizecode.COM'
 c

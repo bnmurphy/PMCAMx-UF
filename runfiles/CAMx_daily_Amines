@@ -13,7 +13,7 @@ set DATE2   = $2
 @ DATE4   = $DATE2 + 120
 #
 set RUN     = "PMCAMxUF_Amines"
-set OUTPUT  = "/nobackup/global/x_benmu/PMCAMx_Output/$RUN"
+set OUTPUT  = "/proj/snic2014-1-155/users/x_janju/PMCAMx_Output/$RUN"
 #
 if ($DATE == "01") then
   mkdir -p $OUTPUT

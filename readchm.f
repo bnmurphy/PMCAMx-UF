@@ -882,6 +882,11 @@ c
         call read_amine_nuc_table
 
 c
+c-----Read Ternary Nucleation Rate Lookup Table
+c
+        call read_tern_nuc_table
+
+c
 c-----Provide diagnostic info for checking rate expressions
 c
         write(idiag,'(/,a,/,/,a)') 

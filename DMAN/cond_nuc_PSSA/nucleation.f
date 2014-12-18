@@ -45,6 +45,7 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
 C-----VARIABLE DECLARATIONS---------------------------------------------
 
       double precision nh3ppt   ! gas phase ammonia in pptv
+      double precision nh3_molec! gas phase ammonia in molec cm-3
       double precision dmappt   ! gas phase dimethyl amine in pptv
       double precision dma_molec! gas phase dimethyl amine in molec cm-3
       double precision h2so4    ! gas phase h2so4 in molec cc-1
@@ -81,7 +82,9 @@ C-----ADJUSTABLE PARAMETERS---------------------------------------------
 C-----CODE--------------------------------------------------------------
 
       h2so4 = Gci(srtso4)/boxvol*1000.d0/98.d0*6.022d23
-      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
+      ! ACDC Lookup table ternary nuclation does not need this in ppt
+c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
+      nh3_molec = Gci(srtnh4)/boxvol*1000.d0/17.d0*6.022d23 
       dma_molec = dmappt*1.e-18 * pres/8.314/temp * 6.022d23 !molec cm-3
 
       fn = 0.d0
@@ -115,18 +118,21 @@ C     and get the nucleation rate and critical cluster size
                mfrac = (/0.8144, 0.0, 0.1856, 0.0/)
                call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
             endif
+         endif
 
-         elseif (nh3ppt.gt.0.1.and.tern_nuc.eq.1) then
-            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
-            
+         if (nh3_molec.gt.1.d6.and.tern_nuc.eq.1) then
+c            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
+            call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc)
+
             if (fn.gt.0.d0) then
                !update mass and number
                !nuclei are assumed as ammonium bisulfte
                mfrac = (/0.8144, 0.0, 0.1856, 0.0/)
                call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
             endif
+         endif
 
-         elseif (bin_nuc.eq.1) then
+         if (bin_nuc.eq.1) then
             call vehk_nucl(temp,rh,h2so4,fn,rnuc) !binary nuc
 
             if (fn.gt.0.d0) then

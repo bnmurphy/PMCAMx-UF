@@ -144,3 +144,25 @@ C Make Common Variable List for Amine Nucleation Lookup Table
      &                   amine_nuc_tbl_CS, amine_nuc_tbl_TEMP,
      &                   amine_nuc_tbl_J
 
+C Make common variable list for ternary NH3-H2SO4-H2O nucleation lookup table
+
+       integer tern_nuc_nH2SO4, tern_nuc_nNH3, tern_nuc_nRH, tern_nuc_nCS,
+     &       tern_nuc_nTEMP
+
+       parameter(tern_nuc_nH2SO4=12, tern_nuc_nNH3=11,
+     &		tern_nuc_nRH=21, tern_nuc_nCS=9,
+     &		tern_nuc_nTEMP=15)
+
+       double precision tern_nuc_tbl_H2SO4(tern_nuc_nH2SO4),
+     &      		tern_nuc_tbl_NH3(tern_nuc_nNH3),
+     &			tern_nuc_tbl_RH(tern_nuc_nRH),
+     &			tern_nuc_tbl_CS(tern_nuc_nCS),
+     &			tern_nuc_tbl_TEMP(tern_nuc_nTEMP),
+     &			tern_nuc_tbl_J(tern_nuc_nTEMP, tern_nuc_nRH,
+     &				      tern_nuc_nCS, tern_nuc_nH2SO4, 
+     &			      	      tern_nuc_nNH3)
+
+       common /tern_nuc/ tern_nuc_tbl_H2SO4, tern_nuc_tbl_NH3,
+     &      		 tern_nuc_tbl_RH, tern_nuc_tbl_CS,
+     &			 tern_nuc_tbl_TEMP, tern_nuc_tbl_J
+
