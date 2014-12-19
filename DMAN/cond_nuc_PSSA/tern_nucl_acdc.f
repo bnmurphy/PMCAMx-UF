@@ -131,9 +131,10 @@ C
      &     ic1*ii2*ii3*ii4*ii5*tern_nuc_tbl_J(itemp, irh1, ics1, icna1, inh31) +
      &     ii1*ii2*ii3*ii4*ii5*tern_nuc_tbl_J(itemp1, irh1, ics1, icna1, inh31)
       
-      ! The biggest cluster has in ACDC simulation had a mobility diamter of
-      ! about 1.2 nm. Should this actually be set to a lower value?
-      rnuc = 1.2
+      ! The biggest cluster in ACDC simulation (and to which the J corresponds to) 
+      ! had a mobility diameter of about 1.2 nm -> set rnuc to 0.6 nm
+ 
+      rnuc = 0.6
       return
 
       end subroutine

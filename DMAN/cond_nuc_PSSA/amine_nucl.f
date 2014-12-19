@@ -106,8 +106,9 @@ C
      &       ic1*ii2*ii3*ii4*amine_nuc_tbl_J(itemp, ics1,icna1,idma1) +
      &       ii1*ii2*ii3*ii4*amine_nuc_tbl_J(itemp1,ics1,icna1,idma1)
       
-      ! Always (?) in the kinetic limit, so set a constant rnuc
-      rnuc = 0.8
+      ! Always in the kinetic limit, so set a constant rnuc to 0.7 nm,
+      ! as the mobility diameter for largest cluster in ACDC is 1.4 nm 
+      rnuc = 0.7
       return
 
       end subroutine
