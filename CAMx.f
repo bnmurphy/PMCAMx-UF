@@ -225,14 +225,7 @@ c     end added by LA
         if (nsteps.eq.1) then
           write(*,'(a20,$)') 'readcnc ......'
           call readcnc
-cdbg          call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,
-cdbg     &      spname,20)
-          call numconv(conc(1),ncol(1),nrow(1),nlay(1),conc(1),nspec,0)
-                           ! by jgj 2/16/06
-cdbg          call mnratios(conc(1),ncol(1),nrow(1),nlay(1),nspec,0)
-cdbg          call numcheck(conc(1),ncol(1),nrow(1),nlay(1),nspec)
-cdbg          call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,
-cdbg     &      spname,21)
+
           do igrd = 1,ngrid
             call wrtmass(igrd,date,time,0)
             call massum(igrd,nspec,ncol(igrd),nrow(igrd),nlay(igrd),
@@ -569,16 +562,21 @@ c     added by LA
       write(*,*)'bndtim=',bndtim
 c     end added by LA
       if (date.eq.bnddate .and. abs(time-bndtim).lt.0.01) then
-        write(*,'(a20,$)') 'readbnd ......'
-        call readbnd(bndtim,bnddate)
-cdbg        call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,
-cdbg     &       spname,22)
-        call numconv(conc(1),ncol(1),nrow(1),nlay(1),conc(1),nspec,1)
+         call saveconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,sconc)
+         write(*,'(a20,$)') 'readbnd ......'
+         call readbnd(bndtim,bnddate)
+
+c     assign_dist will assign number distributions, use in case you do not 
+c     have size resolved boundary conditions (like in the US). Use numconv 
+c     if you want to calculate the number emissions from the mass emissions 
+c     and their size
+
+c         call assign_ndist(conc(1),ncol(1),nrow(1),nlay(1),sconc,nspec)
+         call numconv(conc(1),ncol(1),nrow(1),nlay(1),conc(1),nspec)
                            ! by jgj 2/17/06
-cdbg        call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,
-cdbg     &       spname,23)
-        tcpu = dtime(tarray2)
-        write(*,'(a,f10.3)') '   CPU = ', tarray2(1)
+
+         tcpu = dtime(tarray2)
+         write(*,'(a,f10.3)') '   CPU = ', tarray2(1)
 c
 c======================== Source Apportion Begin =======================
 c

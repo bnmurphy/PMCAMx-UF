@@ -5,7 +5,7 @@
 #SBATCH --mem=4000
 #SBATCH -N 1
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=benjamin.murphy@itm.su.se
+#SBATCH --mail-user=jan.julin@aces.su.se
 #SBATCH --constraint=vtune
 #
 # Run a single task in the foreground

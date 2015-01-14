@@ -116,9 +116,9 @@ cdbg         write(*,*)conc(n4d)
 cdbg      enddo
 cdbg      pause
 c
-cdbg      write(*,*)'before saveconc'
+
       call saveconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,sconc)
-cdbg      write(*,*)'after saveconc'
+
 c
 cdbg      call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,spname,12)
       call emiss(igrd,kno,kno2,nspec,narspc,nptspc,larmap(1,igrd),
@@ -134,11 +134,12 @@ cdbg      call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,spname,12)
      &           armass(1,igrd),ptmass(1,igrd),
      &           conc(iptr4d(igrd)),ipacl_3d(iptr3d(igrd)) )
 c
-cdbg      call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,spname,13)
-cdbg      write(*,*)'before numconv'
-      call numconv(conc(1),ncol(1),nrow(1),nlay(1),sconc,nspec,3)
-cdbg      write(*,*)'after numconv after emiss'
-cdbg      call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,spname,14)
+c     assign_dist will assign number distributions, use in case you do not 
+c     have size resolved emissions (like in the US). Use numconv if you want
+c     to calculate the number emissions from the mass emissions and their sizes
+c      call assign_ndist(conc(1),ncol(1),nrow(1),nlay(1),sconc,nspec)
+      call numconv(conc(1),ncol(1),nrow(1),nlay(1),sconc,nspec)
+
                            ! by jgj 2/17/06
 c======================== Source Apportion Begin =======================
 c

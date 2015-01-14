@@ -13,7 +13,7 @@ set DATE2   = $2
 @ DATE4   = $DATE2 + 120
 #
 set RUN     = "PMCAMxUF_Base"
-set OUTPUT  = "/nobackup/global/x_benmu/PMCAMx_Output/$RUN"
+set OUTPUT  = $PMCAMxUF_USER_OUTPUT/$RUN
 #
 if ($DATE == "01") then
   mkdir -p $OUTPUT
