@@ -422,6 +422,8 @@ $(PSSA)/eznh3eqm.o \
 $(PSSA)/eznh3.o \
 $(PSSA)/ezwatereqm.o \
 $(PSSA)/getNucRate.o \
+$(PSSA)/getNucMass.o \
+$(PSSA)/nuc_massupd.o \
 $(PSSA)/napa_nucl.o \
 $(PSSA)/vehk_nucl.o \
 $(PSSA)/mnfix_PSSA.o \
@@ -1522,6 +1524,12 @@ $(PSSA)/getH2SO4conc.o    : $(PSSA)/getH2SO4conc.f                             \
 			  $(INC)/sizecode.COM
 
 $(PSSA)/getNucRate.o	  : $(PSSA)/getNucRate.f                               \
+			  $(INC)/sizecode.COM
+
+$(PSSA)/getNucMass.o	  : $(PSSA)/getNucMass.f                               \
+			  $(INC)/sizecode.COM
+
+$(PSSA)/nuc_massupd.o	  : $(PSSA)/nuc_massupd.f                               \
 			  $(INC)/sizecode.COM
 
 $(PSSA)/mnfix_PSSA.o	  : $(PSSA)/mnfix_PSSA.f                               \

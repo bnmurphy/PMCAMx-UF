@@ -1363,4 +1363,1114 @@ Processing grid:  1 Timestep:   300.0
       wetdep  ......   CPU =     -2.180
       updtmet ......   CPU =      3.440
   z diffusion ......   CPU =     15.730
-     x/y diff ......
+     x/y diff ......   CPU =     11.870
+          TUV ......     chemdriv ...... aerotchk,grdtime:    310.0000       315.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     14.160
+Accumulative CPU time:    5185.359
+ 
+Date/time:    08122  310.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   310.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      4.350
+        emiss ......   CPU =     12.890
+  x advection ......   CPU =      6.990
+  y advection ......   CPU =      0.930
+  z advection ......   CPU =     10.700
+      wetdep  ......   CPU =     -2.170
+      updtmet ......   CPU =      3.430
+  z diffusion ......   CPU =     15.640
+     x/y diff ......   CPU =     11.830
+          TUV ......     chemdriv ...... aerotchk,grdtime:    315.0000       315.0000    
+ Calling fullaero ... time:    315.0000      8.3333336E-02  0.2500000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =    220.570
+Accumulative CPU time:    5463.650
+ 
+Date/time:    08122  315.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   315.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      4.310
+        emiss ......   CPU =     12.850
+  y advection ......   CPU =      0.890
+  x advection ......   CPU =      0.110
+  z advection ......   CPU =     10.670
+      wetdep  ......   CPU =     -2.190
+      updtmet ......   CPU =      3.430
+  z diffusion ......   CPU =     15.630
+     x/y diff ......   CPU =     11.840
+          TUV ......     chemdriv ...... aerotchk,grdtime:    320.0000       330.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     14.300
+Accumulative CPU time:    5535.523
+ 
+Date/time:    08122  320.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   320.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      4.360
+        emiss ......   CPU =     12.990
+  x advection ......   CPU =      7.000
+  y advection ......   CPU =      0.950
+  z advection ......   CPU =     10.710
+      wetdep  ......   CPU =     -2.180
+      updtmet ......   CPU =      3.430
+  z diffusion ......   CPU =     15.830
+     x/y diff ......   CPU =     11.890
+          TUV ......     chemdriv ...... aerotchk,grdtime:    325.0000       330.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     14.300
+Accumulative CPU time:    5607.956
+ 
+Date/time:    08122  325.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   325.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      4.350
+        emiss ......   CPU =     12.900
+  y advection ......   CPU =      0.910
+  x advection ......   CPU =      0.140
+  z advection ......   CPU =     10.710
+      wetdep  ......   CPU =     -2.190
+      updtmet ......   CPU =      3.450
+  z diffusion ......   CPU =     15.660
+     x/y diff ......   CPU =     11.860
+          TUV ......     chemdriv ...... aerotchk,grdtime:    330.0000       330.0000    
+ Calling fullaero ... time:    330.0000      8.3333336E-02  0.2500000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =    198.480
+Accumulative CPU time:    5864.215
+ 
+Date/time:    08122  330.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   330.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      4.350
+        emiss ......   CPU =     12.930
+  x advection ......   CPU =      7.000
+  y advection ......   CPU =      0.890
+  z advection ......   CPU =     10.740
+      wetdep  ......   CPU =     -2.190
+      updtmet ......   CPU =      3.450
+  z diffusion ......   CPU =     15.700
+     x/y diff ......   CPU =     11.860
+          TUV ......     chemdriv ...... aerotchk,grdtime:    335.0000       345.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     14.540
+Accumulative CPU time:    5936.623
+ 
+Date/time:    08122  335.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   335.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      4.320
+        emiss ......   CPU =     12.980
+  y advection ......   CPU =      0.930
+  x advection ......   CPU =      0.160
+  z advection ......   CPU =     10.820
+      wetdep  ......   CPU =     -2.190
+      updtmet ......   CPU =      3.440
+  z diffusion ......   CPU =     15.640
+     x/y diff ......   CPU =     11.850
+          TUV ......     chemdriv ...... aerotchk,grdtime:    340.0000       345.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     14.480
+Accumulative CPU time:    6009.050
+ 
+Date/time:    08122  340.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   340.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      4.350
+        emiss ......   CPU =     12.880
+  x advection ......   CPU =      6.990
+  y advection ......   CPU =      0.910
+  z advection ......   CPU =     10.750
+      wetdep  ......   CPU =     -2.180
+      updtmet ......   CPU =      3.440
+  z diffusion ......   CPU =     15.820
+     x/y diff ......   CPU =     11.850
+          TUV ......     chemdriv ...... aerotchk,grdtime:    345.0000       345.0000    
+ Calling fullaero ... time:    345.0000      8.3333336E-02  0.2500000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =    194.570
+Accumulative CPU time:    6261.588
+ 
+Date/time:    08122  345.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   345.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      4.360
+        emiss ......   CPU =     13.000
+  y advection ......   CPU =      0.940
+  x advection ......   CPU =      0.140
+  z advection ......   CPU =     10.800
+      wetdep  ......   CPU =     -2.180
+      updtmet ......   CPU =      3.450
+  z diffusion ......   CPU =     15.690
+     x/y diff ......   CPU =     11.880
+          TUV ......     chemdriv ...... aerotchk,grdtime:    350.0000       400.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     14.620
+Accumulative CPU time:    6334.262
+ 
+Date/time:    08122  350.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   350.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      4.330
+        emiss ......   CPU =     12.800
+  x advection ......   CPU =      6.970
+  y advection ......   CPU =      0.870
+  z advection ......   CPU =     10.680
+      wetdep  ......   CPU =     -2.190
+      updtmet ......   CPU =      3.440
+  z diffusion ......   CPU =     15.700
+     x/y diff ......   CPU =     11.880
+          TUV ......     chemdriv ...... aerotchk,grdtime:    355.0000       400.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     14.770
+Accumulative CPU time:    6406.671
+ 
+Date/time:    08122  355.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   355.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      4.350
+        emiss ......   CPU =     13.020
+  y advection ......   CPU =      0.930
+  x advection ......   CPU =      0.150
+  z advection ......   CPU =     10.770
+      wetdep  ......   CPU =     -2.170
+      updtmet ......   CPU =      3.440
+  z diffusion ......   CPU =     15.810
+     x/y diff ......   CPU =     11.870
+          TUV ......     chemdriv ...... aerotchk,grdtime:    400.0000       400.0000    
+ Calling fullaero ... time:    400.0000      8.3333336E-02  0.2500000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =    195.910
+       wrtcon ......   CPU =      4.980
+Accumulative CPU time:    6661.402
+ 
+Date/time:    08122  400.00
+ 
+      readinp ......   CPU =      3.810
+     timestep ......   CPU =     -3.800
+        khorz ......   CPU =      3.830
+       drydep ......   CPU =     -2.920
+       readar ......   CPU =      3.840
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   400.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =     -3.420
+        emiss ......   CPU =      5.690
+  x advection ......   CPU =     -0.250
+  y advection ......   CPU =      8.160
+  z advection ......   CPU =      3.490
+      wetdep  ......   CPU =      5.060
+      updtmet ......   CPU =     -3.810
+  z diffusion ......   CPU =     22.920
+     x/y diff ......   CPU =      4.610
+          TUV ......     chemdriv ...... aerotchk,grdtime:    405.0000       415.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     22.150
+Accumulative CPU time:    6735.107
+ 
+Date/time:    08122  405.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   405.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =     -2.910
+        emiss ......   CPU =      5.680
+  y advection ......   CPU =      8.120
+  x advection ......   CPU =      7.400
+  z advection ......   CPU =      3.480
+      wetdep  ......   CPU =      5.060
+      updtmet ......   CPU =     -3.800
+  z diffusion ......   CPU =     22.920
+     x/y diff ......   CPU =      4.600
+          TUV ......     chemdriv ...... aerotchk,grdtime:    410.0000       415.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     22.180
+Accumulative CPU time:    6807.837
+ 
+Date/time:    08122  410.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   410.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =     -2.900
+        emiss ......   CPU =      5.670
+  x advection ......   CPU =     -0.260
+  y advection ......   CPU =      8.160
+  z advection ......   CPU =      3.470
+      wetdep  ......   CPU =      5.080
+      updtmet ......   CPU =     -3.810
+  z diffusion ......   CPU =     22.930
+     x/y diff ......   CPU =      4.650
+          TUV ......     chemdriv ...... aerotchk,grdtime:    415.0000       415.0000    
+ Calling fullaero ... time:    415.0000      8.3333336E-02  0.2500000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =    231.090
+Accumulative CPU time:    7089.564
+ 
+Date/time:    08122  415.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   415.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =     -2.900
+        emiss ......   CPU =      5.740
+  y advection ......   CPU =      8.180
+  x advection ......   CPU =      7.390
+  z advection ......   CPU =      3.490
+      wetdep  ......   CPU =      5.070
+      updtmet ......   CPU =     -3.810
+  z diffusion ......   CPU =     22.970
+     x/y diff ......   CPU =      4.630
+          TUV ......     chemdriv ...... aerotchk,grdtime:    420.0000       430.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     22.460
+Accumulative CPU time:    7162.794
+ 
+Date/time:    08122  420.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   420.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =     -2.880
+        emiss ......   CPU =      5.820
+  x advection ......   CPU =     -0.240
+  y advection ......   CPU =      8.200
+  z advection ......   CPU =      3.530
+      wetdep  ......   CPU =      5.070
+      updtmet ......   CPU =     -3.800
+  z diffusion ......   CPU =     22.960
+     x/y diff ......   CPU =      4.610
+          TUV ......     chemdriv ...... aerotchk,grdtime:    425.0000       430.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     22.450
+Accumulative CPU time:    7236.141
+ 
+Date/time:    08122  425.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   425.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =     -2.890
+        emiss ......   CPU =      5.640
+  y advection ......   CPU =      8.170
+  x advection ......   CPU =      7.400
+  z advection ......   CPU =      3.450
+      wetdep  ......   CPU =      5.070
+      updtmet ......   CPU =     -3.810
+  z diffusion ......   CPU =     22.920
+     x/y diff ......   CPU =      4.610
+          TUV ......     chemdriv ...... aerotchk,grdtime:    430.0000       430.0000    
+ Calling fullaero ... time:    430.0000      8.3333336E-02  0.2500000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =    214.920
+Accumulative CPU time:    7501.613
+ 
+Date/time:    08122  430.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   430.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =     -2.910
+        emiss ......   CPU =      5.810
+  x advection ......   CPU =     -0.250
+  y advection ......   CPU =      8.190
+  z advection ......   CPU =      3.550
+      wetdep  ......   CPU =      5.080
+      updtmet ......   CPU =     -3.820
+  z diffusion ......   CPU =     23.010
+     x/y diff ......   CPU =      4.680
+          TUV ......     chemdriv ...... aerotchk,grdtime:    435.0000       445.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     22.710
+Accumulative CPU time:    7575.326
+ 
+Date/time:    08122  435.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   435.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =     -2.900
+        emiss ......   CPU =      5.750
+  y advection ......   CPU =      8.210
+  x advection ......   CPU =      7.420
+  z advection ......   CPU =      3.510
+      wetdep  ......   CPU =      5.090
+      updtmet ......   CPU =     -3.820
+  z diffusion ......   CPU =     23.050
+     x/y diff ......   CPU =      4.630
+          TUV ......     chemdriv ...... aerotchk,grdtime:    440.0000       445.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     22.760
+Accumulative CPU time:    7649.026
+ 
+Date/time:    08122  440.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   440.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =     -2.900
+        emiss ......   CPU =      5.750
+  x advection ......   CPU =     -0.260
+  y advection ......   CPU =      8.210
+  z advection ......   CPU =      3.490
+      wetdep  ......   CPU =      5.090
+      updtmet ......   CPU =     -3.820
+  z diffusion ......   CPU =     22.930
+     x/y diff ......   CPU =      4.620
+          TUV ......     chemdriv ...... aerotchk,grdtime:    445.0000       445.0000    
+ Calling fullaero ... time:    445.0000      8.3333336E-02  0.2500000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =    215.270
+Accumulative CPU time:    7915.055
+ 
+Date/time:    08122  445.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   445.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =     -2.910
+        emiss ......   CPU =      5.790
+  y advection ......   CPU =      8.220
+  x advection ......   CPU =      7.410
+  z advection ......   CPU =      3.480
+      wetdep  ......   CPU =      5.090
+      updtmet ......   CPU =     -3.830
+  z diffusion ......   CPU =     23.060
+     x/y diff ......   CPU =      4.660
+          TUV ......     chemdriv ...... aerotchk,grdtime:    450.0000       500.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     22.900
+Accumulative CPU time:    7988.929
+ 
+Date/time:    08122  450.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   450.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =     -2.910
+        emiss ......   CPU =      5.690
+  x advection ......   CPU =     -0.260
+  y advection ......   CPU =      8.170
+  z advection ......   CPU =      3.500
+      wetdep  ......   CPU =      5.080
+      updtmet ......   CPU =     -3.830
+  z diffusion ......   CPU =     22.990
+     x/y diff ......   CPU =      4.630
+          TUV ......     chemdriv ...... aerotchk,grdtime:    455.0000       500.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     23.100
+Accumulative CPU time:    8062.763
+ 
+Date/time:    08122  455.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   455.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =     -2.930
+        emiss ......   CPU =      5.640
+  y advection ......   CPU =      8.170
+  x advection ......   CPU =      7.420
+  z advection ......   CPU =      3.490
+      wetdep  ......   CPU =      5.090
+      updtmet ......   CPU =     -3.820
+  z diffusion ......   CPU =     23.020
+     x/y diff ......   CPU =      4.600
+          TUV ......     chemdriv ...... aerotchk,grdtime:    500.0000       500.0000    
+ Calling fullaero ... time:    500.0000      8.3333336E-02  0.2500000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =    217.530
+       wrtcon ......   CPU =     -2.710
+Accumulative CPU time:    8331.580
+ 
+Date/time:    08122  500.00
+ 
+      readinp ......   CPU =     -4.270
+     timestep ......   CPU =      4.280
+        khorz ......   CPU =     -4.250
+       drydep ......   CPU =      5.190
+       readar ......   CPU =     -4.260
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   500.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      4.680
+        emiss ......   CPU =     13.230
+  x advection ......   CPU =      7.730
+  y advection ......   CPU =     -0.230
+  z advection ......   CPU =     11.260
+      wetdep  ......   CPU =     -3.070
+      updtmet ......   CPU =      4.300
+  z diffusion ......   CPU =     14.440
+     x/y diff ......   CPU =     12.690
+          TUV ......     chemdriv ...... aerotchk,grdtime:    505.0000       515.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     14.870
+Accumulative CPU time:    8404.329
+ 
+Date/time:    08122  505.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   505.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      5.080
+        emiss ......   CPU =     13.030
+  y advection ......   CPU =     -0.250
+  x advection ......   CPU =     -0.840
+  z advection ......   CPU =     11.240
+      wetdep  ......   CPU =     -3.060
+      updtmet ......   CPU =      4.300
+  z diffusion ......   CPU =     14.450
+     x/y diff ......   CPU =     12.690
+          TUV ......     chemdriv ...... aerotchk,grdtime:    510.0000       515.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     15.020
+Accumulative CPU time:    8475.990
+ 
+Date/time:    08122  510.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   510.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      5.090
+        emiss ......   CPU =     13.020
+  x advection ......   CPU =      7.740
+  y advection ......   CPU =     -0.230
+  z advection ......   CPU =     11.280
+      wetdep  ......   CPU =     -3.070
+      updtmet ......   CPU =      4.300
+  z diffusion ......   CPU =     14.430
+     x/y diff ......   CPU =     12.690
+          TUV ......     chemdriv ...... aerotchk,grdtime:    515.0000       515.0000    
+ Calling fullaero ... time:    515.0000      8.3333336E-02  0.2500000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =    227.530
+Accumulative CPU time:    8760.190
+ 
+Date/time:    08122  515.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   515.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      5.090
+        emiss ......   CPU =     13.070
+  y advection ......   CPU =     -0.230
+  x advection ......   CPU =     -0.850
+  z advection ......   CPU =     11.280
+      wetdep  ......   CPU =     -3.070
+      updtmet ......   CPU =      4.300
+  z diffusion ......   CPU =     14.470
+     x/y diff ......   CPU =     12.700
+          TUV ......     chemdriv ...... aerotchk,grdtime:    520.0000       530.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     15.140
+Accumulative CPU time:    8832.088
+ 
+Date/time:    08122  520.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   520.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      5.090
+        emiss ......   CPU =     13.060
+  x advection ......   CPU =      7.740
+  y advection ......   CPU =     -0.240
+  z advection ......   CPU =     11.280
+      wetdep  ......   CPU =     -3.070
+      updtmet ......   CPU =      4.310
+  z diffusion ......   CPU =     14.450
+     x/y diff ......   CPU =     12.700
+          TUV ......     chemdriv ...... aerotchk,grdtime:    525.0000       530.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     15.240
+Accumulative CPU time:    8904.062
+ 
+Date/time:    08122  525.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   525.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      5.090
+        emiss ......   CPU =     13.070
+  y advection ......   CPU =     -0.250
+  x advection ......   CPU =     -0.850
+  z advection ......   CPU =     11.320
+      wetdep  ......   CPU =     -3.070
+      updtmet ......   CPU =      4.310
+  z diffusion ......   CPU =     14.450
+     x/y diff ......   CPU =     12.720
+          TUV ......     chemdriv ...... aerotchk,grdtime:    530.0000       530.0000    
+ Calling fullaero ... time:    530.0000      8.3333336E-02  0.2500000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =    214.290
+Accumulative CPU time:    9175.151
+ 
+Date/time:    08122  530.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   530.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      5.100
+        emiss ......   CPU =     13.070
+  x advection ......   CPU =      7.740
+  y advection ......   CPU =     -0.230
+  z advection ......   CPU =     11.290
+      wetdep  ......   CPU =     -3.090
+      updtmet ......   CPU =      4.310
+  z diffusion ......   CPU =     14.450
+     x/y diff ......   CPU =     12.710
+          TUV ......     chemdriv ...... aerotchk,grdtime:    535.0000       545.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     15.340
+Accumulative CPU time:    9247.245
+ 
+Date/time:    08122  535.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   535.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      5.100
+        emiss ......   CPU =     13.070
+  y advection ......   CPU =     -0.250
+  x advection ......   CPU =     -0.850
+  z advection ......   CPU =     11.270
+      wetdep  ......   CPU =     -3.080
+      updtmet ......   CPU =      4.310
+  z diffusion ......   CPU =     14.420
+     x/y diff ......   CPU =     12.710
+          TUV ......     chemdriv ...... aerotchk,grdtime:    540.0000       545.0000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     15.430
+Accumulative CPU time:    9319.368
+ 
+Date/time:    08122  540.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   540.0000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =      5.090
+        emiss ......   CPU =     13.050
+  x advection ......   CPU =      7.740
+  y advection ......   CPU =     -0.250
+  z advection ......   CPU =     11.290
+      wetdep  ......   CPU =     -3.080
+      updtmet ......   CPU =      4.310
+  z diffusion ......   CPU =     14.450
+     x/y diff ......   CPU =     12.710
+          TUV ......     chemdriv ...... aerotchk,grdtime:    545.0000       545.0000    
+ Calling fullaero ... time:    545.0000      8.3333336E-02  0.2500000    
+ Layer=           1
