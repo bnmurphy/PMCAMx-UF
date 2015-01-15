@@ -1,8 +1,8 @@
 CAMx Version       |VERSION4.0 
 Run Message        |PMCAMx v4.0 Europe PM Test Run May 01-29 2008
-Root output name   |/proj/snic2014-1-155/users/x_janju/PMCAMx_Output/PMCAMxUF_Base/Eucaari.May.123.PMCAMxUF_Base
-Start yr/mo/dy/hr  |08 05 02 0000.
-End   yr/mo/dy/hr  |08 05 02 2400.
+Root output name   |/proj/snic2014-1-155/users/x_janju/PMCAMx_Output/PMCAMxUF_Base/Eucaari.May.122.PMCAMxUF_Base
+Start yr/mo/dy/hr  |08 05 01 0000.
+End   yr/mo/dy/hr  |08 05 01 2400.
 DT:max,met,ems,out |5. 60. 60. 60.
 nx,ny,nz           |150   162   14
 sCoordinate ID     |POLAR
@@ -116,7 +116,7 @@ Avg output species |615
 # nested grids     |0
 SMOLAR,BOTT, PPM?  |PPM
 Chemistry solver   |CMC
-Restart            |true
+Restart            |false
 Chemistry          |true
 Dry dep            |true
 Wet dep            |true
@@ -128,18 +128,18 @@ Treat point emiss  |false
 3-D average file   |false
 Source Apportion   |false
 Chemparam          |CAMx4.chemparam.6
-Photolysis rates   |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/photolysis_rates/tuv_euro_ps2str_S99.080502.txt
-Landuse            |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/Metfields/lu_d02.bin
-Height/pressure    |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/Metfields/zp_d02.20080502.bin
-Wind               |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/Metfields/uv_d02.20080502.bin
-Temperature        |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/Metfields/tp_d02.20080502.bin
-Water vapor        |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/Metfields/qa_d02.20080502.bin
-Cloud/rain         |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/cr_files/cr_patched/cr_d02.20080502.patched.bin
-Vertical diffsvty  |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/Metfields/kv_d02.20080502.patched.bin
-Initial conditions |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/IC_BC_TCs/ICs43_Eucaari_2.bin
-Boundary conditions|/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/IC_BC_TCs/BCs43_Eucaari_2_edges.bin
-Top concentration  |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/IC_BC_TCs/TCs43_Eucaari_2.txt
-Albedo/haze/ozone  |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/ahomap/ahomap.monthEU.080502
+Photolysis rates   |/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe/photolysis_rates/tuv_euro_ps2str_S99.080501.txt
+Landuse            |/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe/Metfields/lu_d02.bin
+Height/pressure    |/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe/Metfields/zp_d02.20080501.bin
+Wind               |/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe/Metfields/uv_d02.20080501.bin
+Temperature        |/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe/Metfields/tp_d02.20080501.bin
+Water vapor        |/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe/Metfields/qa_d02.20080501.bin
+Cloud/rain         |/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe/cr_files/cr_patched/cr_d02.20080501.patched.bin
+Vertical diffsvty  |/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe/Metfields/kv_d02.20080501.patched.bin
+Initial conditions |/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe/IC_BC_TCs/ICs43_Eucaari_2.bin
+Boundary conditions|/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe/IC_BC_TCs/BCs43_Eucaari_2_edges.bin
+Top concentration  |/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe/IC_BC_TCs/TCs43_Eucaari_2.txt
+Albedo/haze/ozone  |/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe/ahomap/ahomap.monthEU.080501
 Point emiss        |
-Area emiss         |/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/ufeu_emiss/emnnum.080502.bin
-Restart file name  |/proj/snic2014-1-155/users/x_janju/PMCAMx_Output/PMCAMxUF_Base/Eucaari.May.122.PMCAMxUF_Base.inst.2
+Area emiss         |/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe/ufeu_emiss/emnnum.080501.bin
+Restart file name  |

@@ -87,13 +87,16 @@ c
 c      conc   --  species concentrations field (umol/m3)
 c      avcnc  --  average species concentration (gas=ppm,other=ug/m3)
 c      cncrad --  radical concentrations (ppm)
+c
+c      sconc -- for saving conc (umol/m3) (added 1/2015)
 c-----------------------------------------------------------------------
 c
       real   conc(MXVEC4D)
       real   avcnc(MXVEC4D)
       real   cncrad(MXVECRD)
+      real   sconc(MXVEC4D)
 c
-      common /store4d/ conc, avcnc, cncrad
+      common /store4d/ conc, avcnc, cncrad, sconc
 c
 c-----------------------------------------------------------------------
 c     Variables for calculating vertical transport:

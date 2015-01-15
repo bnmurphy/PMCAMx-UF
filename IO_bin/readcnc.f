@@ -59,7 +59,6 @@ c
       real massum
       real nmbr
       real meandp3
-      dimension sconc(ncol(1),nrow(1),nlay(1),nspec)
 c
 c-----Entry point
 c

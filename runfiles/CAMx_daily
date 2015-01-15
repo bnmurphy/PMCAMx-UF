@@ -4,8 +4,8 @@
 #
 #set INPUT  = "/home/christos/Research/ICEHT/eucaari"
 #set INPUT2 = "/home/christos/Research/ICEHT/ufeu/inputs"
-set INPUT  = "/nobackup/global/x_benmu/PMCAMx_Input/May_Europe"
-set INPUT2 = "/nobackup/global/x_benmu/PMCAMx_Input/May_Europe/ufeu/inputs"
+set INPUT  = "/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe"
+set INPUT2 = "/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe/ufeu/inputs"
 
 set DATE    = $1
 set DATE2   = $2
