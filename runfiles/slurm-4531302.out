@@ -1,0 +1,119 @@
+/proj/snic2014-1-155/users/x_janju/PMCAMx_Output/PMCAMxUF_Master/Eucaari.May.121.PMCAMxUF_Master.inst.2
+Mon Jan 19 17:12:49 CET 2015
+      startup ...... grd_time,date_aero:    15.00000            8122
+ In bndprep.f:
+ idat1:         8001
+ idat2:         8365
+ tim1:   0.0000000E+00
+ tim2:    24.00000    
+ idat2:         8366
+   CPU =      0.560
+ 
+Date/time:    08122    0.00
+ 
+      readinp ......   CPU =     -0.410
+      readcnc ......   CPU =      7.430
+     timestep ......   CPU =     -0.840
+        khorz ......   CPU =      0.870
+       drydep ......   CPU =      0.000
+       readar ......   CPU =      0.900
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8122
+ time=  0.0000000E+00
+ bndtim=  0.0000000E+00
+      readbnd ...... Updated bnddate in readbnd.f
+ bndtim:   0.0000000E+00
+ bnddate:         8366
+   CPU =      5.200
+      readaho (haze)   CPU =      0.890
+      readaho (o3)..   CPU =     -0.890
+     raddrivr ......   CPU =      1.210
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =     -0.860
+        emiss ......   CPU =     14.290
+  x advection ......   CPU =      2.240
+  y advection ......   CPU =      5.240
+  z advection ......   CPU =      5.680
+      wetdep  ......   CPU =      1.830
+      updtmet ......   CPU =     -1.180
+  z diffusion ......   CPU =     19.990
+     x/y diff ......   CPU =      7.210
+          TUV ......     chemdriv ...... aerotchk,grdtime:    5.000000       15.00000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     27.470
+Accumulative CPU time:      98.614
+ 
+Date/time:    08122    5.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   5.000000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =     -0.390
+        emiss ......   CPU =     13.970
+  y advection ......   CPU =      5.250
+  x advection ......   CPU =      4.620
+  z advection ......   CPU =      5.690
+      wetdep  ......   CPU =      1.840
+      updtmet ......   CPU =     -1.180
+  z diffusion ......   CPU =     19.980
+     x/y diff ......   CPU =      7.210
+          TUV ......     chemdriv ...... aerotchk,grdtime:    10.00000       15.00000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+ Layer=           6
+ Layer=           7
+ Layer=           8
+ Layer=           9
+ Layer=          10
+ Layer=          11
+ Layer=          12
+ Layer=          13
+ Layer=          14
+   CPU =     16.770
+Accumulative CPU time:     172.367
+ 
+Date/time:    08122   10.00
+ 
+ Before if statement in CAMx.f
+ date=        8122
+ bnddate=        8366
+ time=   10.00000    
+ bndtim=  0.0000000E+00
+Processing grid:  1 Timestep:   300.0
+       zrates ......   CPU =     -0.400
+        emiss ......   CPU =     13.980
+  x advection ......   CPU =      2.250
+  y advection ......   CPU =      5.240
+  z advection ......   CPU =      5.690
+      wetdep  ......   CPU =      1.830
+      updtmet ......   CPU =     -1.180
+  z diffusion ......   CPU =     19.980
+     x/y diff ......   CPU =      7.220
+          TUV ......     chemdriv ...... aerotchk,grdtime:    15.00000       15.00000    
+ Calling fullaero ... time:    15.00000      8.3333336E-02  0.2500000    
+ Layer=           1
+ Layer=           2
+ Layer=           3
+ Layer=           4
+ Layer=           5
+slurmd[n397]: *** JOB 4531302 CANCELLED AT 2015-01-19T17:19:45 ***
