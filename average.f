@@ -100,6 +100,9 @@ c
                 endif
                 avcnc(i,j,k,l) = convfac*conc(i,j,k,lsp)*dtfact + 
      &                           avcnc(i,j,k,l)
+                if (l.le.2) then
+                  avJnuc(i,j,k,l) = avJnuc(i,j,k,l) 
+                endif
 c
 c========================= Process Analysis Begin ==============================
 c

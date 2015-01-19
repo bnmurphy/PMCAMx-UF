@@ -1,7 +1,7 @@
       subroutine fullaero(water,tempk,press,lwc_c,
      &                    mxspec_c,mxrad_c,nspec_c,ngas_c,
      &                    con,cncrad,convfac,t00,dtaer,ich,
-     &                    jch,kch,height,dsulfdt)
+     &                    jch,kch,height,dsulfdt,fndt)
 c
 c-----PMCAMx v3.01 020531
 c
@@ -80,6 +80,7 @@ c
       real  pressure
       integer     r_idx(4)
       integer ich,jch,kch
+      real fndt(2)
 c
 ckf
       real*4 hgt, klay
@@ -700,7 +701,7 @@ c           write(*,*)
 c           write(*,*)'bef CAMx2dman q=',q
 c        endif
 c     end added by LA
-          call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch) 
+          call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch,fndt) 
 c     added by LA
 c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
 c           write(*,*)

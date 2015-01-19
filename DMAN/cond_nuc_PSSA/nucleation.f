@@ -26,7 +26,7 @@ C-----OUTPUTS-----------------------------------------------------------
 
 C     Nkf, Mkf, Gcf - same as above, but final values
 
-      SUBROUTINE nucleation(Nki,Mki,Gci,Nkf,Mkf,Gcf,nuc_bin,dt,cs)
+      SUBROUTINE nucleation(Nki,Mki,Gci,Nkf,Mkf,Gcf,nuc_bin,dt,fn_all)
 
       IMPLICIT NONE
 
@@ -61,10 +61,9 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision mp       ! mass of particle [kg]
       double precision mold     ! saved mass in first bin
       double precision mnuc     !mass of nucleation
-      double precision cs       ! condensation sink [s-1]
-      double precision d_dma    ! consumed dimethyl amine by the nucleation
-                                ! process (kg m-3)
+      
       double precision mfrac(icomp) ! fraction of the nucleated mass that will be assigned
+      double precision fn_all(2) !Magnitude of nucleation rates resolved by pathway
                                     ! to each icomp species (passed to nucMassUpdate)
 
 C-----EXTERNAL FUNCTIONS------------------------------------------------
@@ -81,8 +80,8 @@ C-----CODE--------------------------------------------------------------
 
       h2so4 = Gci(srtso4)/boxvol*1000.d0/98.d0*6.022d23
       ! ACDC Lookup table ternary nuclation does not need this in ppt
-c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
-      nh3_molec = Gci(srtnh4)/boxvol*1000.d0/17.d0*6.022d23 
+      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
+c      nh3_molec = Gci(srtnh4)/boxvol*1000.d0/17.d0*6.022d23 
 
       fn = 0.d0
       rnuc = 0.d0
@@ -99,7 +98,8 @@ C     if requirements for nucleation are met, call nucleation subroutines
 C     and get the nucleation rate and critical cluster size
       if (h2so4.gt.1.d4) then         
 
-         if (nh3_molec.gt.1.d6.and.tern_nuc.eq.1) then
+c         if (nh3_molec.gt.1.d6.and.tern_nuc.eq.1) then
+         if (nh3ppt.gt.0.1.and.tern_nuc.eq.1) then
             call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
 c            call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc)
 
@@ -108,6 +108,7 @@ c            call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc)
                !nuclei are assumed as ammonium bisulfte
                mfrac = (/0.8144, 0.0, 0.1856, 0.0/)
                call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+               fn_all(1) = fn
             endif
          endif
 
@@ -119,6 +120,7 @@ c            call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc)
                !nuclei are assumed to be sulfuric acid
                mfrac = (/1.0, 0.0, 0.0, 0.0/)
                call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+               fn_all(2) = fn
             endif
          endif    
       endif

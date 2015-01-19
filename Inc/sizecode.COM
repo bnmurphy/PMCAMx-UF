@@ -127,5 +127,7 @@ cdbg     &                  h2so4_print
 cdbg     &                  nh3ppt_o, h2so4_print
 
 
-
+C Nucleation Diagnostic Variables
+     integer nJnuc
+     parameter (nJnuc = 2)
 

@@ -64,8 +64,8 @@ C-----CODE--------------------------------------------------------------
 
       !Convert Gas concentrations from kg/(grid cell) to...
       h2so4  = Gci(srtso4)/boxvol*1000.d0/98.d0*6.022d23 ![molec cm-3]
-c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4)) ![ppt]      
-      nh3_molec = Gci(srtnh4)/boxvol*1000.d0/17.d0*6.022d23  ![molec cm-3]
+      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4)) ![ppt]      
+c      nh3_molec = Gci(srtnh4)/boxvol*1000.d0/17.d0*6.022d23  ![molec cm-3]
 
       fn = 0.d0
       rnuc = 0.d0
@@ -78,7 +78,8 @@ C     and calculate nucleated mass
 C     Total mass is sum from all the nucleation pathways
       if (h2so4.gt.1.d4) then
 
-	 if ((nh3_molec.gt.1.d6).and.(tern_nuc.eq.1)) then
+c	 if ((nh3_molec.gt.1.d6).and.(tern_nuc.eq.1)) then
+         if ((nh3ppt.gt.0.1).and.(tern_nuc.eq.1)) then
             call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
             nflg=.true.
             massnuc2 = 4.d0/3.d0*pi*(rnuc*1.d-9)**3*1350.*fn*boxvol*

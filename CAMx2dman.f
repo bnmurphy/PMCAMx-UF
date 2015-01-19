@@ -20,7 +20,7 @@ c     |6| mass conc.              | q(+k...)  | Mk(ibins,icomp)|
 c     +-+-------------------------+-----------+----------------+
 c     
 
-      subroutine CAMx2dman(q,t0,t1,tempK,pressure,dsulfdt,ich,jch,kch)
+      subroutine CAMx2dman(q,t0,t1,tempK,pressure,dsulfdt,ich,jch,kch,fndt)
 c
 c-----Include files
 c
@@ -70,6 +70,7 @@ c
       real tot_inert2 ! total inert mass after calling dman
 cdbg      real eps
       real cvt, cvt2
+      real fndt(2) !Nucleation diagnostic
 c
 c-----Adjustable parameters
 c
@@ -252,7 +253,7 @@ cdbg          enddo
 cdbg        endif
 cdbg      endif
       call dman(tstart,tend,Nk,Mk,h2so4,nh3ppt,relh,tempK,pres,dsulfdt
-     & ,ich,jch,kch)
+     & ,ich,jch,kch,fndt)
       !For a debuging purpose
 cdbg      if ((tstart.gt.0.0).and.(tstart.lt.0.5)) then
 cdbg        if ((ich.eq.36).and.(jch.eq.29).and.(kch.eq.1)) then

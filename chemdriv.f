@@ -149,7 +149,9 @@ c      integer ispc,naero
       real massum2
       real frctn, nmbr
       real dsulfdt !sulfuric acid production rate
-
+      real fndt(2) !nucleation diagnostic
+      real Jnuc(ncol,nrow,nlay,2) !Common Nucleation Diagnostic
+      integer inuc
 c
 c-----Entry point
 c
@@ -487,9 +489,11 @@ cdbg                 endif !dbg
      &           call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
      &                         MXSPEC,MXRADCL,NSPEC,NGAS,
      &                         con,crad,convfac,time,aero_dt(igrd),
-     &                         ichm,jchm,kchm,height,dsulfdt)
-cjgj     &                         ichm,jchm,kchm,height)
-cdbg                 endif
+     &                         ichm,jchm,kchm,height,dsulfdt,fndt)
+                 do inuc = 1,2
+                   Jnuc(i,j,k,inuc) = fndt(inuc)
+                 enddo
+
                endif
 c
             elseif ( idsolv .EQ. IDIEH ) then
@@ -523,7 +527,7 @@ c
                    if ( laero_upd )
      &             call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
      &                           MXSPEC,MXRADCL,NSPEC,NGAS,
-     &                           con,crad,convfac,time,aero_dt(igrd))
+     &                           con,crad,convfac,time,aero_dt(igrd),fndt)
                endif
 c
             endif
