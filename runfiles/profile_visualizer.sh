@@ -11,5 +11,5 @@
 #Then convert to png
 #
 
-    gprof ../PMCAMx.exe ./gmon.out | gprof2dot.py | dot -Tpng -o PMCAMx_prof.png
+    gprof ../PMCAMx.exe ./gmon_BaseO2_111414.out | gprof2dot.py -n0 -e0 | dot -Tpng -o PMCAMx_profO2.png
    

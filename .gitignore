@@ -3,6 +3,7 @@ OUTPUT/**
 .*.swp
 .*.swo
 core.*
+slurm*
 
 # Compiled Source
 *.com
@@ -27,6 +28,7 @@ core.*
 *.log
 *.sql
 *.sqlite
+*.out
 
 # OS generated Files
 .DS_Store
@@ -37,3 +39,5 @@ core.*
 ehthumbs.db
 Thumbs.db
 
+#Figures
+*.png

@@ -67,18 +67,6 @@ c
         read(iarem) idum,(arspec(i),i=1,10),
      &              ((aremis(i,j,ll),i=1,ncol),j=1,nrow)
       enddo
-c     added by LA
-c      do i = 1,ncol
-c         do j = 1,nrow
-c            aremis(i,j,2) = aremis(i,j,2)*0.34
-c            aremis(i,j,3) = aremis(i,j,3)*0.34
-c            aremis(i,j,4) = aremis(i,j,4)*0.27
-c            aremis(i,j,25:59) = aremis(i,j,25:59)*0.62
-c            aremis(i,j,68:102) = aremis(i,j,68:102)*0.62
-c            aremis(i,j,111:145) = aremis(i,j,111:145)*0.62
-c         enddo
-c      enddo
-c     end added by LA
       write(iout,'(a40,2(f7.0,i8.5),a,i3)')
      &      'Read area source file at ',tim1,idat1,tim2,idat2,
      &      ' grid',igrd

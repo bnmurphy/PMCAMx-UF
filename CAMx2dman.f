@@ -99,13 +99,6 @@ c
       relh = rh ! Change a relative humidity variable for DMAN
 c
 cdbg      write(*,*)'CAMx2dman.f - chkpt 1. at the very beginning'
-c     added by LA
-c      write(*,*)
-c      write(*,*)'naer=',naer
-c      write(*,*)'ih2so4=',ih2so4
-c      write(*,*)'inh3=',inh3
-c      write(*,*)'knum=',knum
-c     end added by LA
       if (q(naer+ih2so4).ge.0.0) then 
         h2so4 = q(naer+ih2so4) * 1.0d6   ! h2so4 [=] ppt, q [=] ppm 
       else
@@ -121,6 +114,7 @@ cdbg          h2so4 = 0.0
           STOP
         endif
       endif
+
       if (q(naer+inh3).ge.0.d0) then
         nh3ppt = q(naer+inh3) * 1.0d6 
       else
@@ -136,6 +130,7 @@ cdbg          nh3ppt = 0.d0
           STOP
         endif
       endif
+
       do i=1, ibins
          ! First check for negative tracers
          if (q((i-1)*nsp+knum).lt.0.0) then
@@ -251,8 +246,10 @@ cdbg            enddo
 cdbg          enddo
 cdbg        endif
 cdbg      endif
+
       call dman(tstart,tend,Nk,Mk,h2so4,nh3ppt,relh,tempK,pres,dsulfdt
      & ,ich,jch,kch)
+
       !For a debuging purpose
 cdbg      if ((tstart.gt.0.0).and.(tstart.lt.0.5)) then
 cdbg        if ((ich.eq.36).and.(jch.eq.29).and.(kch.eq.1)) then

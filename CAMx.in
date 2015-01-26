@@ -1,6 +1,6 @@
 CAMx Version       |VERSION4.0 
 Run Message        |PMCAMx v4.0 Europe PM Test Run May 01-29 2008
-Root output name   |/nobackup/global/x_benmu/PMCAMx_Output/PMCAMxUF_OMP_Chem/Eucaari.May.122.PMCAMxUF_OMP_Chem
+Root output name   |/nobackup/global/x_benmu/PMCAMx_Output/PMCAMxUF_BaseO0/Eucaari.May.122.PMCAMxUF_BaseO0
 Start yr/mo/dy/hr  |08 05 01 0000.
 End   yr/mo/dy/hr  |08 05 01 2400.
 DT:max,met,ems,out |5. 60. 60. 60.

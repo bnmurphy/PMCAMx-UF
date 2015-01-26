@@ -69,10 +69,6 @@ c
      &              MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,
      &              MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0/
       dimension sconc(ncol(1),nrow(1),nlay(1),nspec)
-c     added by LA
-c      integer indx
-c      integer ispc
-c     end LA
                   ! For saving concentrations before calling emiss
 c
 c========================= Source Apportion End ========================
@@ -396,16 +392,7 @@ c
 cadded from ver 6 by Elham
 c  --- call routine to do haze adjustment ---
 c
-c     added by LA
-c      do ispc = 1,600
-c         indx = 2 + 150 + (ispc-1)*150*162
-c         write(*,*)'bef drtuv ispc =',ispc
-c         write(*,*)'conc(i=2,j=2,k=1) =',conc(indx)
-c      enddo   
-c     end LA
          if( lchem ) then
-c          print*,'ELHAM,lchem:', lchem
-c           print *,'Elham,iproc_id:',iproc_id
            if( iproc_id .LE. 1 ) then
               write(*,'(a20,$)') 'TUV ......'
            endif
@@ -421,29 +408,9 @@ c           print *,'Elham,iproc_id:',iproc_id
      &                 cod(iptr3d(igrd)),icdalb(iptr2d(igrd)),
      &                 cldtrns(iptr3d(igrd)))
       
-c      print *, 'igrd:',igrd,'mzp',mzp
-c      print *,'iptr2d:',iptr2d     
-c        if(cldtrns(iptr3d(igrd)).gt.1)
-c      print *,'Elham.emistrns.cldtrns:',cldtrns(56+(129-1)*150) ! Hyytila grid cell
-c      print *, 'Elham.emistrns.time:',time
-c        endif
-c      print *, 'Elham:date:',date 
-
-    
-c           if( iproc_id .LE. 1 ) then
-c              write(*,'(a)') '   Done'
-c           endif
            write(iout,'(a)') '   Done'
            call flush(6)
            call flush(iout)
-c     added by LA
-c           write(*,*)'Gone through drvtuv'
-c           do ispc = 1,600
-c              indx = 2 + 150 + (ispc-1)*150*162
-c              write(*,*)'aft drtuv ispc =',ispc
-c              write(*,*)'conc(i=2,j=2,k=1) =',conc(indx)
-c           enddo   
-c     end LA    
         endif
 c
 cdbg      write(*,*)'at the end of emistrns'
