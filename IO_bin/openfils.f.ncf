@@ -22,6 +22,7 @@ c        ii                  Length of fileroot string
 c        filroot             root name of CAMx output files
 c        ctlfil              name of control file
 c        irec                line number in control file
+c        begtim              beginning time of simulation  by jgj 02/23/2007
 c
 c     Output arguments:
 c        irec                line number in control file
@@ -69,6 +70,7 @@ c
 c-----Open output files for instantaneous concentration
 c
       nopen = 0
+      if (begtim .eq. 0) then ! jgj 3/23/2007
       filroot(ii+1:) = '.inst.1'
       iconc(1) = 10 
       nopen = nopen + 1
@@ -88,6 +90,7 @@ c
       write(iout,9000)'2nd output INST file coarse grid     (unit):',
      &                                                          iconc(2)
       write(iout,9002) '   File: ',filroot(1:ii+7)
+      endif ! jgj 3/23/2007
 c
 c-----Open optional output concentration files
 c
@@ -119,10 +122,14 @@ c
       endif
 c
       if (navspc.gt.0) then
-        write(filroot(ii+1:),'(A)') '.avrg'
+        write(filroot(ii+1:),'(A)') '.ncf'
         filtmp = filroot
         iavg = nfils
         nopen = nopen + 1
+        !Save filename for use with netcdf output in wrtcon.f - BNM
+        c_ncf_file = filroot(1:ii+4)
+        !
+
         action = 'Opening output AVERAGE file for coarse grid.'
         open(unit=iavg,file=filroot(1:ii+5),form='UNFORMATTED',
      &                                       status= 'UNKNOWN',ERR=7005)
@@ -735,6 +742,8 @@ c
         nopen = nopen + 1
         open(unit=irstc,file=filtmp,form='UNFORMATTED',
      &                                    status='OLD',ERR=7005)
+        write(*,*)'irstc=',irstc
+        write(*,*)'file=',filtmp
         write(iout,9000)'Coarse grid restart file             (unit):',
      &                                                         nfils
         write(iout,9002) '   File: ',filtmp(:istrln(filtmp))

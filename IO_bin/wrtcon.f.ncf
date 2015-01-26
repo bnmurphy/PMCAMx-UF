@@ -1,6 +1,6 @@
-      subroutine wrtcon(iflag,tim2,idat2,iunit,c_ncf_avrg,nox,noy,noz,
-     &                  nsptmp, cncfld, iunitNuc, Jnucfld,
-     &                  cellon, cellat, height)
+      subroutine wrtcon(iflag, tim2, idat2, iunit, 
+     &                  c_ncf_file, nox, noy, noz,
+     &                  nsptmp, cncfld, cellon, cellat, height)
 
       USE io_ezcdf
 c
@@ -28,6 +28,7 @@ c        noy                 number of cells in y-direction
 c        noz                 number of layers
 c        nsptmp              number of species
 c        cncfld              concentration field to output (ppm or umol/m3)
+c        cellon/cellat       lon/lat for cell centroid
 c             
 c     Output arguments: 
 c        none
@@ -38,19 +39,16 @@ c
 c     Called by: 
 c        CAMx
 c 
+
       include 'camx.prm'
       include 'camx.com'
       include 'grid.com'
       include 'chmstry.com'
       include 'flags.com'
 c
-      character*10 Snuc(2)
-      real Jnucfld(nox,noy,noz,2)
-      integer iunitNuc
-
       integer  iflag, idat2, iunit
       character*4 ispec(10,MXSPEC), ifile(10), note(60)
-      character*200 c_ncf_avrg, cfil
+      character*200 c_ncf_file, cfil
       integer nox, noy, noz
       real cncfld(nox,noy,noz,nsptmp), tim2
       real cellon(nox,noy), cellat(nox,noy), height(nox, noy, noz)
@@ -58,6 +56,9 @@ c
 c
 c-----Data statements
 c
+      data cnfil /'INSTANT   '/
+      data nseg,izero /1,0/
+      data zero /0./
       
       INTEGER :: ji, jj, jk
 
@@ -70,16 +71,8 @@ c
       CHARACTER(len=20) :: cvarlon, cvarlat, cvardpth 
       CHARACTER(len=20) :: cvartime, cvar, cunit, cln, cun_z, 
      & cun_t
- 
 
-c
-c-----Data statements
-c
-      data cnfil /'INSTANT   '/
-      data nseg,izero /1,0/
-      data zero /0./
 
-      data Snuc /'Ternary','Binary'/
 c
 c-----Entry point
 c
@@ -152,9 +145,8 @@ c       This writes data for ALL species
            enddo
         enddo
 
-
-      else
-
+      else   
+        
 c       
 c--------Write to the Average File
 c
@@ -176,7 +168,7 @@ c
       enddo
       
 
-      cfil     = c_ncf_avrg
+      cfil     = c_ncf_file
       cvarlon  = 'lon'
       cvarlat  = 'lat'
       cvardpth = 'depth'
@@ -185,9 +177,6 @@ c
       cun_z  = 'm'
       cun_t  = 'hr'
 
-!
-!-------Write Average Species Conc. Fields
-!
         do l = 1,nsptmp  !Loop over species
           id_var = l     !Temporary Species identifier 
 	                 !  It will be overwritten in P3D_T_irr
@@ -215,29 +204,11 @@ c
      &       cunit, cln, vflag, cun_z, cun_t)
         enddo
 
-!
-!-------Write Average Nucleation Rates
-!       
-        do l =1,2
-          id_var = l     !Temporary Species identifier 
-	                 !  It will be overwritten in P3D_T_irr
-          x3d(:,:,:) = Jnucfld(:,:,:,l)  !Conc. Array
-          cvar = Snuc(l)      !Species shortname
-         
-          !Species is an Aerosol
-          cunit = 'N cm-3 s-1'
-          cln   = cvar 
-
-          linit = 0   !Assume no initialization
-
-          !Write Concentrations
-          CALL P3D_T_irr(iunit, id_var, linit, lx, ly, lz, lt, lct, 
-     &       vlon, vlat, vdpth(1:lz), 
-     &       vtime, x3d, cfil, cvarlon, cvarlat, cvardpth, cvartime, cvar,  
-     &       cunit, cln, vflag, cun_z, cun_t)
-	enddo
-
+	   
+      
       endif
 
       return
       end
+
+

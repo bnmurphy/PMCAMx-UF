@@ -45,18 +45,23 @@ PSSA  = ./DMAN/cond_nuc_PSSA
 
 TARGT = CAMx
 
+NCDF=/software/apps/netcdf/4.2/i1214-hdf5-1.8.9
+NCDF_LIB=$(NCDF)/lib
+NCDF_INC=$(NCDF)/include
+
+LIB_CDF = -L$(NCDF_LIB) -lnetcdf -lnetcdff
+
+
 default:
 	@echo '---------------------------------------------------------'
 	@echo 'To make PMCAMx.exe type make PMCAMx.exe DOMAIN=string'
 	@echo '----------------------------------------------------------'
 
-# Pavan Nandan Racherla (pavanracherla@cmu.edu) removed the -ipo flag, which performs inter procedural optimizations.
-# Date: Oct 1 2008.
 ifort:
 	@rm -f $(INC)/camx.prm
 	@csh chktracer camx.prm.$(DOMAIN) PMCAMx.exe
 	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC="ifort" FLGS="-I$(INC) -g -O2 -fpe3 -traceback -align dcommons -extend_source -convert big_endian -mcmodel=medium -i-dynamic" TARGT="PMCAMx.exe" DUM=dummy
+	make model FC="ifort" FLGS="-I$(INC) -module mod/ -I$(NCDF_INC) -O2 -fpe3 -reentrancy threaded -traceback -align dcommons -extend_source -convert big_endian -mcmodel=large -shared-intel" TARGT="PMCAMx.exe" DUM=dummy
 #	make model FC="ifort" FLGS="-I$(INC) -O2 -align dcommons -extend_source -convert big_endian -static" TARGT="PMCAMx.exe" DUM=dummy
 
 pgf90:
@@ -198,6 +203,7 @@ $(BNRY)/readzpwt.o \
 $(BNRY)/srfprep.o \
 $(BNRY)/wrfgcon.o \
 $(BNRY)/wrfgdep.o \
+$(BNRY)/io_ezcdf.o \
 $(BNRY)/wrtcon.o \
 $(BNRY)/wrtdep.o \
 $(CMC)/ddmjac1.o \
@@ -436,7 +442,7 @@ $(PSSA)/waterso4.o \
 $(PSSA)/waternacl.o
 
 model: 	$(OBJCTS)
-	$(FC) -o $(TARGT) $(FLGS) $(OBJCTS) $(LIBS)
+	$(FC) -o $(TARGT) $(FLGS) $(OBJCTS) $(LIBS) $(LIB_CDF)
 
 # Modifications by Pavan Nandan Racherla (July 2 2008)--->
 # Date: July 2 2008.
@@ -453,7 +459,7 @@ model: 	$(OBJCTS)
 # if the .mod file does'nt exist, 'touch' creates it with a filesize of 0
 %.mod :
 	@if [ ! -s $@ ] ; then \
-	echo "error, module file deleted?"; rm $^; exit 1; fi
+	echo "error, module file deleted?"; fi
 	echo "module file $@ considered updated through dependence on $^"
 	touch $@
 
@@ -470,7 +476,7 @@ CAMx.o 			: CAMx.f                                               \
                         $(INC)/camx.prm $(INC)/camx.com $(INC)/camxfld.com     \
                         $(INC)/grid.com $(INC)/ptemiss.com $(INC)/bndary.com   \
                         $(INC)/chmstry.com $(INC)/flags.com $(INC)/ahomap.com  \
-                        $(INC)/filunit.com $(INC)/tracer.com                   \
+                        $(INC)/filunit.com $(INC)/tracer.com $(INC)/section.inc \
                         $(INC)/rtracchm.com $(INC)/procan.com
 
 aerochem.o 		: aerochem.f                                           \
@@ -568,7 +574,8 @@ emistrns.o 		: emistrns.f                                           \
                         $(INC)/chmstry.com $(INC)/grid.com $(INC)/flags.com    \
                         $(INC)/filunit.com $(INC)/ptemiss.com $(INC)/ahomap.com \
                         $(INC)/bndary.com $(INC)/procan.com                    \
-                        $(INC)/tracer.com $(INC)/rtracchm.com
+                        $(INC)/tracer.com $(INC)/rtracchm.com                  \
+			$(INC)/section.inc
 
 exptbl.o 		: exptbl.f                                             \
                         $(INC)/camx.prm $(INC)/chmstry.com
@@ -807,6 +814,8 @@ $(BNRY)/wrfgcon.o 	: $(BNRY)/wrfgcon.f                                    \
 $(BNRY)/wrfgdep.o 	: $(BNRY)/wrfgdep.f                                    \
                         $(INC)/camx.prm $(INC)/camx.com $(INC)/filunit.com     \
                         $(INC)/camxfld.com $(INC)/chmstry.com $(INC)/grid.com
+
+$(BNRY)/io_ezcdf.o 	: $(BNRY)/io_ezcdf.f90                                 \
 
 $(BNRY)/wrtcon.o 	: $(BNRY)/wrtcon.f                                     \
                         $(INC)/camx.prm $(INC)/camx.com $(INC)/grid.com        \

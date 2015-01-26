@@ -68,17 +68,9 @@ c
       data fluxdum /MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,
      &              MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0,
      &              MXTRSP*0.0,MXTRSP*0.0,MXTRSP*0.0/
-<<<<<<< HEAD
-      dimension sconc(ncol(1),nrow(1),nlay(1),nspec)
-=======
 c      dimension sconc(ncol(1),nrow(1),nlay(1),nspec)
 c     sconc is now (1/2015) defined in camxfld.com
 
-c     added by LA
-c      integer indx
-c      integer ispc
-c     end LA
->>>>>>> numconv
                   ! For saving concentrations before calling emiss
 c
 c========================= Source Apportion End ========================

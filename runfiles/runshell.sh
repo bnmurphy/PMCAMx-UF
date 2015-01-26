@@ -1,11 +1,11 @@
 #!/bin/bash
 #
-#SBATCH -J PMCAMxUF_OMP
+#SBATCH -J PMCAMxUF_NCF
 #SBATCH -t 2-3:00:00
 #SBATCH --mem=4000
 #SBATCH -N 1
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=jan.julin@aces.su.se
+#SBATCH --mail-user=benjaminmurphy@aces.su.se
 #SBATCH --constraint=vtune
 #
 # Run a single task in the foreground

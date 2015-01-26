@@ -39,80 +39,47 @@ AER   = ./AER
 
 SOAP  = ./SOAP
 
+DMAN  = ./DMAN
+
+PSSA  = ./DMAN/cond_nuc_PSSA
+
 TARGT = CAMx
+
+
+NCDF=/software/apps/netcdf/4.2/i1214-hdf5-1.8.9
+#
+#
+NCDF_LIB=$(NCDF)/lib
+
+NCDF_INC=$(NCDF)/include
+
+LIB_CDF = -L$(NCDF_LIB) -lnetcdf -lnetcdff
+
+FF="-I$(INC) -module mod/ -I$(NCDF_INC) -g -O0 -fpe3 -reentrancy threaded -traceback -parallel -par-threshold100  -par-repor3 -align dcommons -extend_source -convert big_endian -mcmodel=large -shared-intel -finline-functions -funrool-loops"
+
+FC="ifort"
 
 default:
 	@echo '---------------------------------------------------------'
-	@echo 'This is the Makefile for CAMx v4.00'
-	@echo ' '
-	@echo 'Syntax is: "make platform DOMAIN=string"'
-	@echo ' '
-	@echo 'Acceptable platforms are:'
-	@echo '          dec        -- configure for DEC/Alpha platform'
-	@echo '          linux      -- configure for Linux platform'
-	@echo '          linuxomp   -- configure for Linux platform w/OMP'
-	@echo '          sgi        -- configure for SGI platform'
-	@echo '          sgiomp     -- configure for SGI platform w/OMP'
-	@echo '          sun        -- configure for SUN platform'
-	@echo '          hp         -- configure for HP platform'
-	@echo '          ibm        -- configure for IBM platform'
-	@echo ' '
-	@echo 'Do not use OMP for modeling PM with mechanism 4 '
-	@echo ' '
+	@echo 'To make PMCAMx.exe type make PMCAMx.exe DOMAIN=string'
 	@echo '----------------------------------------------------------'
 
-
-dec:
+# Pavan Nandan Racherla (pavanracherla@cmu.edu) removed the -ipo flag, which performs inter procedural optimizations.
+# Date: Oct 1 2008.
+# It will be possible to link to a netcdf library no matter whether you are on Triolith with ifort or Moe with PGI. This needs to be checked 
+# but the netcdf library on Moe should exist in /usr/local/include/. It is netcdf.mod for f90 modules and netcdf.include for f77 include file.
+PMCAMx:
 	@rm -f $(INC)/camx.prm
-	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).dec
+	@csh chktracer camx.prm.$(DOMAIN) PMCAMx.exe
 	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC="f77" FLGS="-I$(INC) -convert big_endian -O3 -align dcommons" TARGT=CAMx.$(DOMAIN).dec DUM=dummy
-
-sgi:
-	@rm -f $(INC)/camx.prm
-	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).sgi
-	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC="f77" FLGS="-O2 -Wf,-I$(INC)" TARGT="CAMx.$(DOMAIN).sgi" DUM=dummy
-
-sgiomp:
-	@rm -f $(INC)/camx.prm
-	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).sgiomp
-	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC="f77" FLGS="-mp -Wf,-I$(INC)" TARGT="CAMx.$(DOMAIN).sgiomp" DUM=dummy_omp
-
-sun:
-	@rm -f $(INC)/camx.prm
-	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).sun
-	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC="f77" FLGS="-I$(INC)" TARGT="CAMx.$(DOMAIN).sun" DUM=dummy
-
-hp:
-	@rm -f $(INC)/camx.prm
-	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).hp
-	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC="f77" FLGS="-I$(INC) -O +U77 +FPVZODu" TARGT="CAMx.$(DOMAIN).hp" DUM=dummy
-
-ibm:
-	@rm -f $(INC)/camx.prm
-	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).ibm
-	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC="xlf" FLGS="-I$(INC) -O2 -static -I$(INC) -brename:.flush,.flush_ -brename:.etime,.etime_  -brename:.dtime,.dtime_ -brename:.fdate,.fdate_" TARGT="CAMx.$(DOMAIN).ibm" DUM=dummy
-
-linux:
-	@rm -f $(INC)/camx.prm
-	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).linux
-	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-#	make model FC="pgf77" FLGS="-I$(INC) -g -tp p6 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl,-Bstatic" TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
-	make model FC="pgf77" FLGS="-I$(INC) -g -tp k8-64 -pc 64 -Mnoframe -byteswapio -Wl,-Bstatic" TARGT="CAMx.$(DOMAIN).linux" DUM=dummy
-linuxomp:
-	@rm -f $(INC)/camx.prm
-	@csh chktracer camx.prm.$(DOMAIN) CAMx.$(DOMAIN).linuxomp
-	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC="pgf77" FLGS="-I$(INC) -O2 -mp -tp p6 -pc 64 -Mnoframe -byteswapio -Wl,-Bstatic" TARGT="CAMx.$(DOMAIN).linuxomp" DUM=dummy_omp
+	#make model FC="ifort" FLGS="-I$(INC) -module mod/ -I$(NCDF_INC) -g -O2 -fpe3 -reentrancy threaded -traceback -parallel -par-threshold100  -par-repor3 -align dcommons -extend_source -convert big_endian -mcmodel=large -shared-intel -finline-functions -funrool-loops" TARGT="PMCAMx.exe" DUM=dummy
+	make model FC="ifort" FLGS="-I$(INC) -module mod/ -I$(NCDF_INC) -O2 -fpe3 -reentrancy threaded -traceback -parallel -par-threshold100  -par-repor3 -align dcommons -extend_source -convert big_endian -mcmodel=large -shared-intel" TARGT="PMCAMx.exe" DUM=dummy
 
 clean:	
 	rm -f $(OBJCTS) dummy*.o
 
+superclean:	
+	rm -f $(OBJCTS) dummy*.o *.exe *.mod
 
 OBJCTS = \
 CAMx.o \
@@ -128,6 +95,7 @@ bc1grd.o \
 bcmodfy.o \
 caldate.o \
 camxerr.o \
+checkconc.o \
 chemdriv.o \
 chemrxn.o \
 chmdat.o \
@@ -138,6 +106,8 @@ cvtwind.o \
 dateerr.o \
 depsmry.o \
 diffus.o \
+CAMx2dman.o \
+CAMx2so4cond.o \
 drydep.o \
 $(DUM).o \
 emassign.o \
@@ -151,6 +121,7 @@ fullaero.o \
 getdelt.o \
 getznth.o \
 grdprep.o \
+pspgeo.o \
 hadvbot.o \
 hadvppm.o \
 iassgn2d.o \
@@ -172,13 +143,14 @@ lsode.o \
 luassgn.o \
 massum.o \
 micromet.o \
+mnratio.o \
 nesting.o \
 nstprep.o \
 numconv.o \
 parntchd.o \
 plumeris.o \
 pntprep.o \
-pspgeo.o \
+ProjUtils.o\
 raddrivr.o \
 rassgn3d.o \
 rassgn4d.o \
@@ -233,6 +205,7 @@ $(BNRY)/readzpwt.o \
 $(BNRY)/srfprep.o \
 $(BNRY)/wrfgcon.o \
 $(BNRY)/wrfgdep.o \
+$(BNRY)/io_ezcdf.o \
 $(BNRY)/wrtcon.o \
 $(BNRY)/wrtdep.o \
 $(CMC)/ddmjac1.o \
@@ -442,19 +415,68 @@ $(AER)/step.o \
 $(AER)/svode.o \
 $(AER)/values.o \
 $(AER)/vsrm.o \
-$(AER)/slsode.o
+$(AER)/slsode.o \
+$(DMAN)/alpha_nh3.o \
+$(DMAN)/dman.o \
+$(DMAN)/dmdt_int.o \
+$(DMAN)/gasdiff.o \
+$(DMAN)/initbounds.o \
+$(DMAN)/multicoag.o \
+$(DMAN)/so4cond.o \
+$(DMAN)/so4cond_oxd.o \
+$(DMAN)/tmconds.o \
+$(PSSA)/aerodens_PSSA.o \
+$(PSSA)/cond_nuc.o \
+$(PSSA)/getCondSink.o \
+$(PSSA)/getH2SO4conc.o \
+$(PSSA)/nucleation.o \
+$(PSSA)/ezcond.o \
+$(PSSA)/eznh3eqm.o \
+$(PSSA)/eznh3.o \
+$(PSSA)/ezwatereqm.o \
+$(PSSA)/getNucRate.o \
+$(PSSA)/napa_nucl.o \
+$(PSSA)/vehk_nucl.o \
+$(PSSA)/mnfix_PSSA.o \
+$(PSSA)/waterso4.o \
+$(PSSA)/waternacl.o
 
 model: 	$(OBJCTS)
-	$(FC) -o $(TARGT) $(FLGS) $(OBJCTS) $(LIBS)
-.f.o	:
+	$(FC) -o $(TARGT) $(FLGS) $(OBJCTS) $(LIBS) $(LIB_CDF) 
+
+# Modifications by Pavan Nandan Racherla (July 2 2008)--->
+# Date: July 2 2008.
+
+# Suffixes and instructions on how to compile those files:
+.SUFFIXES : .f90 .f .mod .o
+.f90.o :
 	$(FC) -c -o $@ $(FLGS) $<
+.f.o :
+	$(FC) -c -o $@ $(FLGS) $<
+
+# Build module files using a 'touch' command:
+# 'touch' updates the access time and modification time/dates to the current time and date
+# if the .mod file does'nt exist, 'touch' creates it with a filesize of 0
+%.mod :
+	@if [ ! -s $@ ] ; then \
+	echo "module file deleted?"; fi
+	echo "module file $@ considered updated through dependence on $^"
+	touch $@
+
+# module-object dependencies:
+projutils.mod : ProjUtils.o
+
+# Instructions to create objects wrt modules (based on the USE statements)
+pspgeo.o : projutils.mod
+
+# End of my modifications
 
 
 CAMx.o 			: CAMx.f                                               \
                         $(INC)/camx.prm $(INC)/camx.com $(INC)/camxfld.com     \
                         $(INC)/grid.com $(INC)/ptemiss.com $(INC)/bndary.com   \
                         $(INC)/chmstry.com $(INC)/flags.com $(INC)/ahomap.com  \
-                        $(INC)/filunit.com $(INC)/tracer.com                   \
+                        $(INC)/filunit.com $(INC)/tracer.com $(INC)/section.inc\
                         $(INC)/rtracchm.com $(INC)/procan.com
 
 aerochem.o 		: aerochem.f                                           \
@@ -488,6 +510,9 @@ bcmodfy.o 		: bcmodfy.f                                            \
 
 camxerr.o 		: camxerr.f                                            \
                         $(INC)/camx.prm $(INC)/filunit.com
+
+checkconc.o		: checkconc.f                                          \
+                        $(INC)/camx.prm $(INC)/bndary.com $(INC)/chmstry.com
 
 chemdriv.o 		: chemdriv.f                                           \
                         $(INC)/camx.prm $(INC)/camx.com $(INC)/bndary.com      \
@@ -523,6 +548,14 @@ drydep.o 		: drydep.f                                             \
                         $(INC)/deposit.com $(INC)/chmstry.com                  \
                         $(INC)/filunit.com $(INC)/section.inc
 
+CAMx2dman.o	        : CAMx2dman.f                                          \
+                        $(INC)/dynamic.inc $(INC)/aervaria.inc                 
+
+CAMx2so4cond.o	        : CAMx2so4cond.f                                       \
+                        $(INC)/dynamic.inc $(INC)/aerpar.inc                   \
+                        $(INC)/camx_aero.inc $(INC)/droppar.inc                \
+                        $(INC)/dropcom.inc
+
 emiss.o 		: emiss.f                                              \
                         $(INC)/camx.prm $(INC)/ptemiss.com $(INC)/bndary.com   \
                         $(INC)/flags.com $(INC)/procan.com $(INC)/tracer.com
@@ -532,7 +565,8 @@ emistrns.o 		: emistrns.f                                           \
                         $(INC)/chmstry.com $(INC)/grid.com $(INC)/flags.com    \
                         $(INC)/filunit.com $(INC)/ptemiss.com                  \
                         $(INC)/bndary.com $(INC)/procan.com                    \
-                        $(INC)/tracer.com $(INC)/rtracchm.com
+                        $(INC)/tracer.com $(INC)/rtracchm.com                  \
+			$(INC)/section.inc
 
 exptbl.o 		: exptbl.f                                             \
                         $(INC)/camx.prm $(INC)/chmstry.com
@@ -583,6 +617,8 @@ ktherm.o 		: ktherm.f                                             \
 
 massum.o 		: massum.f                                             \
                         $(INC)/camx.prm $(INC)/bndary.com
+
+mnratio.o		: mnratio.f
 
 nesting.o 		: nesting.f                                            \
                         $(INC)/camx.prm $(INC)/grid.com
@@ -769,6 +805,9 @@ $(BNRY)/wrfgcon.o 	: $(BNRY)/wrfgcon.f                                    \
 $(BNRY)/wrfgdep.o 	: $(BNRY)/wrfgdep.f                                    \
                         $(INC)/camx.prm $(INC)/camx.com $(INC)/filunit.com     \
                         $(INC)/camxfld.com $(INC)/chmstry.com $(INC)/grid.com
+
+$(BNRY)/io_ezcdf.o 	:$(BNRY)/io_ezcdf.f90
+
 
 $(BNRY)/wrtcon.o 	: $(BNRY)/wrtcon.f                                     \
                         $(INC)/camx.prm $(INC)/camx.com $(INC)/grid.com        \
@@ -1443,3 +1482,66 @@ $(AER)/vsrm.o		: $(AER)/vsrm.f                                        \
 
 $(AER)/slsode.o		: $(AER)/slsode.f
 
+$(DMAN)/alpha_nh3.o     : $(DMAN)/alpha_nh3.f
+
+$(DMAN)/dmdt_int.o      : $(DMAN)/dmdt_int.f
+
+$(DMAN)/dman.o          : $(DMAN)/dman.f                                       \
+                        $(INC)/sizecode.COM $(INC)/aervaria.inc
+
+$(DMAN)/gasdiff.o  	: $(DMAN)/gasdiff.f
+
+$(DMAN)/initbounds.o	: $(DMAN)/initbounds.f                                 \
+			$(INC)/sizecode.COM
+
+$(DMAN)/multicoag.o     : $(DMAN)/multicoag.f                                  \
+	                $(INC)/sizecode.COM $(INC)/aervaria.inc
+
+$(DMAN)/so4cond.o       : $(DMAN)/so4cond.f                                    \
+                        $(INC)/sizecode.COM $(INC)/aervaria.inc
+
+$(DMAN)/so4cond_oxd.o       : $(DMAN)/so4cond_oxd.f                            \
+                        $(INC)/sizecode.COM $(INC)/aervaria.inc
+
+$(DMAN)/tmconds.o       : $(DMAN)/tmconds.f                                    \
+                        $(INC)/sizecode.COM
+
+$(PSSA)/aerodens_PSSA.o   : $(PSSA)/aerodens_PSSA.f                            \
+			  $(PSSA)/aerodens_PSSA.f
+
+$(PSSA)/cond_nuc.o 	  : $(PSSA)/cond_nuc.f                                 \
+			  $(INC)/sizecode.COM
+
+$(PSSA)/ezcond.o  	  : $(PSSA)/ezcond.f                                   \
+	                  $(INC)/sizecode.COM
+
+$(PSSA)/eznh3eqm.o	  : $(PSSA)/eznh3eqm.f                                 \
+			  $(INC)/sizecode.COM
+$(PSSA)/eznh3.o	          : $(PSSA)/eznh3.f                                 \
+			  $(INC)/sizecode.COM
+
+$(PSSA)/ezwatereqm.o      : $(PSSA)/ezwatereqm.f                               \
+	                  $(INC)/sizecode.COM
+
+$(PSSA)/getCondSink.o     : $(PSSA)/getCondSink.f                              \
+			  $(INC)/sizecode.COM
+
+$(PSSA)/getH2SO4conc.o    : $(PSSA)/getH2SO4conc.f                             \
+			  $(INC)/sizecode.COM
+
+$(PSSA)/getNucRate.o	  : $(PSSA)/getNucRate.f                               \
+			  $(INC)/sizecode.COM
+
+$(PSSA)/mnfix_PSSA.o	  : $(PSSA)/mnfix_PSSA.f                               \
+			  $(INC)/sizecode.COM
+
+$(PSSA)/napa_nucl.o	  : $(PSSA)/napa_nucl.f                          
+
+$(PSSA)/nucleation.o	  : $(PSSA)/nucleation.f                               \
+			  $(INC)/sizecode.COM
+
+$(PSSA)/vehk_nucl.o	  : $(PSSA)/vehk_nucl.f                      
+
+$(PSSA)/waterso4.o	  : $(PSSA)/waterso4.f	
+
+$(PSSA)/waternacl.o	  : $(PSSA)/waternacl.f

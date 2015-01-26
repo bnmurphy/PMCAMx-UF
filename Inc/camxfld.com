@@ -26,6 +26,18 @@ c
       real   pspt(MXVEC2D)
 c
       common /store2d/ cellon, cellat, mapscl, tsurf, pspt
+
+c----------------------------------------------------------------------
+c     Variables for netcdf Implementation
+c        1/21/15  Added netcdf filename variable BNM
+c     c_ncf_file -- filename
+c----------------------------------------------------------------------
+c
+       character*200  c_ncf_avrg
+
+       common /store_ncf/ c_ncf_avrg
+
+
 c
 c-----------------------------------------------------------------------
 c     Variables for 3-dimensional fields:
