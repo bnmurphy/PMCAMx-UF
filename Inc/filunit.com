@@ -49,7 +49,7 @@ c-----------------------------------------------------------------------
      &               icld(MXGRID),iic,ibc,
      &               itopc,iaho,iptem,ihtp(MXGRID),iarem(3,MXGRID),
      &               isurf(MXGRID),iwind(MXGRID),itemp(MXGRID),
-     &               ikv(MXGRID),irstc,irstf,irstp
+     &               ikv(MXGRID),irstc,irstf,irstp,iJnuc
 c
 c========================= Process Analysis Begin ==============================
 c

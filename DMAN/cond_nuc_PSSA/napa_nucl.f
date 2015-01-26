@@ -118,7 +118,7 @@ c     Napari's parameterization is only valid within limited area
 c      if ((cna .lt. 5.d4).or.(nh3ppt.lt.0.1)) then ! limit sulf acid and nh3 conc
 
          fn = 0.
-         rnuc = 1
+         rnuc = 1.
          goto 10
       endif  
       

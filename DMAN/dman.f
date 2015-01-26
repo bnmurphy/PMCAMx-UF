@@ -19,7 +19,7 @@ C     For the details of development history, see history.help file.
 
 cPMCAMx      PROGRAM DMAN
       SUBROUTINE dman(tstart,tend,Nki,Mki,h2so4,nh3ppt,rhi,tempi,presi
-     &               ,dsulfdt,ichm, jchm, kchm)
+     &               ,dsulfdt,ichm, jchm, kchm, fndt)
 
       IMPLICIT NONE
 
@@ -44,6 +44,7 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
       integer ichm ! i coordinate in PMCAMx
       integer jchm ! j coordinate in PMCAMx
       integer kchm ! k coordinate in PMCAMx
+      double precision fndt(nJnuc)  !nucleation diagnostic
 
 C-----VARIABLE DECLARATIONS---------------------------------------------
 
@@ -358,7 +359,7 @@ cdbg      endif
       !Call Pseudo Steady State condensation and nucleation
       if (inucl .eq. 1) then
         call cond_nuc(Nk,Mk,Gc,Nkout,Mkout,Gcout,H2SO4rate,dt,
-     &   ichm,jchm,kchm)
+     &   ichm,jchm,kchm,fndt)
       endif
 
       do i=1,ibins

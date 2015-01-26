@@ -6,7 +6,7 @@ C     **************************************************
 C     WRITTEN BY Jeff Pierce, May 2007
 
 C     This subroutine calculates the change in the aerosol size distribution
-C     due to so4 condensation and binary/ternary nucleation during the
+C     due to so4 condensation and binary/ternary nucleation duringl the
 C     overal microphysics timestep.
 
 C     ADD MORE HERE!
@@ -30,7 +30,7 @@ C-----OUTPUTS-----------------------------------------------------------
 C     Nkf, Mkf, Gcf - same as above, but final values
 
       SUBROUTINE cond_nuc(Nki,Mki,Gci,Nkf,Mkf,Gcf,H2SO4rate,dt,ichm,jchm
-     & ,kchm)             
+     & ,kchm, fndt)             
       IMPLICIT NONE
 
 C-----INCLUDE FILES-----------------------------------------------------
@@ -80,6 +80,8 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision mass_change !change in mass during nucleation.f
       double precision total_nh4_1,total_nh4_2
       double precision min_tstep !minimum timestep [s]
+      double precision fn_all(nJnuc)  !Temporary nucleation diagnostic
+      double precision fndt(nJnuc)    !Temporary nucleation diagnostic
 
       logical nflg ! returned from nucleation, says whether nucleation occurred or not
  
@@ -108,6 +110,9 @@ C Initialize values of Nkf, Mkf, Gcf, and time
          enddo
       enddo
 
+C     Initialize the Nucleation Rate Diagnostic Variable
+      fndt = 0.
+
 C     Get initial condensation sink
       CS1 = 0.d0
       call getCondSink(Nk1,Mk1,srtso4,CS1,sinkfrac)
@@ -124,7 +129,7 @@ c      addt = 3600.d0
       totmass = H2SO4rate*addt*96.d0/98.d0
 
       !Get change size distribution due to nucleation with initial guess
-      call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt)          
+      call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all)          
 
       mass_change = 0.d0
       do k=1,ibins
@@ -198,8 +203,12 @@ C     Get the steady state H2SO4 concentration
 
             sumH2SO4 = sumH2SO4 + Gc1(srtso4)*addt
             totmass = H2SO4rate*addt*96.d0/98.d0
-            call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt) 
-            
+            call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all)
+
+            !Add up the nucleation from each process to temp variable 
+            do k=1,2
+               fndt(k) = fndt(k) + fn_all(k) * addt
+            end do
             mass_change = 0.d0
             do k=1,ibins
                mass_change = mass_change + (Mk2(k,srtso4)-Mk1(k,srtso4))
@@ -290,6 +299,8 @@ Cjrp      endif
       enddo      
       Gcf(srtnh4)=Gc3(srtnh4)
 
+      !Divide Nucleation Diagnostic Variable by Master Time step to get rates
+      fndt = fndt / dt
 
       RETURN
       END

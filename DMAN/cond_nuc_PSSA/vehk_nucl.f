@@ -123,9 +123,10 @@ c     Nucleation rate (1/cm3-s)
      &    +fb(8)*(log(cna))**2.+fb(9)*log(rh)*(log(cna))**2.
      &    +fb(10)*(log(cna))**3.)
 c
-c   Cap at 10^6 particles/s, limit for parameterization
-      if (fn.gt.1.0d6) then
-         fn=1.0d6
+c   Cap at 10^10 particles/s, limit for parameterization
+c   This was limited at 10^6, JJ changed to 10^10 19 Dec 2014
+      if (fn.gt.1.0d10) then
+         fn=1.0d10
       endif
 c
 c     Coefficients of total number of molecules in cluster 

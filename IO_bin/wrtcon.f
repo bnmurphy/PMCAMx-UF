@@ -1,5 +1,5 @@
       subroutine wrtcon(iflag,tim2,idat2,iunit,nox,noy,noz,
-     &                  nsptmp,cncfld)
+     &                  nsptmp,cncfld, iunitNuc,Jnucfld)
 c
 c-----CAMx v4.03 031205
 c 
@@ -42,14 +42,19 @@ c
       include 'flags.com'
 c
       character*4 ispec(10,MXSPEC), ifile(10), note(60)
+      character*10 Snuc(2)
       real cncfld(nox,noy,noz,nsptmp)
+      real Jnucfld(nox,noy,noz,2)
       character*10 cnfil
+      integer iunitNuc
 c
 c-----Data statements
 c
       data cnfil /'INSTANT   '/
       data nseg,izero /1,0/
       data zero /0./
+
+      data Snuc /'Ternary','Binary'/
 c
 c-----Entry point
 c
@@ -129,5 +134,19 @@ c
         enddo
       enddo
 c
+c-----Write gridded nucleation rates
+c
+      if (iflag.eq.0) then 
+        write(iunitNuc) idat1,btim,idat2,etim
+        do l = 1,2
+          do k = 1,nlayer
+            write(iunitNuc) nseg,Snuc(l),
+     &                 ((Jnucfld(i,j,k,l),i=1,nox),j=1,noy)
+          enddo
+        enddo
+      endif
+
+
+
       return
       end

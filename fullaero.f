@@ -1,7 +1,7 @@
       subroutine fullaero(water,tempk,press,lwc_c,
      &                    mxspec_c,mxrad_c,nspec_c,ngas_c,
      &                    con,cncrad,convfac,t00,dtaer,ich,
-     &                    jch,kch,height,dsulfdt)
+     &                    jch,kch,height,dsulfdt,fndt)
 c
 c-----PMCAMx v3.01 020531
 c
@@ -80,6 +80,7 @@ c
       real  pressure
       integer     r_idx(4)
       integer ich,jch,kch
+      real fndt(2)
 c
 ckf
       real*4 hgt, klay
@@ -584,10 +585,10 @@ c          call step(nsec,q) ! calculate water in each section
 cjgj
         else                        ! call SOAP + AER
 cjgj          call aerchem(chaero,q,t0,t1,lfrst,ierr)
-        pressure=pres
+          pressure=pres
 c
 cjgj
-          call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch) 
+          call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch,fndt) 
         endif
 c
 c     map q back to con 
