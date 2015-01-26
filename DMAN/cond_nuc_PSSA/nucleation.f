@@ -86,6 +86,7 @@ c      nh3_molec = Gci(srtnh4)/boxvol*1000.d0/17.d0*6.022d23
       fn = 0.d0
       rnuc = 0.d0
       gtime = 0.d0
+      fn_all = 0.
 
       ! if no nucleation occurs the final arrays will be same as the initial arrays
       Mkf=Mki
