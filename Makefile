@@ -56,7 +56,7 @@ ifort:
 	@rm -f $(INC)/camx.prm
 	@csh chktracer camx.prm.$(DOMAIN) PMCAMx.exe
 	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC="ifort" FLGS="-I$(INC) -pg -O0 -fpe3 -traceback -align dcommons -extend_source -convert big_endian -mcmodel=medium -i-dynamic" TARGT="PMCAMx.exe" DUM=dummy
+	make model FC="ifort" FLGS="-I$(INC) -O2 -fpe3 -traceback -align dcommons -extend_source -convert big_endian -mcmodel=medium -i-dynamic" TARGT="PMCAMx.exe" DUM=dummy
 #	make model FC="ifort" FLGS="-I$(INC) -O2 -align dcommons -extend_source -convert big_endian -static" TARGT="PMCAMx.exe" DUM=dummy
 
 pgf90:
