@@ -119,6 +119,10 @@ C Flag for which nucleation parameterizations to use
 cdbg	  double precision NH3ppt_o
 cdbg	  double precision h2so4_print
 
+C Nucleation Diagnostic Variables
+      integer nJnuc
+      parameter (nJnuc = 2)
+
 C Make variables common
 
       common /sizecode/ Nk, Mk, Gc, Nkd, Mkd, Gcd, xk, 
@@ -127,7 +131,4 @@ cdbg     &                  h2so4_print
 cdbg     &                  nh3ppt_o, h2so4_print
 
 
-C Nucleation Diagnostic Variables
-     integer nJnuc
-     parameter (nJnuc = 2)
 

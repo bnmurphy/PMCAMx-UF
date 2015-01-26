@@ -146,6 +146,20 @@ c
           write(iout,9002) '   File: ',filroot(1:ii+6)
           nfils = nfils + 1
         endif
+        
+        !Open file for printing Nucleation Rates Online
+        write(filroot(ii+1:),'(A)') '_Jnuc.avrg'
+        filtmp = filroot
+        iJnuc = nfils
+        nopen = nopen + 1
+        action = 'Opening output AVG. Nucleation file for coarse grid.'
+        open(unit=iJnuc,file=filroot(1:ii+10),form='UNFORMATTED',
+     &                                       status= 'UNKNOWN',ERR=7005)
+        write(iout,9000)'Output AVG. Nuc file coarse grid      (unit):',
+     &                                                          iJnuc
+        write(iout,9002) '   File: ',filroot(1:ii+10)
+        nfils = nfils + 1
+
       endif
 c
       if (ldry .or. lwet) then

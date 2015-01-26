@@ -1,7 +1,7 @@
       subroutine chemdriv(igrd,ncol,nrow,nlay,dt,itzon,idfin,fcloud,
      &                    cldtrns,water,tempk,press,height,cwc,conc,
      &                    cncrad,cellat,cellon,ldark,l3davg,
-     &                    iptr2d,iptrsa,ipa_cel)
+     &                    iptr2d,iptrsa,ipa_cel,Jnuc)
 c
 c-----CAMx v4.02 030709
 c

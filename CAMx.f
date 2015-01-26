@@ -106,6 +106,8 @@ c
         call zeros(avcnc(iptr4d(igrd)),nodes)
         nodes = ncol(igrd)*nrow(igrd)*3*navspc
         call zeros(depfld(iptrdp(igrd)),nodes)
+        nodes = ncol(igrd)*nrow(igrd)*nlay(igrd)*2
+        call zeros(avJnuc(iptr4d(igrd)),nodes)
       enddo
 c
 c======================== Source Apportion Begin =======================
@@ -670,7 +672,7 @@ c
 c
       call average(.FALSE.,1,deltat(1)/2.0,ncol(1),nrow(1),
      &             nlay(1),nlay(1),navspc,nspec,lavmap,tempk(1),
-     &             press(1),conc(1),avcnc(1),ipacl_3d(1))
+     &             press(1),conc(1),avcnc(1),ipacl_3d(1), Jnuc(1), avJnuc(1))
 cdbg      write(*,*)'After average first'
 cdbg      call numcheck(conc(1),ncol(1),nrow(1),nlay(1),nspec)
 cdbg      call avgnumck(avcnc(1),ncol(1),nrow(1),nlay(1),nspec,nspav)
@@ -791,7 +793,7 @@ c-----Update average concentrations
 c
       call average(.FALSE.,1,deltat(1)/2.0,ncol(1),nrow(1),
      &             nlay(1),nlay(1),navspc,nspec,lavmap,tempk(1),
-     &             press(1),conc(1),avcnc(1),ipacl_3d(1))
+     &             press(1),conc(1),avcnc(1),ipacl_3d(1), Jnuc(1), avJnuc(1))
 cdbg      write(*,*)'After average'
 cdbg      call avgnumck(avcnc(1),ncol(1),nrow(1),nlay(1),nspec,nspav)
 cdbg      call numcheck(conc(1),ncol(1),nrow(1),nlay(1),nspec)
@@ -886,14 +888,14 @@ c
         write(*,'(a20,$)') 'wrtcon ......'
         write(iout,'(a20,$)') 'wrtcon ......'
         call wrtcon(0,time,date,iavg,ncol(1),nrow(1), 
-     &              nlay(1),navspc,avcnc(1))
+     &              nlay(1),navspc,avcnc(1), iJnuc, avJnuc(1))
         if (mod(int(time/100.),2).eq.1) then
           iunit = iconc(1)
         else
           iunit = iconc(2)
         endif
         call wrtcon(1,time,date,iunit,ncol(1),nrow(1),
-     &              nlay(1),nspec,conc(1))
+     &              nlay(1),nspec,conc(1), iJnuc, Jnuc(1))
         if (ldry) then
           call wrtdep(time,date,idep,ncol(1),nrow(1),3*navspc,nspec,
      &                vdep(1),depfld(1))
@@ -910,6 +912,8 @@ c
           call zeros(avcnc(iptr4d(igrd)),nodes)
           nodes = ncol(igrd)*nrow(igrd)*3*navspc
           call zeros(depfld(iptrdp(igrd)),nodes)
+          nodes = ncol(igrd)*nrow(igrd)*nlay(igrd)*2
+          call zeros(avJnuc(iptr4d(igrd)),nodes)
         enddo
 
         tcpu = dtime(tarray2)
@@ -1010,6 +1014,7 @@ c------------------  End main time-integration loop  -------------------
 c
       call closefl(iavg)
       call closefl(ncpig)
+      call closefl(iJnuc)
       write(iout,'(/,a,i8.5,f8.2,/)') 'time/Date: ',date,time
       write(*,'(/,a,i8.5,f8.0,/)')'Date/time: ',date,time
       write(iout,'(a)')'END SIMULATION'
