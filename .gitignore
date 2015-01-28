@@ -27,6 +27,9 @@ core.*
 *.log
 *.sql
 *.sqlite
+*.out
+slurm*
+*png
 
 # OS generated Files
 .DS_Store
