@@ -974,10 +974,10 @@ c
 c
 c------------------  End main time-integration loop  -------------------
 c
-      !call closefl(iavg)
-      call disp_err(NF_CLOSE(iavg), "CAMx_Main", "AVERAGE", "Final Close")
+      call closefl(iavg)
+      call disp_err(NF_CLOSE(incf), "CAMx_Main", "AVERAGE", "Final Close")
       call closefl(ncpig)
-      !call closefl(iJnuc)
+      call closefl(iJnuc)
       write(iout,'(/,a,i8.5,f8.2,/)') 'time/Date: ',date,time
       write(*,'(/,a,i8.5,f8.0,/)')'Date/time: ',date,time
       write(iout,'(a)')'END SIMULATION'
