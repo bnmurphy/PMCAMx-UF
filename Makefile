@@ -47,10 +47,11 @@ DMAN  = ./DMAN
 
 PSSA  = ./DMAN/cond_nuc_PSSA
 
+MOD   = ./mod
+
 TARGT = CAMx
 
-
-ifeq ($(CMPLR),ifort)
+ifeq ($(COMPILER),ifort)
   NCDF=/software/apps/netcdf/4.2/i1214-hdf5-1.8.9
   NCDF_LIB=$(NCDF)/lib
   NCDF_INC=$(NCDF)/include
@@ -87,13 +88,13 @@ PMCAMx:
 	@rm -f $(INC)/camx.prm
 	@csh chktracer camx.prm.$(DOMAIN) PMCAMx.exe
 	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC=$(FC) FLGS="$(FLGS)" TARGT="PMCAMx.exe" DUM=dummy
+	make model FC=$(FC) FFLGS="$(FLGS)" TARGT="PMCAMx.exe" DUM=dummy
 
 pgf90:
 	@rm -f $(INC)/camx.prm
 	@csh chktracer camx.prm.$(DOMAIN) PMCAMx.exe
 	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC="pgf90" FLGS="-I$(INC) -module mod/ -I$(NCDF_INC_PGI)  -g -tp k8-64 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl, -mcmodel=medium" TARGT="PMCAMx.exe" DUM=dummy
+	make model FC="pgf90" FFLGS="-I$(INC) -module mod/ -I$(NCDF_INC_PGI)  -g -tp k8-64 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl, -mcmodel=medium" TARGT="PMCAMx.exe" DUM=dummy
 #	make model FC="pgf90" FLGS="-I$(INC) -O2 -tp p6 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl,-Bstatic" TARGT="PMCAMx.exe" DUM=dummy
  
 clean:	
@@ -467,7 +468,7 @@ $(PSSA)/waterso4.o \
 $(PSSA)/waternacl.o
 
 model: 	$(OBJCTS)
-	$(FC) -o $(TARGT) $(FLGS) $(OBJCTS) $(LIBS) $(LIB_CDF)
+	$(FC) -o $(TARGT) $(FFLGS) $(OBJCTS) $(LIBS) $(LIB_CDF)
 
 # Modifications by Pavan Nandan Racherla (July 2 2008)--->
 # Date: July 2 2008.
@@ -475,9 +476,9 @@ model: 	$(OBJCTS)
 # Suffixes and instructions on how to compile those files:
 .SUFFIXES : .f90 .f .mod .o
 .f90.o :
-	$(FC) -c -o $@ $(FLGS) $<
+	$(FC) -c -o $@ $(FFLGS) $<
 .f.o :
-	$(FC) -c -o $@ $(FLGS) $<
+	$(FC) -c -o $@ $(FFLGS) $<
 
 # Build module files using a 'touch' command:
 # 'touch' updates the access time and modification time/dates to the current time and date
@@ -489,10 +490,11 @@ model: 	$(OBJCTS)
 	touch $@
 
 # module-object dependencies:
-projutils.mod : ProjUtils.o
+$(MOD)/projutils.mod : ProjUtils.o
+$(MOD)/io_ezcdf.mod  : $(BNRY)/io_ezcdf.o
 
 # Instructions to create objects wrt modules (based on the USE statements)
-pspgeo.o : projutils.mod
+pspgeo.o : $(MOD)/projutils.mod
 
 # End of my modifications
 
@@ -502,7 +504,7 @@ CAMx.o 			: CAMx.f                                               \
                         $(INC)/grid.com $(INC)/ptemiss.com $(INC)/bndary.com   \
                         $(INC)/chmstry.com $(INC)/flags.com $(INC)/ahomap.com  \
                         $(INC)/filunit.com $(INC)/tracer.com $(INC)/section.inc \
-                        $(INC)/rtracchm.com $(INC)/procan.com
+                        $(INC)/rtracchm.com $(INC)/procan.com $(MOD)/io_ezcdf.mod
 
 aerochem.o 		: aerochem.f                                           \
                         $(INC)/camx.prm $(INC)/camx.com $(INC)/chmstry.com     \
@@ -844,7 +846,7 @@ $(BNRY)/io_ezcdf.o 	: $(BNRY)/io_ezcdf.f90                                 \
 
 $(BNRY)/wrtcon.o 	: $(BNRY)/wrtcon.f                                     \
                         $(INC)/camx.prm $(INC)/camx.com $(INC)/grid.com        \
-                        $(INC)/chmstry.com $(INC)/flags.com
+                        $(INC)/chmstry.com $(INC)/flags.com $(MOD)/io_ezcdf.mod
 
 $(BNRY)/wrtdep.o 	: $(BNRY)/wrtdep.f                                     \
                         $(INC)/camx.prm $(INC)/camx.com $(INC)/grid.com        \

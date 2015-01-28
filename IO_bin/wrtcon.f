@@ -1,4 +1,4 @@
-      subroutine wrtcon(iflag,tim2,idat2,iunit,c_ncf_avrg,nox,noy,noz,
+      subroutine wrtcon(iflag,tim2,idat2,iunit,incf,c_ncf_avrg,nox,noy,noz,
      &                  nsptmp, cncfld, iunitNuc, Jnucfld,
      &                  cellon, cellat, height)
 
@@ -46,7 +46,7 @@ c
 c
       character*10 Snuc(2)
       real Jnucfld(nox,noy,noz,2)
-      integer iunitNuc
+      integer iunitNuc, incf
 
       integer  iflag, idat2, iunit
       character*4 ispec(10,MXSPEC), ifile(10), note(60)
@@ -142,51 +142,43 @@ c
         write(iunit) izero,izero,nox,noy
         write(iunit) ((ispec(n,l),n=1,10),l=1,nsptmp)
         write(iunit) idat2,etim,idat3,etim3
-c
-c-----Write gridded concentration field for instantaneous concentrations
-c       This writes data for ALL species
-        do l = 1,nsptmp
-           do k = 1,nlayer
-             write(iunit) nseg,(ispec(n,l),n=1,10),
-     &                 ((cncfld(i,j,k,l),i=1,nox),j=1,noy)
-           enddo
-        enddo
-
 
       else
 
-c       
-c--------Write to the Average File
-c
-      !Inquire for file identifier
-      lx  = nox
-      ly  = noy
-      lz  = noz
-      if (.not.l3davg) lz    = 1
+        !Prepare to Write Average Concentrations to Binary File
+        do l = 1,nsptmp
+          read(spname(lavmap(l)),'(10a1)') (ispec(n,l),n=1,10)
+        enddo
+        if (.not.l3davg) nlayer = 1
+        write(iunit) idat1,btim,idat2,etim
 
-      lt  = 24
-      lct = int(tim2/100.)  !Current Time step (hours)
+        !Prepare to Write Data to NETCDF File
+        lx  = nox
+        ly  = noy
+        lz  = noz
+        if (.not.l3davg) lz    = 1
 
-      vlon   = cellon  !2D array of longitude
-      vlat   = cellat  !2D array of latitude
-      vdpth  = sum(sum(height,1),1)/(nox*noy)  !1D array of heights
+        lt  = 24
+        lct = int(tim2/100.)  !Current Time step (hours)
 
-      do it = 1,lt
-        vtime(it) = real(it,8)
-      enddo
+        vlon   = cellon  !2D array of longitude
+        vlat   = cellat  !2D array of latitude
+        vdpth  = sum(sum(height,1),1)/(nox*noy)  !1D array of heights
 
-      cfil     = c_ncf_avrg
-      cvarlon  = 'lon'
-      cvarlat  = 'lat'
-      cvardpth = 'depth'
-      cvartime = 'time'
-      vglag  = 999.0
-      cun_z  = 'm'
-      cun_t  = 'hr'
+        do it = 1,lt
+          vtime(it) = real(it,8)
+        enddo
 
-!
-!-------Write Average Species Conc. Fields
-!
+        cfil     = c_ncf_avrg
+        cvarlon  = 'lon'
+        cvarlat  = 'lat'
+        cvardpth = 'depth'
+        cvartime = 'time'
+        vglag  = 999.0
+        cun_z  = 'm'
+        cun_t  = 'hr'
+
+        !Write Average Species Conc. Fields to NETCDF File
         do l = 1,nsptmp  !Loop over species
           id_var = l     !Temporary Species identifier 
 	                 !  It will be overwritten in P3D_T_irr
@@ -208,15 +200,13 @@ c
           if (l.eq.1 .and. lct.eq.1) linit = 1
 
           !Write Concentrations
-          CALL P3D_T_irr(iunit, id_var, linit, lx, ly, lz, lt, lct, 
+          CALL P3D_T_irr(incf, id_var, linit, lx, ly, lz, lt, lct, 
      &       vlon, vlat, vdpth(1:lz), 
      &       vtime, x3d, cfil, cvarlon, cvarlat, cvardpth, cvartime, cvar,  
      &       cunit, cln, vflag, cun_z, cun_t)
         enddo
 
-!
-!-------Write Average Nucleation Rates
-!       
+        !Write Average Nucleation Rates
         do l =1,2
           id_var = l     !Temporary Species identifier 
 	                 !  It will be overwritten in P3D_T_irr
@@ -230,17 +220,37 @@ c
           linit = 0   !Assume no initialization
 
           !Write Concentrations
-          CALL P3D_T_irr(iunit, id_var, linit, lx, ly, lz, lt, lct, 
+          CALL P3D_T_irr(incf, id_var, linit, lx, ly, lz, lt, lct, 
      &       vlon, vlat, vdpth(1:lz), 
      &       vtime, x3d, cfil, cvarlon, cvarlat, cvardpth, cvartime, cvar,  
      &       cunit, cln, vflag, cun_z, cun_t)
 	enddo
 
+	!Sync NetCDF File on DIsk with Memory Buffer
+        call disp_err(NF_SYNC(incf), 'WRTCON','AVERAGE FILE','SYNCING')     
+
       endif
 
 
+!-----Write gridded concentration field for instantaneous concentrations
+      do l = 1,nsptmp
+         do k = 1,nlayer
+           write(iunit) nseg,(ispec(n,l),n=1,10),
+     &               ((cncfld(i,j,k,l),i=1,nox),j=1,noy)
+         enddo
+      enddo
+
+!-----Write Gridded Nucleation Rates
+      if (iflag.eq.0) then
+        write (iunitNuc) idat1,btim,idat2,etim
+	do l = 1,2
+	  do k = 1,nlayer
+	    write(iunitNuc) nseg,Snuc(l),
+     &              ((Jnucfld(i,j,k,l),i=1,nox),j=1,noy)
+          enddo 
+        enddo
+      endif
       
-      call disp_err(NF_SYNC(iunit), 'WRTCON','AVERAGE FILE','SYNCING')     
 
       return
       end

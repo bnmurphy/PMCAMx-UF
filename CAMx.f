@@ -847,7 +847,7 @@ c-----Coarse grid files
 c
         write(*,'(a20,$)') 'wrtcon ......'
         write(iout,'(a20,$)') 'wrtcon ......'
-        call wrtcon(0,time,date,iavg,c_ncf_avrg,ncol(1),nrow(1), 
+        call wrtcon(0,time,date,iavg,incf,c_ncf_avrg,ncol(1),nrow(1), 
      &              nlay(1),navspc,avcnc(1), iJnuc, avJnuc(1),
      &              cellon(1), cellat(1), height(1))
         if (mod(int(time/100.),2).eq.1) then
@@ -855,7 +855,7 @@ c
         else
           iunit = iconc(2)
         endif
-        call wrtcon(1,time,date,iunit,c_ncf_avrg,ncol(1),nrow(1),
+        call wrtcon(1,time,date,iunit,incf,c_ncf_avrg,ncol(1),nrow(1),
      &              nlay(1),nspec,conc(1), iJnuc, Jnuc(1),
      &              cellon(1), cellat(1), height(1))
         if (ldry) then
