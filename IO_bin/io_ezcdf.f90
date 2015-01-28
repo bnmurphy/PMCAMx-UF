@@ -17,7 +17,7 @@ MODULE io_ezcdf
   !!
   !! List of available routines
   !! ==========================
-  PUBLIC :: dims,             &
+  PUBLIC :: dims,disp_err,    &
        &    get_sf_ao,        &
        &    getvar_1d,        &
        &    getvar_2d,        &
@@ -26,9 +26,10 @@ MODULE io_ezcdf
        &    getmask_3d,       &
        &    p2d_t, p2d_t_irr, &
        &    p3d_t, p3d_t_irr, &
+       &    p3d_t_irr_var, p3d_t_irr_init, &
        &    check_4_miss,     &
        &    get_var_info,     &
-       &    prtmask, disp_err
+       &    prtmask
   !!
   !!===========================
   !!
@@ -1562,7 +1563,7 @@ CONTAINS
          &        croutnm, cfil, cvar)
     !!
     !!
-    !IF ( lct == lt ) CALL disp_err(NF_CLOSE(id_fil), croutnm, cfil, cvar)
+    IF ( lct == lt ) CALL disp_err(NF_CLOSE(id_fil), croutnm, cfil, cvar)
     !!
     !!
   END SUBROUTINE P3D_T_IRR
@@ -1571,6 +1572,260 @@ CONTAINS
   !!
   !!
   !!
+  SUBROUTINE P3D_T_IRR_INIT(id_fil, id_var, linit, lx, ly, lz, lt, lct, & 
+       &               rlon, rlat, vdpth, &
+       &               vtime, cfil, cvarlon, cvarlat, cvardpth, cvartime, &
+       &               nvar, cvar, cunit, cln, vflag, cun_z, cun_t)
+    !!
+    !! INPUT :
+    !! -------
+    !!        id_fil = ID of the file (takes its value on the first call)
+    !!        id_var = ID of the variable //
+    !!        linit = flag for initializing file (0/1; no/yes)
+    !!        lx    = x dimension of array to plot             [integer]
+    !!        ly    = y dimension of array to plot             [integer]
+    !!        lz    = z dimension of array to plot             [integer]
+    !!        lt    = t dimension of array to plot             [integer]
+    !!        lct   = current time step                         [integer]
+    !!        rlon  = 2D array of longitude                     [real]
+    !!        rlat  = 2D array of latitude                      [real]
+    !!        vdpth = depth array                               [array 1D]
+    !!        vtime = time array                                [array 1D]
+    !!        x3d   = 3D snapshot at time jt to write           [real]
+    !!        cfil  = name of the output file                   [character]
+    !!        cvarlon = name of longitude                       [character]
+    !!        cvarlat = name of latitude                        [character]
+    !!        cvardpth = name of depth                          [character]
+    !!        cvartime = name of time                           [character]
+    !!        cvar  = name of the variable                      [character]
+    !!        vflag = flag value or "0."                        [real]
+    !!        cunit  = unit for treated variable                [character]
+    !!        cln = long-name for treated variable              [character]
+    !!        cfilename = actual file name (without path!)      [character]
+    !!
+    !!        cun_z = unit for depth                |OPTIONAL|  [character]
+    !!        cun_t = unit for time                 |OPTIONAL|  [character]
+    !!
+    !!--------------------------------------------------------------------------
+    !!
+    !!
+    INTEGER, INTENT(inout) :: id_fil, id_var
+    INTEGER, INTENT(in)    :: lx, ly, lz, lt, lct, linit, nvar
+    !!
+    REAL(wpez), DIMENSION(lx,ly), INTENT(in) :: rlat, rlon
+    REAL(wpez), DIMENSION(lz),    INTENT(in) :: vdpth
+    REAL(wpez), DIMENSION(lt),    INTENT(in) :: vtime
+    !!
+    CHARACTER(len=*), INTENT(in) :: cfil, cvarlon, cvarlat, cvardpth, cvartime
+    CHARACTER(len=*), DIMENSION(nvar), INTENT(in) :: cvar, cunit, cln
+    CHARACTER(len=*),  OPTIONAL, INTENT(in) :: cun_z, cun_t
+    !!
+    REAL(wpez),         INTENT(in) :: vflag
+    INTEGER :: ivar
+    !!
+    !!
+    croutnm = 'P3D_T_IRR_INIT'
+    !!
+    !!
+    !!
+    !! Opening mesh file for grid quest :
+    !! ----------------------------------
+    !!
+    !!           CREATE NETCDF OUTPUT FILE :
+    CALL disp_err(NF_CREATE(cfil, NF_CLOBBER, id_fil), croutnm, cfil, cvar(1))
+    !!
+    !!             DIMMENSIONS 
+    !!       Create longitude dimension :
+    CALL disp_err(NF_DEF_DIM(id_fil, 'x', lx, id_x), croutnm, cfil, cvar(1))
+    !!
+    !       Create latitude dimension :
+    CALL disp_err(NF_DEF_DIM(id_fil, 'y', ly, id_y), croutnm, cfil, cvar(1))
+    !!
+    !       Create latitude dimension :
+    CALL disp_err(NF_DEF_DIM(id_fil, trim(cvardpth), lz, id_z), croutnm, cfil, cvar(1))
+    !!
+    !!      Create record dimension :
+    CALL disp_err(NF_DEF_DIM(id_fil, trim(cvartime), NF_UNLIMITED, id_t), &
+         &        croutnm, cfil, cvar(1))
+    !!
+    !!
+    id_dims2 = (/ id_x , id_y /)
+    id_dims4 = (/ id_x , id_y , id_z, id_t /)
+    !!
+    !!
+    !!           VARIABLES TO PLOT
+    CALL disp_err(NF_DEF_VAR(id_fil,trim(cvarlon),NF_REAL,2,id_dims2,id_lon), &
+         &        croutnm, cfil, cvar(1))
+    !!
+    CALL disp_err(NF_DEF_VAR(id_fil,trim(cvarlat),NF_REAL,2,id_dims2,id_lat),  &
+         &        croutnm, cfil, cvar(1))  
+    !!
+    CALL disp_err(NF_DEF_VAR(id_fil,trim(cvardpth),NF_REAL,1,id_z,id_dpth),  &
+         &        croutnm, cfil, cvar(1))  
+    !!
+    CALL disp_err(NF_DEF_VAR(id_fil,trim(cvartime), NF_REAL,1,id_t,id_time),  &
+         &        croutnm, cfil, cvar(1))
+    !!  
+    DO ivar = 1,nvar    
+      !!  DEFINE NEW VARIABLE
+      CALL disp_err(NF_DEF_VAR(id_fil, trim(cvar(ivar)), NF_REAL, 4, id_dims4, id_var), &
+             &        croutnm, cfil, cvar(ivar))
+    ENDDO 
+    !!
+    !!
+    !!          ATTRIBUTES
+    !!
+    !!      For longitude :
+    CALL disp_err(NF_PUT_ATT_TEXT(id_fil, id_lon, 'units', 12,'degrees_east'), &
+         &      croutnm, cfil, cvar(1))
+    !!
+    rrange = (/ minval(rlon) , maxval(rlon) /)
+    CALL disp_err(NF_PUT_ATT_REAL(id_fil,id_lon,'valid_min',NF_REAL,1,rrange(1)), &
+         &        croutnm, cfil, cvar(1))
+    CALL disp_err(NF_PUT_ATT_REAL(id_fil,id_lon,'valid_max',NF_REAL,1,rrange(2)), &
+         &        croutnm, cfil, cvar(1))
+    !!
+    !!      For latitude :
+    CALL disp_err(NF_PUT_ATT_TEXT(id_fil, id_lat, 'units', 13,'degrees_north'),  &
+         &        croutnm, cfil, cvar(1)) 
+    !!
+    rrange = (/ minval(rlat) , maxval(rlat) /)
+    CALL disp_err(NF_PUT_ATT_REAL(id_fil,id_lat,'valid_min',NF_REAL,1,rrange(1)), &
+         &        croutnm, cfil, cvar(1))
+    CALL disp_err(NF_PUT_ATT_REAL(id_fil,id_lat,'valid_max',NF_REAL,1,rrange(2)), &
+         &        croutnm, cfil, cvar(1))
+    !!
+    !!      For depth :
+    cu = 'unknown'
+    IF ( present(cun_z) ) cu = cun_z
+    ils = len_trim(trim(cu))
+    CALL disp_err(NF_PUT_ATT_TEXT(id_fil, id_dpth, 'units', ils, trim(cu)), &
+         &        croutnm, cfil, cvar(1)) 
+    !!
+    rrange = (/ minval(vdpth) , maxval(vdpth) /)
+    CALL disp_err(NF_PUT_ATT_REAL(id_fil,id_dpth,'valid_min',NF_REAL,1,rrange(1)), &
+         &        croutnm, cfil, cvar(1))
+    CALL disp_err(NF_PUT_ATT_REAL(id_fil,id_dpth,'valid_max',NF_REAL,1,rrange(2)), &
+         &        croutnm, cfil, cvar(1))
+    !!
+    !!      For time
+    cu = 'unknown'
+    IF ( present(cun_t) ) cu = cun_t
+    ils = len_trim(trim(cu))
+    CALL disp_err(NF_PUT_ATT_TEXT(id_fil, id_time, 'units', ils, trim(cu)), &
+         &        croutnm, cfil, cvar(1))
+    rrange = (/ minval(vtime), maxval(vtime) /)
+    CALL disp_err(NF_PUT_ATT_REAL(id_fil,id_time,'valid_min',NF_REAL,1,rrange(1)), &
+         &        croutnm, cfil, cvar(1))
+    CALL disp_err(NF_PUT_ATT_REAL(id_fil,id_time,'valid_max',NF_REAL,1,rrange(2)), &
+         &          croutnm, cfil, cvar(1))
+    !!
+    !!
+    !! Global attributes
+    ils = LEN_TRIM(cabout)
+    CALL disp_err(NF_PUT_ATT_TEXT(id_fil, NF_GLOBAL, 'About', ils, trim(cabout)), &
+         &        croutnm, cfil, cvar(1))
+    !!
+    !!
+    !!  LOOP OVER VARIABLE DEFINITIONS
+    !!
+    
+    DO ivar = 1,nvar    
+      !!
+      !!  VARIABLE ATTRIBUTES
+      !!
+      !!     Get Variable Identifier
+      CALL disp_err(NF_INQ_VARID(id_fil, trim(cvar(ivar)), id_var), &
+         &        croutnm, cfil, cvar(ivar))
+      !!   
+      !! Long name
+      ils=LEN_TRIM(trim(cln(ivar)))
+      CALL disp_err(NF_PUT_ATT_TEXT(id_fil, id_var, 'long_name', ils, trim(cln(ivar))), &
+           &       croutnm, cfil, cvar(ivar))
+      !!
+      !! Units
+      ils = LEN_TRIM(cunit(ivar)) 
+      CALL disp_err(NF_PUT_ATT_TEXT(id_fil, id_var, 'units', ils, trim(cunit(ivar)) ),  &
+           &       croutnm, cfil, cvar(ivar))     
+      !!
+      !! Missing value
+      IF ( vflag /= 0.) &
+           & CALL disp_err(NF_PUT_ATT_REAL(id_fil, id_var, 'missing_value', &
+           &              NF_REAL, 1, vflag), croutnm, cfil, cvar(ivar))
+
+    ENDDO
+    !!
+    !!           END OF DEFINITION
+    !!           -----------------
+    CALL disp_err(NF_ENDDEF(id_fil), croutnm, cfil, cvar(1))
+    !!
+    !!
+    !!     WRITE COORDINATES
+    !!     -----------------
+    !!       Write longitude variable :
+    CALL disp_err(NF_PUT_VAR_REAL(id_fil, id_lon, rlon), croutnm, cfil, cvar(1))
+    !!
+    !!       Write latitude variable :
+    CALL disp_err(NF_PUT_VAR_REAL(id_fil, id_lat, rlat), croutnm, cfil, cvar(1))
+    !!
+    !!       Write depth variable :
+    CALL disp_err(NF_PUT_VAR_REAL(id_fil, id_dpth, vdpth), croutnm, cfil,cvar(1))
+    !!
+    !!       Write time variable :
+    CALL disp_err(NF_PUT_VARA_REAL(id_fil, id_time, 1, lt, vtime), &
+         &        croutnm, cfil, cvar(1))
+    !!
+    !!
+  END SUBROUTINE P3D_T_IRR_INIT
+  !!
+  !!
+  !!
+  !!
+  !!
+  SUBROUTINE P3D_T_IRR_VAR(id_fil, id_var, lx, ly, lz, lt, lct, &
+       &               x3d, cfil, cvar)
+    !!
+    !! INPUT :
+    !! -------
+    !!        id_fil = ID of the file (takes its value on the first call)
+    !!        id_var = ID of the variable //
+    !!        lx    = x dimension of array to plot             [integer]
+    !!        ly    = y dimension of array to plot             [integer]
+    !!        lz    = z dimension of array to plot             [integer]
+    !!        lt    = t dimension of array to plot             [integer]
+    !!        lct   = current time step                         [integer]
+    !!        x3d   = 3D snapshot at time jt to write           [real]
+    !!        cfil  = name of the output file                   [character]
+    !!        cvar  = name of the variable                      [character]
+    !!
+    !!--------------------------------------------------------------------------
+    !!
+    !!
+    INTEGER, INTENT(inout) :: id_fil, id_var
+    INTEGER, INTENT(in)    :: lx, ly, lz, lt, lct
+    !!
+    REAL(wpez), DIMENSION(lx,ly,lz), INTENT(in) :: x3d
+    !!
+    CHARACTER(len=*), INTENT(in) :: cfil, cvar 
+    !!
+    !!
+    croutnm = 'P3D_T_IRR_VAR'
+    !!
+    !!   GET IDENTIFIERS NECESSARY FOR ADDING DATA
+    !!
+    !!     Get Variable Identifier
+    CALL disp_err(NF_INQ_VARID(id_fil, trim(cvar), id_var), &
+         &        croutnm, cfil, cvar)
+    !!
+    !!
+    !!     WRITE VARIABLE
+    istart4 = (/ 1,  1, 1, lct /)
+    icount4 = (/ lx, ly, lz, 1 /)
+    CALL disp_err(NF_PUT_VARA_REAL(id_fil, id_var, istart4, icount4, x3d), &
+         &        croutnm, cfil, cvar)
+    !!
+    !!
+  END SUBROUTINE P3D_T_IRR_VAR
   !!
   !!
   !!

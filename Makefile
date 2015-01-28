@@ -66,7 +66,7 @@ ifeq ($(COMPILER),ifort)
 endif
 
 ifeq ($(COMPILER),pgf90)
-  NCDF=/software/apps/netcdf/4.2/i1214-hdf5-1.8.9
+  NCDF=/usr/local/
   NCDF_LIB=$(NCDF)/lib
   NCDF_INC=$(NCDF)/include
   LIB_CDF = -L$(NCDF_LIB) -lnetcdf -lnetcdff
@@ -101,7 +101,7 @@ clean:
 	rm -f $(OBJCTS) dummy*.o
 
 superclean:	
-	rm -f $(OBJCTS) dummy*.o *.exe *.mod
+	rm -f $(OBJCTS) dummy*.o *.exe mod/*.mod
 
 OBJCTS = \
 CAMx.o \

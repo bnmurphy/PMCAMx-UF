@@ -169,7 +169,7 @@ c
         iJnuc = nfils
         nopen = nopen + 1
         action = 'Opening output AVG NUCLEATION file for coarse grid.'
-        open(unit=iavg,file=filroot(1:ii+5),form='UNFORMATTED',
+        open(unit=iavg,file=filroot(1:ii+10),form='UNFORMATTED',
      &                                       status= 'UNKNOWN',ERR=7005)
         write(iout,9000)'Output AVERAGE file coarse grid      (unit):',
      &                                                          iJnuc
