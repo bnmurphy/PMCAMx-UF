@@ -44,14 +44,14 @@ c
       include 'chmstry.com'
       include 'flags.com'
 c
-      character*10 Snuc(2)
+      character*20 Snuc(2)
       real Jnucfld(nox,noy,noz,2)
       integer iunitNuc, incf
 
       integer  iflag, idat2, iunit
       character*4 ispec(10,MXSPEC), ifile(10), note(60)
       character*200 c_ncf_avrg, cfil
-      integer nox, noy, noz
+      integer nox, noy, noz, nvar
       real cncfld(nox,noy,noz,nsptmp), tim2
       real cellon(nox,noy), cellat(nox,noy), height(nox, noy, noz)
       character*10 cnfil
@@ -184,25 +184,25 @@ c
           linit = 1   !initialization
 
           !Attributes for Variables
-          do l = 1,nsptmp+2   !Add 2 to make room for Nucleation Rates
+          nvar = nsptmp+2
+          do l = 1,nvar   !Add 2 to make room for Nucleation Rates
 
-            if (lavmap(l).le.ngas) then  !Species is a gas
+            if (l.gt.nsptmp) then    !Variable is a Nucleation Rate
+              cvar(l)  = Snuc(l-nsptmp)      !Species shortname
+              cunit(l) = 'N cm-3 s-1'
+              cln(l)   = cvar(l) 
+
+            elseif (lavmap(l).le.ngas) then  !Species is a gas
               cvar(l)  = spname(lavmap(l))  !Species shortname
               cunit(l) = 'ppbv'   !Units
               cln(l)   = cvar(l)  !Long Name
 
-            elseif (l.le.nsptmp) then   !Species is an Aerosol
+            else    !Species is an Aerosol
               cvar(l)  = spname(lavmap(l))  !Species shortname
               cunit(l) = 'ug m-3' !Units
               cln(l)   = cvar(l)  !Long Name
-
-            else   !Variable is a Nucleation Rate
-              cvar(l)  = Snuc(l-nsptmp)      !Species shortname
-              cunit(l) = 'N cm-3 s-1'
-              cln(l)   = cvar(l) 
             endif 
           enddo
-          nvar = nsptmp
 
           CALL P3D_T_irr_init(incf, id_var, linit, lx, ly, lz, lt, lct, 
      &       vlon, vlat, vdpth(1:lz), 
