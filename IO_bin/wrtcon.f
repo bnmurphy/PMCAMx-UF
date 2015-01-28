@@ -204,7 +204,7 @@ c
           enddo
           nvar = nsptmp
 
-          CALL P3D_T_irr_init(iunit, id_var, linit, lx, ly, lz, lt, lct, 
+          CALL P3D_T_irr_init(incf, id_var, linit, lx, ly, lz, lt, lct, 
      &       vlon, vlat, vdpth(1:lz), 
      &       vtime, cfil, cvarlon, cvarlat, cvardpth, cvartime,  
      &       nvar, cvar, cunit, cln, vflag, cun_z, cun_t) 
@@ -224,7 +224,7 @@ c
 	  endif
 
           !Write Array
-          CALL P3D_T_irr_var(iunit, id_var, lx, ly, lz, lt, lct, 
+          CALL P3D_T_irr_var(incf, id_var, lx, ly, lz, lt, lct, 
      &       x3d, cfil, cvar1)
         enddo
 
