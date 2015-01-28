@@ -28,7 +28,7 @@ MODULE io_ezcdf
        &    p3d_t, p3d_t_irr, &
        &    check_4_miss,     &
        &    get_var_info,     &
-       &    prtmask
+       &    prtmask, disp_err
   !!
   !!===========================
   !!
@@ -1562,7 +1562,7 @@ CONTAINS
          &        croutnm, cfil, cvar)
     !!
     !!
-    IF ( lct == lt ) CALL disp_err(NF_CLOSE(id_fil), croutnm, cfil, cvar)
+    !IF ( lct == lt ) CALL disp_err(NF_CLOSE(id_fil), croutnm, cfil, cvar)
     !!
     !!
   END SUBROUTINE P3D_T_IRR

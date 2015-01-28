@@ -174,7 +174,6 @@ c
       do it = 1,lt
         vtime(it) = real(it,8)
       enddo
-      
 
       cfil     = c_ncf_avrg
       cvarlon  = 'lon'
@@ -238,6 +237,10 @@ c
 	enddo
 
       endif
+
+
+      
+      call disp_err(NF_SYNC(iunit), 'WRTCON','AVERAGE FILE','SYNCING')     
 
       return
       end

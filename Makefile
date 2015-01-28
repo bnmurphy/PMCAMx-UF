@@ -17,6 +17,10 @@
 DOMAIN = otag
 #endif
 
+#ifndef COMPILER
+CMPLR = ifort
+#endif
+
 INC   = ./Inc
 
 CMC   = ./CMC
@@ -45,11 +49,33 @@ PSSA  = ./DMAN/cond_nuc_PSSA
 
 TARGT = CAMx
 
-NCDF=/software/apps/netcdf/4.2/i1214-hdf5-1.8.9
-NCDF_LIB=$(NCDF)/lib
-NCDF_INC=$(NCDF)/include
 
-LIB_CDF = -L$(NCDF_LIB) -lnetcdf -lnetcdff
+ifeq ($(CMPLR),ifort)
+  NCDF=/software/apps/netcdf/4.2/i1214-hdf5-1.8.9
+  NCDF_LIB=$(NCDF)/lib
+  NCDF_INC=$(NCDF)/include
+  LIB_CDF = -L$(NCDF_LIB) -lnetcdf -lnetcdff
+
+  FC   := ifort
+  FLGS := -I$(INC) -module mod/ -I$(NCDF_INC) 
+  FLGS := $(FLGS) -O2 
+  FLGS := $(FLGS) -fpe3 -reentrancy threaded -traceback -align dcommons -extend_source -convert big_endian -mcmodel=large -shared-intel
+	#make model FC="ifort" FLGS="-I$(INC) -module mod/ -I$(NCDF_INC) -O2 -fpe3 -reentrancy threaded -traceback -align dcommons -extend_source -convert big_endian -mcmodel=large -shared-intel" TARGT="PMCAMx.exe" DUM=dummy
+#	make model FC="ifort" FLGS="-I$(INC) -O2 -align dcommons -extend_source -convert big_endian -static" TARGT="PMCAMx.exe" DUM=dummy
+endif
+
+ifeq ($(COMPILER),pgf90)
+  NCDF=/software/apps/netcdf/4.2/i1214-hdf5-1.8.9
+  NCDF_LIB=$(NCDF)/lib
+  NCDF_INC=$(NCDF)/include
+  LIB_CDF = -L$(NCDF_LIB) -lnetcdf -lnetcdff
+
+  FC   := pgf90
+  FLGS := -I$(INC) -module mod/ -I$(NCDF_INC_PGI)  
+  FLGS := $(FLGS) -g -tp k8-64 -pc 64 
+  FLGS := $(FLGS) -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl, -mcmodel=medium
+
+endif
 
 
 default:
@@ -57,18 +83,17 @@ default:
 	@echo 'To make PMCAMx.exe type make PMCAMx.exe DOMAIN=string'
 	@echo '----------------------------------------------------------'
 
-ifort:
+PMCAMx:
 	@rm -f $(INC)/camx.prm
 	@csh chktracer camx.prm.$(DOMAIN) PMCAMx.exe
 	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC="ifort" FLGS="-I$(INC) -module mod/ -I$(NCDF_INC) -O2 -fpe3 -reentrancy threaded -traceback -align dcommons -extend_source -convert big_endian -mcmodel=large -shared-intel" TARGT="PMCAMx.exe" DUM=dummy
-#	make model FC="ifort" FLGS="-I$(INC) -O2 -align dcommons -extend_source -convert big_endian -static" TARGT="PMCAMx.exe" DUM=dummy
+	make model FC=$(FC) FLGS="$(FLGS)" TARGT="PMCAMx.exe" DUM=dummy
 
 pgf90:
 	@rm -f $(INC)/camx.prm
 	@csh chktracer camx.prm.$(DOMAIN) PMCAMx.exe
 	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC="pgf90" FLGS="-I$(INC) -g -tp k8-64 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl, -mcmodel=medium" TARGT="PMCAMx.exe" DUM=dummy
+	make model FC="pgf90" FLGS="-I$(INC) -module mod/ -I$(NCDF_INC_PGI)  -g -tp k8-64 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl, -mcmodel=medium" TARGT="PMCAMx.exe" DUM=dummy
 #	make model FC="pgf90" FLGS="-I$(INC) -O2 -tp p6 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl,-Bstatic" TARGT="PMCAMx.exe" DUM=dummy
  
 clean:	

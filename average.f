@@ -64,10 +64,10 @@ c
 c========================= Process Analysis End ==============================
 c
       logical lgas, losat
-      dimension tempk(ncol,nrow,nlay),press(ncol,nrow,nlay),
+      real tempk(ncol,nrow,nlay),press(ncol,nrow,nlay),
      &          avcnc(ncol,nrow,nlayav,nspav),conc(ncol,nrow,nlay,nspc),
-     &          lmap(nspc),
      &          avJnuc(ncol,nrow,nlayav,2),Jnuc(ncol,nrow,nlay,2)
+      integer  lmap(nspc)
 c
 c-----Entry point
 c

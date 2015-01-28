@@ -43,7 +43,10 @@ c        RADDRIVR, EMISTRNS, NESTING,  CHEMRXN,  PIGWALK,  PIGMSCAL,
 c        WRTCON,   WRFGCON,  WRTPIG,   PIGDIAG
 c
 c***********************************************************************
-c  
+c
+      USE io_ezcdf
+
+      include 'netcdf.inc'
       include 'camx.prm'
       include 'camx.com'
       include 'camxfld.com'
@@ -971,9 +974,10 @@ c
 c
 c------------------  End main time-integration loop  -------------------
 c
-      call closefl(iavg)
+      !call closefl(iavg)
+      call disp_err(NF_CLOSE(iavg), "CAMx_Main", "AVERAGE", "Final Close")
       call closefl(ncpig)
-      call closefl(iJnuc)
+      !call closefl(iJnuc)
       write(iout,'(/,a,i8.5,f8.2,/)') 'time/Date: ',date,time
       write(*,'(/,a,i8.5,f8.0,/)')'Date/time: ',date,time
       write(iout,'(a)')'END SIMULATION'

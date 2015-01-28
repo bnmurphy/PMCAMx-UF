@@ -70,7 +70,7 @@ c
       real tot_inert2 ! total inert mass after calling dman
 cdbg      real eps
       real cvt, cvt2
-      real fndt(2) !Nucleation diagnostic
+      double precision fndt(2) !Nucleation diagnostic
 c
 c-----Adjustable parameters
 c

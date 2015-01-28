@@ -149,7 +149,7 @@ c      integer ispc,naero
       real massum2
       real frctn, nmbr
       real dsulfdt !sulfuric acid production rate
-      real fndt(2) !nucleation diagnostic
+      double precision fndt(2) !nucleation diagnostic
       real Jnuc(ncol,nrow,nlay,2) !Common Nucleation Diagnostic
       integer inuc
 c
@@ -212,10 +212,8 @@ c
          enddo
       enddo
 
-cdbg      write(*,*)'In chemdriv, after advection species ordering, before
-cdbg&checkconc' !dbg
-cdbg      call checkconc(conc,ncol,nrow,nlay,nspc,species,4)
-cdbg      write(*,*)'after checkconc in chemdriv'
+      !Set Nucleation Rate Diagnostic Variable to Zero
+      Jnuc(:,:,:,:) = 0.
 
 c
       igrdchm = igrd
@@ -472,7 +470,7 @@ cdbg                 endif !dbg
      &                         con,crad,convfac,time,aero_dt(igrd),
      &                         ichm,jchm,kchm,height,dsulfdt,fndt)
                  do inuc = 1,2
-                   Jnuc(i,j,k,inuc) = fndt(inuc)
+                   Jnuc(i,j,k,inuc) = real(fndt(inuc))
                  enddo
 
                endif
