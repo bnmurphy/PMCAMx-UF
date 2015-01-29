@@ -56,7 +56,7 @@ C---------------------------------------------------------------------
 
       !calculate the mass of the nucleated particles
       mnuc = (4.d0/3.d0*pi*(rnuc*1D-9)**3)*1350.d0
-      if (mnuc.lt.xk(1))then
+      if (mnuc.lt.xk(1))then !this should never happen anymore since rnuc>=0.4 nm
          print*,'mnuc < xk(1) in nucleation routines',mnuc
          stop
       endif

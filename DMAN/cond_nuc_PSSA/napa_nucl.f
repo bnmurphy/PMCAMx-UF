@@ -265,6 +265,11 @@ cc   Cap at 10^6 particles/cm3-s, limit for parameterization
      &     -0.00156727*temp-0.00003076*temp*fnl
      &     +0.0000108375*temp**2.
      
+      if (rnuc.lt.0.405) then !set to lower limit of the smallest size bin
+         ! this is a bit off because xk does not seem to match the size bins
+c         print*, 'rnuc set to 0.4, Napari ternary, original rnuc ', rnuc
+         rnuc = 0.405
+      end if
 
 c      rnuc=0.328886-0.00337417*temp+0.0000183474*temp**2.
 c     &     +0.00254198*log(cna)-0.0000949811*temp*log(cna)
