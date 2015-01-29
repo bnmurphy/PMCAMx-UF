@@ -19,13 +19,13 @@ C     Journal of Geophysical Research-Atmospheres 107, no. D22 (2002).
 
 C-----INPUTS------------------------------------------------------------
 
-      double precision tempi                ! temperature of air [K]
-      double precision rhi                  ! relative humidity of air as a fraction
+      !double precision tempi                ! temperature of air [K]
+      !double precision rhi                  ! relative humidity of air as a fraction
       double precision cnai                 ! concentration of gas phase sulfuric acid [molec cm-3]
 
-cjgj      real tempi                ! temperature of air [K]
-cjgj      real rhi                  ! relative humidity of air as a fraction
-cjgj      real cnai                 ! concentration of gas phase sulfuric acid [molec cm-3]
+      real tempi                ! temperature of air [K]
+      real rhi                  ! relative humidity of air as a fraction
+      !real cnai                 ! concentration of gas phase sulfuric acid [molec cm-3]
 C-----OUTPUTS-----------------------------------------------------------
 
       double precision fn                   ! nucleation rate [cm-3 s-1]
@@ -86,9 +86,9 @@ c
 
 C-----CODE--------------------------------------------------------------
 
-      temp=tempi
-      rh=rhi
-      cna=cnai
+      temp = dble(tempi)
+      rh   = dble(rhi)
+      cna  = cnai
 
 c     Respect the limits of the parameterization
       if (cna .lt. 1.d4) then ! limit sulf acid conc

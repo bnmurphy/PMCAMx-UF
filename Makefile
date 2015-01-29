@@ -59,7 +59,7 @@ ifeq ($(COMPILER),ifort)
 
   FC   := ifort
   FLGS := -I$(INC) -module mod/ -I$(NCDF_INC) 
-  FLGS := $(FLGS) -O2 
+  FLGS := $(FLGS) -O2
   FLGS := $(FLGS) -fpe3 -reentrancy threaded -traceback -align dcommons -extend_source -convert big_endian -mcmodel=large -shared-intel
 	#make model FC="ifort" FLGS="-I$(INC) -module mod/ -I$(NCDF_INC) -O2 -fpe3 -reentrancy threaded -traceback -align dcommons -extend_source -convert big_endian -mcmodel=large -shared-intel" TARGT="PMCAMx.exe" DUM=dummy
 #	make model FC="ifort" FLGS="-I$(INC) -O2 -align dcommons -extend_source -convert big_endian -static" TARGT="PMCAMx.exe" DUM=dummy
@@ -72,7 +72,7 @@ ifeq ($(COMPILER),pgf90)
   LIB_CDF = -L$(NCDF_LIB) -lnetcdf -lnetcdff
 
   FC   := pgf90
-  FLGS := -I$(INC) -module mod/ -I$(NCDF_INC_PGI)  
+  FLGS := -I$(INC) -module mod/ -I$(NCDF_INC)  
   FLGS := $(FLGS) -g -tp k8-64 -pc 64 
   FLGS := $(FLGS) -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl, -mcmodel=medium
 
@@ -90,13 +90,6 @@ PMCAMx:
 	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
 	make model FC=$(FC) FFLGS="$(FLGS)" TARGT="PMCAMx.exe" DUM=dummy
 
-pgf90:
-	@rm -f $(INC)/camx.prm
-	@csh chktracer camx.prm.$(DOMAIN) PMCAMx.exe
-	@ln -s camx.prm.$(DOMAIN) $(INC)/camx.prm
-	make model FC="pgf90" FFLGS="-I$(INC) -module mod/ -I$(NCDF_INC_PGI)  -g -tp k8-64 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl, -mcmodel=medium" TARGT="PMCAMx.exe" DUM=dummy
-#	make model FC="pgf90" FLGS="-I$(INC) -O2 -tp p6 -pc 64 -Kieee -Mdalign -Mextend -Mnoframe -byteswapio -Wl,-Bstatic" TARGT="PMCAMx.exe" DUM=dummy
- 
 clean:	
 	rm -f $(OBJCTS) dummy*.o
 

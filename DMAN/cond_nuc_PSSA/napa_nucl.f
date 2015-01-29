@@ -18,8 +18,10 @@ c     Research-Atmospheres 107, no. D19 (2002).
 
 C-----INPUTS------------------------------------------------------------
 
-      double precision tempi                ! temperature of air [K]
-      double precision rhi                  ! relative humidity of air as a fraction
+      !double precision tempi                ! temperature of air [K]
+      !double precision rhi                  ! relative humidity of air as a fraction
+      real tempi                ! temperature of air [K]
+      real rhi                  ! relative humidity of air as a fraction
       double precision cnai                 ! concentration of gas phase sulfuric acid [molec cm-3]
       double precision nh3ppti              ! concentration of gas phase ammonia
 
@@ -108,10 +110,10 @@ c
 C-----CODE--------------------------------------------------------------
 
 cdbg      print*,'temp=',tempi,' rh=',rhi,' cna=',cnai,' nh3ppt=',nh3ppti
-      temp=tempi
-      rh=rhi
-      cna=cnai
-      nh3ppt=nh3ppti
+      temp   = dble(tempi)
+      rh     = dble(rhi)
+      cna    = cnai
+      nh3ppt = nh3ppti
 
 c     Napari's parameterization is only valid within limited area
       if ((cna .lt. 1.d4).or.(nh3ppt.lt.0.1)) then ! limit sulf acid and nh3 conc
