@@ -161,6 +161,7 @@ c
 
         lt  = 24
         lct = int(tim2/100.)  !Current Time step (hours)
+	if (lct.eq.0) lct = 24
 
         vlon   = cellon  !2D array of longitude
         vlat   = cellat  !2D array of latitude
