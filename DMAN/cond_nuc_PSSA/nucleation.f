@@ -26,7 +26,7 @@ C-----OUTPUTS-----------------------------------------------------------
 
 C     Nkf, Mkf, Gcf - same as above, but final values
 
-      SUBROUTINE nucleation(Nki,Mki,Gci,Nkf,Mkf,Gcf,nuc_bin,dt,fn_all)
+      SUBROUTINE nucleation(Nki,Mki,Gci,Nkf,Mkf,Gcf,nuc_bin,dt,fn_all,cs)
 
       IMPLICIT NONE
 
@@ -61,6 +61,7 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision mp       ! mass of particle [kg]
       double precision mold     ! saved mass in first bin
       double precision mnuc     !mass of nucleation
+      double precision cs       ! condensation sink [s-1]
       
       double precision mfrac(icomp) ! fraction of the nucleated mass that will be assigned
       double precision fn_all(2) !Magnitude of nucleation rates resolved by pathway
@@ -80,8 +81,8 @@ C-----CODE--------------------------------------------------------------
 
       h2so4 = Gci(srtso4)/boxvol*1000.d0/98.d0*6.022d23
       ! ACDC Lookup table ternary nuclation does not need this in ppt
-      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
-c      nh3_molec = Gci(srtnh4)/boxvol*1000.d0/17.d0*6.022d23 
+c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
+      nh3_molec = Gci(srtnh4)/boxvol*1000.d0/17.d0*6.022d23 
 
       fn = 0.d0
       rnuc = 0.d0
@@ -99,10 +100,10 @@ C     if requirements for nucleation are met, call nucleation subroutines
 C     and get the nucleation rate and critical cluster size
       if (h2so4.gt.1.d4) then         
 
-c         if (nh3_molec.gt.1.d6.and.tern_nuc.eq.1) then
-         if (nh3ppt.gt.0.1.and.tern_nuc.eq.1) then
-            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
-c            call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc)
+         if (nh3_molec.gt.1.d6.and.tern_nuc.eq.1) then
+c$$$         if (nh3ppt.gt.0.1.and.tern_nuc.eq.1) then
+c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
+            call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc)
 
             if (fn.gt.0.d0) then
                !update mass and number

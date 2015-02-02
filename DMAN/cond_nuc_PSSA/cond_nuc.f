@@ -129,7 +129,7 @@ c      addt = 3600.d0
       totmass = H2SO4rate*addt*96.d0/98.d0
 
       !Get change size distribution due to nucleation with initial guess
-      call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all)          
+      call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all, CS1)          
 
       mass_change = 0.d0
       do k=1,ibins
@@ -203,7 +203,7 @@ C     Get the steady state H2SO4 concentration
 
             sumH2SO4 = sumH2SO4 + Gc1(srtso4)*addt
             totmass = H2SO4rate*addt*96.d0/98.d0
-            call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all)
+            call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all,CS1)
 
             !Add up the nucleation from each process to temp variable 
             do k=1,2
