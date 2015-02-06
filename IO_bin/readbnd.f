@@ -64,9 +64,6 @@ c
           if (n.gt.2) nc = ncol(1)
           read(ibc) idum,(bcspec(j),j=1,10),iedge,
      &              ((bctmp(i,k,n,l),k=1,nz),i=1,nc)
-c     added by LA
-          !write(*,*)'bctmp(1:10,1,1,225)=',bctmp(1:10,1,1,225)
-c     end added by LA
         enddo
       enddo
       write(iout,'(a40,2(f7.0,i8.5))')
@@ -92,10 +89,9 @@ c
                 convfac = 1.
               endif
               conc(n4d) = convfac*bdnl(l)
-              if (lbc.gt.0) then
-	        if (bctmp(j,k,1,lbc).gt.bdnl(l)) 
-     &            conc(n4d) = convfac*bctmp(j,k,1,lbc)
-              endif
+              if (lbc.gt.0 .and. bctmp(j,k,1,lbc).gt.bdnl(l)) 
+     &          conc(n4d) = convfac*bctmp(j,k,1,lbc)
+c
               i = iend(j) + 1
               n3d = i + ncol(1)*(j - 1) + ncol(1)*nrow(1)*(k - 1)
               n4d = n3d + ncol(1)*nrow(1)*nlay(1)*(l - 1)
@@ -105,10 +101,8 @@ c
                 convfac = 1.
               endif
               conc(n4d) = convfac*bdnl(l)
-              if (lbc.gt.0) then
-	        if ( bctmp(j,k,2,lbc).gt.bdnl(l)) 
+              if (lbc.gt.0 .and. bctmp(j,k,2,lbc).gt.bdnl(l)) 
      &          conc(n4d) = convfac*bctmp(j,k,2,lbc)
-              endif
 c-----Set POC and PEC BC-------------------------------------------
 cjgj              if (l.ge.75.and.l.le.80) then
 cjgj                conc(n4d)=1.8d-1
@@ -129,10 +123,8 @@ c
                 convfac = 1.
               endif
               conc(n4d) = convfac*bdnl(l)
-              if (lbc.gt.0) then
-	        if (bctmp(i,k,3,lbc).gt.bdnl(l))
+              if (lbc.gt.0 .and. bctmp(i,k,3,lbc).gt.bdnl(l))
      &          conc(n4d) = convfac*bctmp(i,k,3,lbc)
-              endif
 c
               j = jend(i) + 1 
               n3d = i + ncol(1)*(j - 1) + ncol(1)*nrow(1)*(k - 1) 
@@ -143,10 +135,8 @@ c
                 convfac = 1.
               endif
               conc(n4d) = convfac*bdnl(l)
-              if (lbc.gt.0) then
-	        if (bctmp(i,k,4,lbc).gt.bdnl(l))
+              if (lbc.gt.0 .and. bctmp(i,k,4,lbc).gt.bdnl(l))
      &            conc(n4d) = convfac*bctmp(i,k,4,lbc) 
-              endif
 c-----Set POC and PEC BC-------------------------------------------
 cjgj                if (l.ge.75.and.l.le.80) then
 cjgj                  conc(n4d)=1.8d-1

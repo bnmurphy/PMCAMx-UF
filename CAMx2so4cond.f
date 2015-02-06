@@ -190,6 +190,7 @@ c         add_tot_inert(i) = moxid0(i,kna_c)+                          ! cf
          add_rt_pom(i)   = moxid0(i,nao) * (1.0/add_tot_inert(i))
          add_rt_ec(i)    = moxid0(i,nae) * (1.0/add_tot_inert(i))
          add_rt_crst(i)  = moxid0(i,nar) * (1.0/add_tot_inert(i))
+
          moxid(i,srtorg) = add_tot_inert(i)*cvt*boxvol
 cdbg         if (moxid(i).ge.0.0) then
 cdbg            moxid(i)=moxid0(i)*cvt*boxvol

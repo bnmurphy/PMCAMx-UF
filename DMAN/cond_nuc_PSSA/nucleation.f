@@ -26,7 +26,7 @@ C-----OUTPUTS-----------------------------------------------------------
 
 C     Nkf, Mkf, Gcf - same as above, but final values
 
-      SUBROUTINE nucleation(Nki,Mki,Gci,Nkf,Mkf,Gcf,nuc_bin,dt,cs,dmappt)
+      SUBROUTINE nucleation(Nki,Mki,Gci,Nkf,Mkf,Gcf,nuc_bin,dt,fn_all,cs,dmappt)
 
       IMPLICIT NONE
 
@@ -68,6 +68,8 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
                                 ! process (kg m-3)
       double precision mfrac(icomp) ! fraction of the nucleated mass that will be assigned
                                     ! to each icomp species (passed to nucMassUpdate)
+      double precision fn_all(2) !Magnitude of nucleation rates resolved by pathway
+
 
 C-----EXTERNAL FUNCTIONS------------------------------------------------
 
@@ -90,6 +92,7 @@ c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
       fn = 0.d0
       rnuc = 0.d0
       gtime = 0.d0
+      fn_all = 0.
 
       ! if no nucleation occurs the final arrays will be same as the initial arrays
       Mkf=Mki
@@ -118,10 +121,11 @@ C     and get the nucleation rate and critical cluster size
                mfrac = (/0.8144, 0.0, 0.1856, 0.0/)
                call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
             endif
-         endif
+         endif       
 
          if (nh3_molec.gt.1.d6.and.tern_nuc.eq.1) then
-c            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
+c$$$         if (nh3ppt.gt.0.1.and.tern_nuc.eq.1) then
+c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
             call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc)
 
             if (fn.gt.0.d0) then
@@ -129,6 +133,7 @@ c            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
                !nuclei are assumed as ammonium bisulfte
                mfrac = (/0.8144, 0.0, 0.1856, 0.0/)
                call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+               fn_all(1) = fn
             endif
          endif
 
@@ -140,6 +145,7 @@ c            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
                !nuclei are assumed to be sulfuric acid
                mfrac = (/1.0, 0.0, 0.0, 0.0/)
                call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+               fn_all(2) = fn
             endif
          endif    
       endif

@@ -133,6 +133,22 @@ c
      &                                                          iavg
         write(iout,9002) '   File: ',filroot(1:ii+5)
         nfils = nfils + 1
+ 
+        write(filroot(ii+1:),'(A)') '.ncf'
+        filtmp = filroot
+        !Save filename for use with netcdf output in wrtcon.f - BNM
+        c_ncf_avrg = filroot(1:ii+4)
+        !
+        incf = nfils
+        nopen = nopen + 1
+        action = 'Opening output AVERAGE file for coarse grid.'
+        !open(unit=iavg,file=filroot(1:ii+5),form='UNFORMATTED',
+        !&                                       status= 'UNKNOWN',ERR=7005)
+        write(iout,9000)'Output AVERAGE file coarse grid      (unit):',
+     &                                                          incf
+        write(iout,9002) '   File: ',filroot(1:ii+5)
+        nfils = nfils + 1
+
         if (ngrid.gt.1) then
           write(filroot(ii+1:),'(A)') '.favrg'
           filtmp = filroot
@@ -146,6 +162,22 @@ c
           write(iout,9002) '   File: ',filroot(1:ii+6)
           nfils = nfils + 1
         endif
+        
+	!Open File FOr Printing Nucleation Rates Online
+        write(filroot(ii+1:),'(A)') '_Jnuc.avrg'
+        filtmp = filroot
+        iJnuc = nfils
+        nopen = nopen + 1
+        action = 'Opening output AVG NUCLEATION file for coarse grid.'
+        open(unit=iJnuc,file=filroot(1:ii+10),form='UNFORMATTED',
+     &                                       status= 'UNKNOWN',ERR=7005)
+        write(iout,9000)'Output AVERAGE file coarse grid      (unit):',
+     &                                                          iJnuc
+        write(iout,9002) '   File: ',filroot(1:ii+10)
+        nfils = nfils + 1
+ 
+
+
       endif
 c
       if (ldry .or. lwet) then

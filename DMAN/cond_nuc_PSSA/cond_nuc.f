@@ -29,8 +29,8 @@ C-----OUTPUTS-----------------------------------------------------------
 
 C     Nkf, Mkf, Gcf - same as above, but final values
 
-      SUBROUTINE cond_nuc(Nki,Mki,Gci,Nkf,Mkf,Gcf,H2SO4rate,dmappt,dt,ichm,jchm
-     & ,kchm)             
+      SUBROUTINE cond_nuc(Nki,Mki,Gci,Nkf,Mkf,Gcf,H2SO4rate,dmappt,dt
+     & ,ichm,jchm,kchm, fndt)             
       IMPLICIT NONE
 
 C-----INCLUDE FILES-----------------------------------------------------
@@ -81,6 +81,8 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision total_nh4_1,total_nh4_2
       double precision min_tstep !minimum timestep [s]
       double precision dmappt   !mixing ratio of dimethyl amine (for nucleation)
+      double precision fn_all(nJnuc)  !Temporary nucleation diagnostic
+      double precision fndt(nJnuc)    !Temporary nucleation diagnostic
 
       logical nflg ! returned from nucleation, says whether nucleation occurred or not
  
@@ -109,6 +111,9 @@ C Initialize values of Nkf, Mkf, Gcf, and time
          enddo
       enddo
 
+C     Initialize the Nucleation Rate Diagnostic Variable
+      fndt = 0.
+
 C     Get initial condensation sink
       CS1 = 0.d0
       call getCondSink(Nk1,Mk1,srtso4,CS1,sinkfrac)
@@ -125,7 +130,7 @@ c      addt = 3600.d0
       totmass = H2SO4rate*addt*96.d0/98.d0
 
       !Get change size distribution due to nucleation with initial guess
-      call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,CS1,dmappt)
+      call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all,CS1,dmappt)
 
       mass_change = 0.d0
       do k=1,ibins
@@ -187,9 +192,7 @@ c      if (CSch.gt.CSch_tol) then ! condensation sink didn't change much use who
          
          num_iter = 0
          sumH2SO4=0.d0
-
-
-         !DO ADAPTIVE TIMESTEPS
+         ! do adaptive timesteps
          do while (time_rem .gt. 0.d0)
             num_iter = num_iter + 1
 
@@ -201,8 +204,12 @@ C     Get the steady state H2SO4 concentration
 
             sumH2SO4 = sumH2SO4 + Gc1(srtso4)*addt
             totmass = H2SO4rate*addt*96.d0/98.d0
-            call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,CS1,dmappt) 
-            
+            call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all,CS1,dmappt) 
+
+            !Add up the nucleation from each process to temp variable 
+            do k=1,2
+               fndt(k) = fndt(k) + fn_all(k) * addt
+            end do
             mass_change = 0.d0
             do k=1,ibins
                mass_change = mass_change + (Mk2(k,srtso4)-Mk1(k,srtso4))
@@ -293,6 +300,8 @@ Cjrp      endif
       enddo      
       Gcf(srtnh4)=Gc3(srtnh4)
 
+      !Divide Nucleation Diagnostic Variable by Master Time step to get rates
+      fndt = fndt / dt
 
       RETURN
       END

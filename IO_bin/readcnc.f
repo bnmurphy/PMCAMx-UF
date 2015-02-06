@@ -171,6 +171,13 @@ cbk     &                AMAX1( bdnl(l),convfac*conc(iptr4d(igrd)-1+n4d) )
             enddo
           enddo
         enddo
+c     assign_dist will assign number distributions, use in case you do not 
+c     have size resolved initial conditions (like in the US). Use numconv if 
+c     you want to calculate the number emissions from the mass emissions and 
+c     their sizes
+        sconc = 0. !always zero here so that subroutine redistribute all of the mass
+c        call assign_ndist(conc(1),ncol(1),nrow(1),nlay(1),sconc,nspec)
+        call numconv(conc(1),ncol(1),nrow(1),nlay(1),sconc,nspec)
       else
 c
 c-----Otherwise, read fine grid concentrations from fine grid restart file

@@ -1,7 +1,7 @@
       subroutine chemdriv(igrd,ncol,nrow,nlay,dt,itzon,idfin,fcloud,
      &                    cldtrns,water,tempk,press,height,cwc,conc,
      &                    cncrad,cellat,cellon,ldark,l3davg,
-     &                    iptr2d,iptrsa,ipa_cel)
+     &                    iptr2d,iptrsa,ipa_cel,Jnuc)
 c
 c-----CAMx v4.02 030709
 c
@@ -149,7 +149,9 @@ c      integer ispc,naero
       real massum2
       real frctn, nmbr
       real dsulfdt !sulfuric acid production rate
-
+      double precision fndt(2) !nucleation diagnostic
+      real Jnuc(ncol,nrow,nlay,2) !Common Nucleation Diagnostic
+      integer inuc
 c
 c-----Entry point
 c
@@ -210,10 +212,8 @@ c
          enddo
       enddo
 
-cdbg      write(*,*)'In chemdriv, after advection species ordering, before
-cdbg&checkconc' !dbg
-cdbg      call checkconc(conc,ncol,nrow,nlay,nspc,species,4)
-cdbg      write(*,*)'after checkconc in chemdriv'
+      !Set Nucleation Rate Diagnostic Variable to Zero
+      Jnuc(:,:,:,:) = 0.
 
 c
       igrdchm = igrd
@@ -311,28 +311,13 @@ c
               fcld = fcloud(i,j,1)
             endif
             ctrns = cldtrns(i,j,k)
-c           print *, 'Elham.Chemdrive.ctrns',ctrns
             call getznth(cellat(i,j),cellon(i,j),time,date,itzon,
      &                   zenith,ldark(i,j))
 c
 c-----Determine photolysis rates through interpolation of look-up table
 c
-
-c           print *,'Eli.ldark.chemdrive',ldark(i,j)
-
-          
             call kphoto(iozon,ialb,ihaze,hght,zenith,fcld,
      &                  ctrns,ldark(i,j),iabov)
-
-c          if (i.eq.145.and.j.eq.107.and.k.eq.13) then
-c       write(*,*) 
-c       print *,'Eli.chemdriv.i145.j107', rk 
-c       print *,'Eli.hght',hght,'iozon',iozon,'ialb',ialb
-c        print *,'Eli.chemdrive.zenth',zenith,'ctrns',ctrns
-c       print *,'Eli.ldark:',ldark(i,j),'iabov',iabov
-c        endif
-
-
 c
 c======================== Source Apportion Begin =======================
 c
@@ -479,17 +464,15 @@ cdbg                   print*,'coordinate of (31,2,1)' !dbg
 cdbg                   print*,'tempk,pressure,dsulfdt=',tempk,pressure
 cdbg     &                  ,dsulfdt !dbg
 cdbg                 endif !dbg
-
-
-              
-
                  if ( laero_upd )
      &           call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
      &                         MXSPEC,MXRADCL,NSPEC,NGAS,
      &                         con,crad,convfac,time,aero_dt(igrd),
-     &                         ichm,jchm,kchm,height,dsulfdt)
-cjgj     &                         ichm,jchm,kchm,height)
-cdbg                 endif
+     &                         ichm,jchm,kchm,height,dsulfdt,fndt)
+                 do inuc = 1,2
+                   Jnuc(i,j,k,inuc) = real(fndt(inuc))
+                 enddo
+
                endif
 c
             elseif ( idsolv .EQ. IDIEH ) then
@@ -523,7 +506,7 @@ c
                    if ( laero_upd )
      &             call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
      &                           MXSPEC,MXRADCL,NSPEC,NGAS,
-     &                           con,crad,convfac,time,aero_dt(igrd))
+     &                           con,crad,convfac,time,aero_dt(igrd),fndt)
                endif
 c
             endif
@@ -700,17 +683,6 @@ cdbg                         endif
 cdbg                         endif
                       endif
                     endif
-c     added by LA
-c                    if(i.le.2 .and. j.le.2 .and. k.le.1) then
-c                       write(*,*)
-c                       write(*,*)'isund=',INDEX(spname(is),'_')
-c                       write(*,*)'is=',is
-c                       write(*,*)'spname(is)(1:isund-1)=',
-c     &                      spname(is)(1:isund-1)
-c                       write(*,*)'con(is)=',con(is)
-c                       write(*,*)'massum=',massum
-c                    endif
-c     end LA
                  enddo
                  ispc = isp
                  inum = order(ispc+naero)
@@ -757,12 +729,6 @@ cjgj                conc(i,j,k,is) = amax1(con(is),bdnl(is))
                 conc(i,j,k,is) = con(is)
               enddo
             endif
-c     added by LA
-c            if(i.le.2 .and. j.le.2 .and. k.le.1) then
-c               write(*,*)
-c               write(*,*)'con aft fullaero and spec2=',con
-c            endif
-c     end LA
 c
   89      continue
   90    continue

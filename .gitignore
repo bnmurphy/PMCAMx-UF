@@ -3,6 +3,8 @@ OUTPUT/**
 .*.swp
 .*.swo
 core.*
+runfiles/slurm*
+CAMx.in
 
 # Compiled Source
 *.com
@@ -12,6 +14,7 @@ core.*
 *.o
 **/*.o
 *.so
+*.mod
 
 # Packages
 *.7z
@@ -27,6 +30,7 @@ core.*
 *.log
 *.sql
 *.sqlite
+*.out
 
 # OS generated Files
 .DS_Store
@@ -37,3 +41,5 @@ core.*
 ehthumbs.db
 Thumbs.db
 
+#Figures
+*.png

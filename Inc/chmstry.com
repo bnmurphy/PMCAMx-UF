@@ -184,7 +184,7 @@ c
      &               lbiomap(MXSPEC,MXGRID),lmoblmap(MXSPEC,MXGRID),
      &               lspmap(MXSPEC,MXGRID),lavwrmap(MXSPEC,MXGRID)
 c
-      !Gases
+c      Gases
       integer   kno   ,kno2  ,ko3  
       integer   kpan  ,kcres ,kpan2
       integer   kmpan ,kpbzn ,knphe
@@ -219,7 +219,7 @@ c
       integer   kterp ,ktol  ,kxn  
       integer   kxyl  ,kamine     
       
-      !Aerosols
+c      Aerosols
       integer   ksoa1_1  ,ksoa1_2
       integer   ksoa1_3  ,ksoa1_4  ,ksoa1_5
       integer   ksoa1_6  ,ksoa1_7  ,ksoa1_8

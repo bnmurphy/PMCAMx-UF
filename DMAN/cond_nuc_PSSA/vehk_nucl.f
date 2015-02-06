@@ -19,13 +19,13 @@ C     Journal of Geophysical Research-Atmospheres 107, no. D22 (2002).
 
 C-----INPUTS------------------------------------------------------------
 
-      double precision tempi                ! temperature of air [K]
-      double precision rhi                  ! relative humidity of air as a fraction
+      !double precision tempi                ! temperature of air [K]
+      !double precision rhi                  ! relative humidity of air as a fraction
       double precision cnai                 ! concentration of gas phase sulfuric acid [molec cm-3]
 
-cjgj      real tempi                ! temperature of air [K]
-cjgj      real rhi                  ! relative humidity of air as a fraction
-cjgj      real cnai                 ! concentration of gas phase sulfuric acid [molec cm-3]
+      real tempi                ! temperature of air [K]
+      real rhi                  ! relative humidity of air as a fraction
+      !real cnai                 ! concentration of gas phase sulfuric acid [molec cm-3]
 C-----OUTPUTS-----------------------------------------------------------
 
       double precision fn                   ! nucleation rate [cm-3 s-1]
@@ -86,9 +86,9 @@ c
 
 C-----CODE--------------------------------------------------------------
 
-      temp=tempi
-      rh=rhi
-      cna=cnai
+      temp = dble(tempi)
+      rh   = dble(rhi)
+      cna  = cnai
 
 c     Respect the limits of the parameterization
       if (cna .lt. 1.d4) then ! limit sulf acid conc
@@ -128,6 +128,16 @@ c   This was limited at 10^6, JJ changed to 10^10 19 Dec 2014
       if (fn.gt.1.0d10) then
          fn=1.0d10
       endif
+
+c     There's also a lower limit to the nucleation rate in the 
+c     parameterization validity range: 10^-7 particles/cm3s. 
+c     Setting rates below this to zero (which they practically 
+c     are anyway), avoid needless calculation of mass later
+c     (JJ 15/01/29)
+      if (fn.lt.1.0d-7) then
+         fn=0.
+      endif
+c     
 c
 c     Coefficients of total number of molecules in cluster 
       do i=1, 10
@@ -143,6 +153,12 @@ c     Total number of molecules in cluster
 
 c     cluster radius
       rnuc=exp(-1.6524245+0.42316402*xstar+0.3346648*log(ntot)) ! [nm]
+
+      if (rnuc.lt.0.405) then !set to lower limit of the smallest size bin
+         !this is a bit of since xk does not seem to match the size bins
+c         print*, 'rnuc set to 0.4, binary nuc., original rnuc ', rnuc
+         rnuc = 0.405
+      end if
 
  10   return
       end

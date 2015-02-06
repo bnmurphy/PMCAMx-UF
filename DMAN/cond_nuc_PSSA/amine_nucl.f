@@ -166,36 +166,36 @@ c
 
       end subroutine
 
-c========================================================
-c
-      SUBROUTINE locate(xx,n,x,j)
-c     Lookup the nearest index (j) in the array xx to the
-c     value, x, where xx is of length n. x will be
-c     between xx(j) and xx(j+1).
-c
-c========================================================
-      IMPLICIT NONE
-
-      INTEGER j,n
-      DOUBLE PRECISION x,xx(n)
-      INTEGER jl,jm,ju
-      jl=0
-      ju=n+1
-10    if(ju-jl.gt.1)then
-        jm=(ju+jl)/2
-        if((xx(n).ge.xx(1)).eqv.(x.ge.xx(jm)))then
-          jl=jm
-        else
-          ju=jm
-        endif
-      goto 10
-      endif
-      if(x.eq.xx(1))then
-        j=1
-      else if(x.eq.xx(n))then
-        j=n-1
-      else
-        j=jl
-      endif
-      return
-      END 
+c$$$c========================================================
+c$$$c
+c$$$      SUBROUTINE locate(xx,n,x,j)
+c$$$c     Lookup the nearest index (j) in the array xx to the
+c$$$c     value, x, where xx is of length n. x will be
+c$$$c     between xx(j) and xx(j+1).
+c$$$c
+c$$$c========================================================
+c$$$      IMPLICIT NONE
+c$$$
+c$$$      INTEGER j,n
+c$$$      DOUBLE PRECISION x,xx(n)
+c$$$      INTEGER jl,jm,ju
+c$$$      jl=0
+c$$$      ju=n+1
+c$$$10    if(ju-jl.gt.1)then
+c$$$        jm=(ju+jl)/2
+c$$$        if((xx(n).ge.xx(1)).eqv.(x.ge.xx(jm)))then
+c$$$          jl=jm
+c$$$        else
+c$$$          ju=jm
+c$$$        endif
+c$$$      goto 10
+c$$$      endif
+c$$$      if(x.eq.xx(1))then
+c$$$        j=1
+c$$$      else if(x.eq.xx(n))then
+c$$$        j=n-1
+c$$$      else
+c$$$        j=jl
+c$$$      endif
+c$$$      return
+c$$$      END 

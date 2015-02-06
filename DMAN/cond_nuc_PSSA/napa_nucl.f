@@ -18,8 +18,10 @@ c     Research-Atmospheres 107, no. D19 (2002).
 
 C-----INPUTS------------------------------------------------------------
 
-      double precision tempi                ! temperature of air [K]
-      double precision rhi                  ! relative humidity of air as a fraction
+      !double precision tempi                ! temperature of air [K]
+      !double precision rhi                  ! relative humidity of air as a fraction
+      real tempi                ! temperature of air [K]
+      real rhi                  ! relative humidity of air as a fraction
       double precision cnai                 ! concentration of gas phase sulfuric acid [molec cm-3]
       double precision nh3ppti              ! concentration of gas phase ammonia
 
@@ -108,17 +110,17 @@ c
 C-----CODE--------------------------------------------------------------
 
 cdbg      print*,'temp=',tempi,' rh=',rhi,' cna=',cnai,' nh3ppt=',nh3ppti
-      temp=tempi
-      rh=rhi
-      cna=cnai
-      nh3ppt=nh3ppti
+      temp   = dble(tempi)
+      rh     = dble(rhi)
+      cna    = cnai
+      nh3ppt = nh3ppti
 
 c     Napari's parameterization is only valid within limited area
       if ((cna .lt. 1.d4).or.(nh3ppt.lt.0.1)) then ! limit sulf acid and nh3 conc
 c      if ((cna .lt. 5.d4).or.(nh3ppt.lt.0.1)) then ! limit sulf acid and nh3 conc
 
          fn = 0.
-         rnuc = 1
+         rnuc = 1.
          goto 10
       endif  
       
@@ -263,6 +265,11 @@ cc   Cap at 10^6 particles/cm3-s, limit for parameterization
      &     -0.00156727*temp-0.00003076*temp*fnl
      &     +0.0000108375*temp**2.
      
+      if (rnuc.lt.0.405) then !set to lower limit of the smallest size bin
+         ! this is a bit off because xk does not seem to match the size bins
+c         print*, 'rnuc set to 0.4, Napari ternary, original rnuc ', rnuc
+         rnuc = 0.405
+      end if
 
 c      rnuc=0.328886-0.00337417*temp+0.0000183474*temp**2.
 c     &     +0.00254198*log(cna)-0.0000949811*temp*log(cna)

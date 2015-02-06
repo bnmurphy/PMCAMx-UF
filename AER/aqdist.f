@@ -130,8 +130,6 @@ c Normalize so fdist sums to 1
         endif
       enddo                 
 
-
-
       return
       end
 

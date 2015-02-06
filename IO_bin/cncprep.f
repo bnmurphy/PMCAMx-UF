@@ -60,10 +60,6 @@ c-----Read 1st IC header record and check inputs
 c
       read(iunit,ERR=7000,END=7000) ifile,note,iseg,nicspc,idat1,
      &                                             tim1,idat2,tim2
-c     added by LA
-c      write(*,*)
-c      write(*,*)'nicspc=',nicspc
-c     end added by LA
       if (INT(tim2) .EQ. 24 ) then
         idat2 = idat2 + 1
         tim2 = 0.

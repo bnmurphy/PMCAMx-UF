@@ -103,27 +103,11 @@ c-----Cloud coverage adjustment
 c
       zenang = amin1(zenith,60.0)
       zenang = deg2rad*zenang
-c commented off by Elham
-c      if (iabov.eq.1) then
-c        cldrat = 1. + (1. - cldtrns)*cos(zenang)
-c      else
-c        cldrat = 1.6*cldtrns*cos(zenang)
-c      endif
-c      coefcld = 1. + fcloud*(cldrat - 1.)
-cend of commenting-off by Elham
 
-c added by Elham
-c        if( cldtrns.lt.1) then
-c       write(*,*)'Elham.cldtrns.kphoto',cldtrns
-c       endif
-
-c       print *,'Eli.rk.before', rk 
       do irxn = 1,nphot1
         rk(idphot1(irxn)) = rk(idphot1(irxn))*cldtrns
       enddo
-c      print *,'Eli.rk.after', rk
-c end of add by Elham
-c       print *,'the energy transmision is:',cldtrns
+      !Commented by Elham for TUV implementation
 c      do irxn = 1,nphot1
 c        rk(idphot1(irxn)) = rk(idphot1(irxn))*coefcld
 c      enddo

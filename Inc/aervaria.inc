@@ -52,7 +52,7 @@ c
       integer mgso2 ! sulfur dioxide
       integer mgsvi ! sulfuric acid
       integer mgnh3 ! ammonia
-      integer mgdma ! ammonia
+      integer mgdma ! dimethyl amine
       integer srtorg ! a species flag of organic matter in aerosol phase
       integer srtnh3 ! a species flag of ammonium in aerosol phase
 

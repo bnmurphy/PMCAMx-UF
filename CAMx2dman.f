@@ -20,7 +20,7 @@ c     |6| mass conc.              | q(+k...)  | Mk(ibins,icomp)|
 c     +-+-------------------------+-----------+----------------+
 c     
 
-      subroutine CAMx2dman(q,t0,t1,tempK,pressure,dsulfdt,ich,jch,kch)
+      subroutine CAMx2dman(q,t0,t1,tempK,pressure,dsulfdt,ich,jch,kch,fndt)
 c
 c-----Include files
 c
@@ -70,6 +70,7 @@ c
       real tot_inert2 ! total inert mass after calling dman
 cdbg      real eps
       real cvt, cvt2
+      double precision fndt(2) !Nucleation diagnostic
 c
 c-----Adjustable parameters
 c
@@ -98,12 +99,12 @@ c
       pres = pressure * 1.01325d5 ! Pa
       relh = rh ! Change a relative humidity variable for DMAN
 c
-      !Load Gas Variables
-      !Sulfuric Acid
+cdbg      write(*,*)'CAMx2dman.f - chkpt 1. at the very beginning'
       if (q(naer+ih2so4).ge.0.0) then 
         h2so4 = q(naer+ih2so4) * 1.0d6   ! h2so4 [=] ppt, q [=] ppm 
       else
         if (q(naer+ih2so4).gt.(-eps*1.0d-6)) then
+cdbg          h2so4 = 0.0
           h2so4 = eps
           q(naer+ih2so4) = eps * 1.0d-6
         else
@@ -119,6 +120,7 @@ c
         nh3ppt = q(naer+inh3) * 1.0d6 
       else
         if (q(naer+inh3).gt.(-eps*1.0d-6)) then
+cdbg          nh3ppt = 0.d0
           nh3ppt = eps
           q(naer+inh3) = eps * 1.0d-6
         else
@@ -261,8 +263,9 @@ cdbg            enddo
 cdbg          enddo
 cdbg        endif
 cdbg      endif
-      call dman(tstart,tend,Nk,Mk,h2so4,nh3ppt,dmappt,relh,tempK,pres,dsulfdt
-     & ,ich,jch,kch)
+
+      call dman(tstart,tend,Nk,Mk,h2so4,nh3ppt,dmappt,relh,tempK,pres,
+     & ,dsulfdt,ich,jch,kch,fndt)
       !For a debuging purpose
 cdbg      if ((tstart.gt.0.0).and.(tstart.lt.0.5)) then
 cdbg        if ((ich.eq.36).and.(jch.eq.29).and.(kch.eq.1)) then
@@ -415,13 +418,12 @@ c
           dmappt = eps
         else
           write(*,*)'DMA is less than zero'
-          write(*,*)'nh3ppt=',dmappt
+          write(*,*)'dmappt=',dmappt
           write(*,*)'Coordinate =', ich, jch, kch
           write(*,*)'dsulfdt=',dsulfdt
           STOP
         endif
       endif
- 
 
       RETURN
       END

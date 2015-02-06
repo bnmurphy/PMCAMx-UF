@@ -43,7 +43,10 @@ c        RADDRIVR, EMISTRNS, NESTING,  CHEMRXN,  PIGWALK,  PIGMSCAL,
 c        WRTCON,   WRFGCON,  WRTPIG,   PIGDIAG
 c
 c***********************************************************************
-c  
+c
+      USE io_ezcdf
+
+      include 'netcdf.inc'
       include 'camx.prm'
       include 'camx.com'
       include 'camxfld.com'
@@ -82,6 +85,7 @@ c
       character*10 name
       dimension tmass(97,90,14,nsec) ! should be improved by jgj 2/18/06
       integer igrd
+
 c
       data version /'CAMx v4.02, 03-07-09'/
 c
@@ -107,6 +111,8 @@ c
         call zeros(avcnc(iptr4d(igrd)),nodes)
         nodes = ncol(igrd)*nrow(igrd)*3*navspc
         call zeros(depfld(iptrdp(igrd)),nodes)
+        nodes = ncol(igrd)*nrow(igrd)*nlay(igrd)*2
+        call zeros(avJnuc(iptr4d(igrd)),nodes)
       enddo
 c
 c======================== Source Apportion Begin =======================
@@ -145,10 +151,6 @@ c
   100 continue
       nsteps = nsteps + 1
       xyordr = mod(nsteps,2)
-c     added by LA
-c      write(*,*)
-c      write(*,*)'xyordr = ',xyordr
-c     end added by LA
       write(iout,*)
       write(iout,'(a,i8.5,f8.2)') 'Date/time: ',date,time
       write(iout,*)
@@ -159,11 +161,6 @@ c
 c-----Check if time-varying grid/met data are to be read
 c
       if (date.eq.inpdate .and. abs(time-inptim).lt.0.01) then
-c     added by LA
-c        write(*,*)
-c        write(*,*)'time = ',time
-c        write(*,*)'inptim bef = ',inptim
-c     end added by LA
         write(*,'(a20,$)') 'readinp ......'
         tcpu = dtime(tarray2)
         do 10 igrd = 1,ngrid
@@ -193,17 +190,8 @@ c
         write(*,'(a,f10.3)') '   CPU = ', tarray2(1)
         whr = aint(inptim/100.)
         wmn = amod(inptim,100.)
-c     added by LA
-c        write(*,*)
-c        write(*,*)'whr = ',whr
-c        write(*,*)'wmn = ',wmn
-c     end added by LA
         inptim = 100.*(whr + aint((wmn + dtinp)/60.)) + 
      &             amod((wmn + dtinp),60.)
-c     added by LA
-c        write(*,*)
-c        write(*,*)'inptim = ',inptim
-c     end added by LA
         if (inptim.ge.2400.) then
           inptim = inptim - 2400.
           inpdate = inpdate + 1
@@ -219,21 +207,10 @@ c     end added by LA
 c
 c-----Initialize concentrations from an AIRQUALITY file or RESTART files
 c
-c     added by LA
-c        write(*,*)
-c        write(*,*)'nsteps = ',nsteps
-c     end added by LA
         if (nsteps.eq.1) then
           write(*,'(a20,$)') 'readcnc ......'
           call readcnc
-cdbg          call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,
-cdbg     &      spname,20)
-          call numconv(conc(1),ncol(1),nrow(1),nlay(1),conc(1),nspec,0)
-                           ! by jgj 2/16/06
-cdbg          call mnratios(conc(1),ncol(1),nrow(1),nlay(1),nspec,0)
-cdbg          call numcheck(conc(1),ncol(1),nrow(1),nlay(1),nspec)
-cdbg          call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,
-cdbg     &      spname,21)
+
           do igrd = 1,ngrid
             call wrtmass(igrd,date,time,0)
             call massum(igrd,nspec,ncol(igrd),nrow(igrd),nlay(igrd),
@@ -457,20 +434,12 @@ c
           write(*,'(a,f10.3)') '   CPU = ', tarray2(1)
         endif
 c
-c     added by LA
-c        write(*,*)
-c        write(*,*)'larsrc = ',larsrc
-c     end added by LA
         if( larsrc ) then
 c
 c------Read area emissions if data is available----
 c
            write(*,'(a20,$)') 'readar ......'
            do igrd = 1,ngrid
-c     added by LA
-c              write(*,*)'iarem(1,igrd) = ',iarem(1,igrd)
-c              write(*,*)'ngrid = ',ngrid
-c     end added by LA
               if( iarem(1,igrd) .GT. 0 ) then
                  call readar(igrd,ncol(igrd),nrow(igrd),
      &                            iarem(1,igrd),iout,
@@ -480,12 +449,6 @@ c     end added by LA
 c
 c------Otherwise assign values from the parent---
 c
-c     added by LA
-c                 write(*,*)
-c                 write(*,*)'nchdrn(ip) = ',nchdrn(ip)
-c                 write(*,*)'igrd = ',igrd
-c                 write(*,*)'idchdrn(ic,ip) = ',idchdrn(ic,ip)
-c     end added by LA
                  do ip=1,ngrid
                    do ic = 1,nchdrn(ip)
                      if( igrd .EQ. idchdrn(ic,ip) ) then
@@ -563,11 +526,21 @@ c
 c-----Check if coarse grid boundary data are to be read
 c
       if (date.eq.bnddate .and. abs(time-bndtim).lt.0.01) then
-        write(*,'(a20,$)') 'readbnd ......'
-        call readbnd(bndtim,bnddate)
-        call numconv(conc(1),ncol(1),nrow(1),nlay(1),conc(1),nspec,1)
-        tcpu = dtime(tarray2)
-        write(*,'(a,f10.3)') '   CPU = ', tarray2(1)
+         call saveconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,sconc)
+         write(*,'(a20,$)') 'readbnd ......'
+         call readbnd(bndtim,bnddate)
+
+c     assign_dist will assign number distributions, use in case you do not 
+c     have size resolved boundary conditions (like in the US). Use numconv 
+c     if you want to calculate the number emissions from the mass emissions 
+c     and their size
+
+c         call assign_ndist(conc(1),ncol(1),nrow(1),nlay(1),sconc,nspec)
+         call numconv(conc(1),ncol(1),nrow(1),nlay(1),conc(1),nspec)
+                           ! by jgj 2/17/06
+
+         tcpu = dtime(tarray2)
+         write(*,'(a,f10.3)') '   CPU = ', tarray2(1)
 c
 c======================== Source Apportion Begin =======================
 c
@@ -661,7 +634,7 @@ c
 c
       call average(.FALSE.,1,deltat(1)/2.0,ncol(1),nrow(1),
      &             nlay(1),nlay(1),navspc,nspec,lavmap,tempk(1),
-     &             press(1),conc(1),avcnc(1),ipacl_3d(1))
+     &             press(1),conc(1),avcnc(1),ipacl_3d(1), Jnuc(1), avJnuc(1))
 cdbg      write(*,*)'After average first'
 cdbg      call numcheck(conc(1),ncol(1),nrow(1),nlay(1),nspec)
 cdbg      call avgnumck(avcnc(1),ncol(1),nrow(1),nlay(1),nspec,nspav)
@@ -782,7 +755,7 @@ c-----Update average concentrations
 c
       call average(.FALSE.,1,deltat(1)/2.0,ncol(1),nrow(1),
      &             nlay(1),nlay(1),navspc,nspec,lavmap,tempk(1),
-     &             press(1),conc(1),avcnc(1),ipacl_3d(1))
+     &             press(1),conc(1),avcnc(1),ipacl_3d(1), Jnuc(1), avJnuc(1))
 cdbg      write(*,*)'After average'
 cdbg      call avgnumck(avcnc(1),ncol(1),nrow(1),nlay(1),nspec,nspav)
 cdbg      call numcheck(conc(1),ncol(1),nrow(1),nlay(1),nspec)
@@ -876,15 +849,17 @@ c-----Coarse grid files
 c
         write(*,'(a20,$)') 'wrtcon ......'
         write(iout,'(a20,$)') 'wrtcon ......'
-        call wrtcon(0,time,date,iavg,ncol(1),nrow(1), 
-     &              nlay(1),navspc,avcnc(1))
+        call wrtcon(0,time,date,iavg,incf,c_ncf_avrg,ncol(1),nrow(1), 
+     &              nlay(1),navspc,avcnc(1), iJnuc, avJnuc(1),
+     &              cellon(1), cellat(1), height(1))
         if (mod(int(time/100.),2).eq.1) then
           iunit = iconc(1)
         else
           iunit = iconc(2)
         endif
-        call wrtcon(1,time,date,iunit,ncol(1),nrow(1),
-     &              nlay(1),nspec,conc(1))
+        call wrtcon(1,time,date,iunit,incf,c_ncf_avrg,ncol(1),nrow(1),
+     &              nlay(1),nspec,conc(1), iJnuc, Jnuc(1),
+     &              cellon(1), cellat(1), height(1))
         if (ldry) then
           call wrtdep(time,date,idep,ncol(1),nrow(1),3*navspc,nspec,
      &                vdep(1),depfld(1))
@@ -901,6 +876,8 @@ c
           call zeros(avcnc(iptr4d(igrd)),nodes)
           nodes = ncol(igrd)*nrow(igrd)*3*navspc
           call zeros(depfld(iptrdp(igrd)),nodes)
+          nodes = ncol(igrd)*nrow(igrd)*nlay(igrd)*2
+          call zeros(avJnuc(iptr4d(igrd)),nodes)
         enddo
 
         tcpu = dtime(tarray2)
@@ -1000,7 +977,9 @@ c
 c------------------  End main time-integration loop  -------------------
 c
       call closefl(iavg)
+      call disp_err(NF_CLOSE(incf), "CAMx_Main", "AVERAGE", "Final Close")
       call closefl(ncpig)
+      call closefl(iJnuc)
       write(iout,'(/,a,i8.5,f8.2,/)') 'time/Date: ',date,time
       write(*,'(/,a,i8.5,f8.0,/)')'Date/time: ',date,time
       write(iout,'(a)')'END SIMULATION'

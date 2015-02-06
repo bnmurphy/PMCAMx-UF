@@ -1,7 +1,7 @@
       subroutine fullaero(water,tempk,press,lwc_c,
      &                    mxspec_c,mxrad_c,nspec_c,ngas_c,
      &                    con,cncrad,convfac,t00,dtaer,ich,
-     &                    jch,kch,height,dsulfdt)
+     &                    jch,kch,height,dsulfdt,fndt)
 c
 c-----PMCAMx v3.01 020531
 c
@@ -80,6 +80,7 @@ c
       real  pressure
       integer     r_idx(4)
       integer ich,jch,kch
+      double precision fndt(2)
 c
 ckf
       real*4 hgt, klay
@@ -139,15 +140,6 @@ c
       tcom = t0                  ! common t (sec) for AEROCHEM
       t0_min = t1_min - dt_min   ! beginning time (min) for AQCHEM
 c
-c     added by LA
-c      write(*,*)
-c      write(*,*)'dtaer=',dtaer
-c      write(*,*)'t1_min=',t1_min
-c      write(*,*)'dt=',dt
-c      write(*,*)'t0=',t0
-c      write(*,*)'t1=',t1
-c     end added by LA
-c
 c  Calculate RH
 c
       qwatr = 1.e-6*water*18./28.8
@@ -156,14 +148,6 @@ c
       rhumid = amin1(0.99,ev/es)
       rh=rhumid
 c
-c     added by LA
-c      write(*,*)
-c      write(*,*)'lfrst=',lfrst
-c      write(*,*)'nsecp1=',nsecp1
-c      write(*,*)'dsec_c=',dsec_c
-c      write(*,*)'dsecf_c=',dsecf_c
-c     end added by LA
-
       if (lfrst) then
         do i=1,nsecp1
   	  dsec(i)=dsec_c(i)
@@ -187,16 +171,6 @@ c
           moxid0(knsec,naers) = 0.0
         enddo
       enddo
-c     added by LA
-c      if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
-c      write(*,*)
-c      write(*,*)'lwc_c=',lwc_c
-c      write(*,*)'aqcwmin=',aqcwmin
-c      write(*,*)'tempk=',tempk
-c      write(*,*)'aqtamin=',aqtamin
-c      write(*,*)'laq=',laq
-c      endif
-c     end LA
       if ( lwc_c.ge.aqcwmin .and. tempk.ge.aqtamin .and. laq ) then
        if ( chaq.eq.'RADM' ) then
         pres_pa = 100. * press
@@ -358,9 +332,8 @@ c
         gas(ngch3o2)   = 1.0e-6              ! CH3O2(g) in ppm
         gas(ngch3oh)   = 1.0e-3              ! CH3OH(g) in ppm = 1 ppb
         gas(ngch3co3h) = 0.05*con(kh2o2_c)   ! CH3C(O)OOH(g) in ppm  = 0.05*H2O2
-        
-	
-	do knsec=1,nsect
+c
+        do knsec=1,nsect
           aerosol(knsec,naw)    = con(kph2o_c+(knsec-1))   ! water
           aerosol(knsec,naa)    = con(kpnh4_c+(knsec-1))   ! ammonium
           aerosol(knsec,na4)    = con(kpso4_c+(knsec-1))   ! sulfate
@@ -373,7 +346,7 @@ c
           aerosol(knsec,nahso5) = 0.0
           aerosol(knsec,nahmsa) = 0.0
         enddo
-
+c
 ckf
 c        Nitrogen mass balance (convert n2o5 to nitrate)
 c
@@ -406,17 +379,7 @@ c
           arsl(knsec,nao) = aerosol(knsec,nao) ! primary organics
           arsl(knsec,nar) = aerosol(knsec,nar) ! crustal
         enddo
-c     added by LA
-c      if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
-c      write(*,*)
-c      write(*,*)'arsl=',arsl
-c      endif
-c     end LA
 c
-c     added by LA
-c        write(*,*)
-c        write(*,*)'naer=',naer
-c     end added by LA
         qins(naer+ih2so4) = con(kh2so4_c)                                 ! cf
         qins(naer+inh3)   = gas(nga)                                      !
         qins(naer+ihno3)  = gas(ngn)                                      !
@@ -440,40 +403,18 @@ c          qins((knsec-1)*nsp+knum)=con(knum_c+(knsec-1))                 !
                      ! Number concentration jgj 2/28/06                   !
         enddo                                                             !
 c                                                                         !
-c     added by LA
-c      if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
-c      write(*,*)
-c      write(*,*)'bef eqpart qins=',qins
-c      endif
-c     end LA
 c----------------------call isorropia here------------------------------  !
 c                                                                         !
         call eqpart(t1,qins)                                              !
 c-----------------------------------------------------------------------  !
-c     added by LA
-c      if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
-c      write(*,*)
-c      write(*,*)'aft eqpart qins=',qins
-c      endif
-c     end LA
                                                                           !
         do knsec=1,nsect                                                  !
 c          aerosol(knsec,naw) =  qins((knsec-1)*nsp+kh2o) ! water          !
           aerosol(knsec,naa) =  qins((knsec-1)*nsp+knh4) ! ammonium       !
           aerosol(knsec,nan) =  qins((knsec-1)*nsp+kno3) ! nitrate        !
         enddo
-c     added by LA
-c      if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
-c      write(*,*)
-c      write(*,*)'aft eqpart aerosol=',aerosol
-c      endif
-c     end LA                                                             !                                                              !
       gas(nga)   = max(qins(ng+inh3), 0.0)         ! NH3(g) in ppm                  !
       gas(ngn)   = max(qins(ng+ihno3), 0.0)        ! HNO3(g) in ppm                 ! cf
-c     changed by LA
-c      gas(nga)   = max(qins(ng+inh3), 0.D0)         ! NH3(g) in ppm                  !
-c      gas(ngn)   = max(qins(ng+ihno3), 0.D0)        ! HNO3(g) in ppm                 ! cf
-c     end changed by LA
 c
          call aqchem(gas,aerosol,rhumid,prs,tempk,lwc_c,t0_min,t1_min,
      &            dt_min,ierr,kchm,height,chtype)
@@ -498,7 +439,7 @@ ctmg	 write(6,*) n2o5nit, nitbal, nitbef, nitaf
 ctmg	 endif
 ckf
 c
-c     CAMx doesn''t carry HMSA or HSO5 so we put their mass into sulfate (NA4)
+c     CAMx doesn't carry HMSA or HSO5 so we put their mass into sulfate (NA4)
 c
         do knsec=1,nsect
           aerosol(knsec,na4)=aerosol(knsec,na4)+
@@ -558,7 +499,7 @@ c     OVSR         -> call SOAP alone if the aqueous module is called
 c
       !modeaero = 0: If not inside a cloud
       !modeaero = 1: If inside a cloud
-      
+
       if (laero) then
         if ( chaq.eq.'OVSR' .and. modeaero.eq.1 ) then
           modeaero = 1
@@ -637,6 +578,7 @@ c
         q(naer+idma)   = con(kamine_c)
         
 	if (modeaero.eq.1) then     ! call SOAP only
+
 cjgj
 c     Currently, soap is turned off.
 c
@@ -659,13 +601,11 @@ c          call step(nsec,q) ! calculate water in each section
 cjgj
         else                        ! call SOAP + AER
 cjgj          call aerchem(chaero,q,t0,t1,lfrst,ierr)
-        pressure=pres
+          pressure=pres
 c
 cjgj
-          call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch) 
+          call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch,fndt) 
         endif
-
-
 c
 c     map q back to con 
 c
@@ -686,31 +626,6 @@ c
           con(knum_c+(knsec-1))=q((knsec-1)*nsp+knum)
                      ! Number concentration jgj 2/28/06
         enddo
-c     added by LA
-c        write(*,*)'ksoa1_c=',ksoa1_c
-c        write(*,*)'ksoa2_c=',ksoa2_c
-c        write(*,*)'ksoa3_c=',ksoa3_c
-c        write(*,*)'ksoa4_c=',ksoa4_c
-c        write(*,*)'kpso4_c=',kpso4_c
-c        write(*,*)'kpcl_c=',kpcl_c
-c        write(*,*)'kpno3_c=',kpno3_c
-c        write(*,*)'kna_c=',kna_c
-c        write(*,*)'kpnh4_c=',kpnh4_c
-c        write(*,*)'kph2o_c=',kph2o_c
-c        write(*,*)'kcrst_c=',kcrst_c
-c        write(*,*)'kpec_c=',kpec_c
-c        write(*,*)'kpoc_c=',kpoc_c
-c        write(*,*)'knum_c=',knum_c
-c        write(*,*)'kcg1_c=',kcg1_c
-c        write(*,*)'kcg2_c=',kcg2_c
-c        write(*,*)'kcg3_c=',kcg3_c
-c        write(*,*)'kcg4_c=',kcg4_c
-c        write(*,*)'kh2oso4_c=',kh2oso4_c
-c        write(*,*)'knh3_c=',knh3_c
-c        write(*,*)'khno3_c=',khno3_c
-c        write(*,*)'khcl_c=',khcl_c
-c        write(*,*)'kcl=',kcl
-c     end added by LA
 c
 cdbg      if ((t0.gt.4500).and.(t0.lt.6300))then !between 1:15 and 1:45
 cdbg      if ((t0.gt.0.0).and.(t0.lt.30.))then !between 0:00 and 0:30
@@ -749,12 +664,6 @@ cbk      endif
         con(khcl_c)   = q(naer+ihcl)
         con(kamine_c) = q(naer+idma)
 c
-c     added by LA
-c        if(ich.eq.2 .and. jch.eq.2 .and. kch.eq.1) then
-c           write(*,*)
-c           write(*,*)'aft CAMx2dman anbd remapping con=',con
-c        endif
-c     end added by LA
       endif
 c
 c      if ( .not. lsoap .or. .not.lcond ) then

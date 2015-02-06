@@ -1,11 +1,12 @@
 #!/bin/bash
 #
-#SBATCH -J test_def
-#SBATCH -t 5-20:00:00
+#SBATCH -J PMCAMxUF
+#SBATCH -t 2-3:00:00
 #SBATCH --mem=4000
 #SBATCH -n 1
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=elham.baranizadeh@uef.fi
+#SBATCH --mail-user=jan.julin@aces.su.se
+#SBATCH --constraint=vtune
 #
 # Run a single task in the foreground
 ./run_days 

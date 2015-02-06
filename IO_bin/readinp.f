@@ -408,9 +408,10 @@ c
                 tau = cldod(i,j,k)
                  energy(i,j,k)=1
                 if (tau.lt.5.) then
-c                  energy(i,j,k) = 1.
+c                  energy(i,j,k) = 1.   !Commented for TUV implementation
                   cloud(i,j,k) = 0.
                 else
+		   !Commented for TUV implementation
 c                  energy(i,j,k) = (5. - exp(-tau))/(4. + 0.42*tau)
                   cloud(i,j,k) = 1.
                 endif

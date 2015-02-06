@@ -1,5 +1,8 @@
-      subroutine wrtcon(iflag,tim2,idat2,iunit,nox,noy,noz,
-     &                  nsptmp,cncfld)
+      subroutine wrtcon(iflag,tim2,idat2,iunit,incf,c_ncf_avrg,nox,noy,noz,
+     &                  nsptmp, cncfld, iunitNuc, Jnucfld,
+     &                  cellon, cellat, height)
+
+      USE io_ezcdf
 c
 c-----CAMx v4.03 031205
 c 
@@ -41,15 +44,42 @@ c
       include 'chmstry.com'
       include 'flags.com'
 c
+      character*20 Snuc(2)
+      real Jnucfld(nox,noy,noz,2)
+      integer iunitNuc, incf
+
+      integer  iflag, idat2, iunit
       character*4 ispec(10,MXSPEC), ifile(10), note(60)
-      real cncfld(nox,noy,noz,nsptmp)
+      character*200 c_ncf_avrg, cfil
+      integer nox, noy, noz, nvar
+      real cncfld(nox,noy,noz,nsptmp), tim2
+      real cellon(nox,noy), cellat(nox,noy), height(nox, noy, noz)
       character*10 cnfil
+c
+c-----Data statements
+c
+      
+      INTEGER :: ji, jj, jk
+
+      INTEGER :: id_fil, id_var, nsptmp, lz, lt, lct, lx, ly 
+      REAL,DIMENSION(nox,noy) :: vlon,  vlat
+      REAL,DIMENSION(noz) :: vdpth
+      REAL, DIMENSION(24) :: vtime
+      REAL, DIMENSION(nox,noy,noz) :: x3d
+      REAL :: vflag
+      CHARACTER(len=20) :: cvarlon, cvarlat, cvardpth
+      CHARACTER(len=20), DIMENSION(nsptmp+2) :: cvar, cunit, cln
+      CHARACTER(len=20) :: cvartime, cvar1, cun_z, cun_t
+ 
+
 c
 c-----Data statements
 c
       data cnfil /'INSTANT   '/
       data nseg,izero /1,0/
       data zero /0./
+
+      data Snuc /'Ternary','Binary'/
 c
 c-----Entry point
 c
@@ -112,22 +142,119 @@ c
         write(iunit) izero,izero,nox,noy
         write(iunit) ((ispec(n,l),n=1,10),l=1,nsptmp)
         write(iunit) idat2,etim,idat3,etim3
+
       else
+
+        !Prepare to Write Average Concentrations to Binary File
         do l = 1,nsptmp
           read(spname(lavmap(l)),'(10a1)') (ispec(n,l),n=1,10)
         enddo
-        if (.not.l3davg) nlayer = 1 
+        if (.not.l3davg) nlayer = 1
         write(iunit) idat1,btim,idat2,etim
-      endif
-c
-c-----Write gridded concentration field
-c
-      do l = 1,nsptmp
-        do k = 1,nlayer
-          write(iunit) nseg,(ispec(n,l),n=1,10),
-     &                 ((cncfld(i,j,k,l),i=1,nox),j=1,noy)
+
+        !------------------------NETCDF--------------------------------!
+        !Prepare to Write Data to NETCDF File
+        lx  = nox
+        ly  = noy
+        lz  = noz
+        if (.not.l3davg) lz    = 1
+
+        lt  = 24
+        lct = int(tim2/100.)  !Current Time step (hours)
+	if (lct.eq.0) lct = 24
+
+        vlon   = cellon  !2D array of longitude
+        vlat   = cellat  !2D array of latitude
+        vdpth  = sum(sum(height,1),1)/(nox*noy)  !1D array of heights
+
+        do it = 1,lt
+          vtime(it) = real(it,8)
         enddo
+
+        cfil     = c_ncf_avrg
+        cvarlon  = 'lon'
+        cvarlat  = 'lat'
+        cvardpth = 'depth'
+        cvartime = 'time'
+        vglag  = 999.0
+        cun_z  = 'm'
+        cun_t  = 'hr'
+
+        !First Initialize The NETCDF File
+        if (lct.eq.1) then
+          linit = 1   !initialization
+
+          !Attributes for Variables
+          nvar = nsptmp+2
+          do l = 1,nvar   !Add 2 to make room for Nucleation Rates
+
+            if (l.gt.nsptmp) then    !Variable is a Nucleation Rate
+              cvar(l)  = Snuc(l-nsptmp)      !Species shortname
+              cunit(l) = 'N cm-3 s-1'
+              cln(l)   = cvar(l) 
+
+            elseif (lavmap(l).le.ngas) then  !Species is a gas
+              cvar(l)  = spname(lavmap(l))  !Species shortname
+              cunit(l) = 'ppbv'   !Units
+              cln(l)   = cvar(l)  !Long Name
+
+            else    !Species is an Aerosol
+              cvar(l)  = spname(lavmap(l))  !Species shortname
+              cunit(l) = 'ug m-3' !Units
+              cln(l)   = cvar(l)  !Long Name
+            endif 
+          enddo
+
+          CALL P3D_T_irr_init(incf, id_var, linit, lx, ly, lz, lt, lct, 
+     &       vlon, vlat, vdpth(1:lz), 
+     &       vtime, cfil, cvarlon, cvarlat, cvardpth, cvartime,  
+     &       nvar, cvar, cunit, cln, vflag, cun_z, cun_t) 
+        endif  
+      
+        !Add species concentrations
+        do l = 1,nsptmp+2 !Loop over Variables
+          id_var = l      !Temporary Species identifier 
+                          !  It will be overwritten in P3D_T_irr
+          if (l.le.nsptmp) then  !Variable is a Species
+            x3d(:,:,:) = cncfld(:,:,:,l)  !Conc. Array
+            cvar1 = spname(lavmap(l))      !Species shortname
+
+          else                   !Variable is a Nucleation Rate
+            x3d(:,:,:) = Jnucfld(:,:,:,l-nsptmp)  !Nuc. Array
+            cvar1 = Snuc(l-nsptmp)
+	  endif
+
+          !Write Array
+          CALL P3D_T_irr_var(incf, id_var, lx, ly, lz, lt, lct, 
+     &       x3d, cfil, cvar1)
+        enddo
+
+	!Sync NetCDF File on Disk with Memory Buffer
+        call disp_err(NF_SYNC(incf), 'WRTCON','AVERAGE FILE','SYNCING')     
+        !------------------------NETCDF--------------------------------!
+      endif
+
+
+!-----Write gridded concentration field for instantaneous concentrations
+!     Or Binary Average File Depending on Value of iflag
+      do l = 1,nsptmp
+         do k = 1,nlayer
+           write(iunit) nseg,(ispec(n,l),n=1,10),
+     &               ((cncfld(i,j,k,l),i=1,nox),j=1,noy)
+         enddo
       enddo
-c
+
+!-----Write Gridded Nucleation Rates
+      if (iflag.eq.0) then
+        write (iunitNuc) idat1,btim,idat2,etim
+	do l = 1,2
+	  do k = 1,nlayer
+	    write(iunitNuc) nseg,Snuc(l),
+     &              ((Jnucfld(i,j,k,l),i=1,nox),j=1,noy)
+          enddo 
+        enddo
+      endif
+      
+
       return
       end

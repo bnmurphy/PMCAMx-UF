@@ -20,6 +20,8 @@ c     imass  -- mass summary output file
 c     iconc  -- coarse grid instantaneous concentration output file
 c     ifconc -- fine grid instantaneous concentration output file
 c     iavg   -- coarse grid average concentration output file
+c     iJnuc  -- coarse grid average nucleatino output file
+c     incf   -- coarse grid average concentration netcdf file
 c     ifavg  -- fine grid average concentration output file
 c     idep   -- coarse grid deposition output file
 c     ifdep  -- fine grid deposition output file
@@ -49,7 +51,7 @@ c-----------------------------------------------------------------------
      &               icld(MXGRID),iic,ibc,
      &               itopc,iaho,iptem,ihtp(MXGRID),iarem(3,MXGRID),
      &               isurf(MXGRID),iwind(MXGRID),itemp(MXGRID),
-     &               ikv(MXGRID),irstc,irstf,irstp
+     &               ikv(MXGRID),irstc,irstf,irstp,incf,iJnuc
 c
 c========================= Process Analysis Begin ==============================
 c

@@ -56,10 +56,6 @@ c
             do i = i1,i2
               dtmp = conc(i,j,k,is)*dx(j)*dy*depth(i,j,k)
               xmass(is) = xmass(is) + dtmp
-c     added by LA
-c              write(*,*)
-c              write(*,*)'conc(i,j,k,is)=',conc(i,j,k,is)
-c     end added by LA
             enddo
   20      continue
   30    continue
