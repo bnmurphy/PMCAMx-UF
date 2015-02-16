@@ -111,7 +111,7 @@ c
         call zeros(avcnc(iptr4d(igrd)),nodes)
         nodes = ncol(igrd)*nrow(igrd)*3*navspc
         call zeros(depfld(iptrdp(igrd)),nodes)
-        nodes = ncol(igrd)*nrow(igrd)*nlay(igrd)*2
+        nodes = ncol(igrd)*nrow(igrd)*nlay(igrd)*3
         call zeros(avJnuc(iptr4d(igrd)),nodes)
       enddo
 c
@@ -876,7 +876,7 @@ c
           call zeros(avcnc(iptr4d(igrd)),nodes)
           nodes = ncol(igrd)*nrow(igrd)*3*navspc
           call zeros(depfld(iptrdp(igrd)),nodes)
-          nodes = ncol(igrd)*nrow(igrd)*nlay(igrd)*2
+          nodes = ncol(igrd)*nrow(igrd)*nlay(igrd)*3
           call zeros(avJnuc(iptr4d(igrd)),nodes)
         enddo
 

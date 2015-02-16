@@ -68,7 +68,7 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
                                 ! process (kg m-3)
       double precision mfrac(icomp) ! fraction of the nucleated mass that will be assigned
                                     ! to each icomp species (passed to nucMassUpdate)
-      double precision fn_all(2) !Magnitude of nucleation rates resolved by pathway
+      double precision fn_all(nJnuc) !Magnitude of nucleation rates resolved by pathway
 
 
 C-----EXTERNAL FUNCTIONS------------------------------------------------
@@ -79,7 +79,7 @@ C-----EXTERNAL FUNCTIONS------------------------------------------------
 C-----ADJUSTABLE PARAMETERS---------------------------------------------
 
       parameter (neps=1E8, meps=1E-8)
-      parameter (pi=3.14159)
+      parameter (pi=3.14159d0)
 
 C-----CODE--------------------------------------------------------------
 
@@ -87,12 +87,12 @@ C-----CODE--------------------------------------------------------------
       ! ACDC Lookup table ternary nuclation does not need this in ppt
 c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
       nh3_molec = Gci(srtnh4)/boxvol*1000.d0/17.d0*6.022d23 
-      dma_molec = dmappt*1.e-18 * pres/8.314/temp * 6.022d23 !molec cm-3
+      dma_molec = dmappt*1.d-18 * pres/8.314d0/temp * 6.022d23 !molec cm-3
 
       fn = 0.d0
       rnuc = 0.d0
       gtime = 0.d0
-      fn_all = 0.
+      fn_all = 0.d0
 
       ! if no nucleation occurs the final arrays will be same as the initial arrays
       Mkf=Mki
@@ -104,22 +104,31 @@ cdbg      print*,'h2so4',h2so4,'nh3ppt',nh3ppt
 C     if requirements for nucleation are met, call nucleation subroutines
 C     and get the nucleation rate and critical cluster size
       if (h2so4.gt.1.d4) then
-         if (amine_nuc.eq.1.and.dma_molec.gt.1.e4) then
+         if (amine_nuc.eq.1.and.dma_molec.gt.1.d4) then
             call amine_nucl(temp,cs,h2so4,dma_molec,fn,rnuc) !amine nuc
 
             !Update DMA Concentration
 	    !The 0.31 factor should be the mass fraction of DMA in
 	    !the nucleated particles.
-            d_dma = 0.31 * (4.d0/3.d0*pi*(rnuc*1D-9)**3)*1350.d0*fn*1.e6*dt !kg m-3
-            dmappt = dmappt - d_dma/0.045 / (pres/(8.314*temp)) * 1.e12 !pptv
+            d_dma = 0.31d0 * (4.d0/3.d0*pi*(rnuc*1D-9)**3)*1350.d0*fn*1.d6*dt !kg m-3
+            dmappt = dmappt - d_dma/0.045d0 / (pres/(8.314d0*temp)) * 1.d12 !pptv
+
+            !nucleation could use all of the DMA so check that we do not get negative
+            if (dmappt.lt.0.d0) then
+               print*, 'Neg DMA in nucleation', dmappt
+               dmappt = 0.d0
+            end if
 
             if (fn.gt.0.d0) then
                !update mass and number
                !nuclei consist of sulfate and amine compounds
-	       !assume them to be like ammonium bisulfate
-	       !even though they should be bigger and look more organic
-               mfrac = (/0.8144, 0.0, 0.1856, 0.0/)
+	       !assume 1-to-1 ratio of DMA and sulfuric acid, put DMA 
+               !in to particle phase as Ammonia
+               mfrac = (/0.69, 0.0, 0.31, 0.0/)
                call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+               !set amine nucleation rate as number 3 for now (it is
+               !the latest addition to fn_all
+               fn_all(3)=fn
             endif
          endif       
 

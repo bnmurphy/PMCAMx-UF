@@ -12,7 +12,7 @@ set DATE2   = $2
 @ DATE3   = $DATE2 + 121
 @ DATE4   = $DATE2 + 120
 #
-set RUN     = "PMCAMxUF_FixACDC_ternary"
+set RUN     = "PMCAMxUF_Amines"
 set OUTPUT  = $PMCAMxUF_USER_OUTPUT/$RUN
 #
 if ($DATE == "01") then

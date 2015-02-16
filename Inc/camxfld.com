@@ -108,8 +108,8 @@ c
       real   avcnc(MXVEC4D)
       real   cncrad(MXVECRD)
       real   sconc(MXVEC4D)
-      real   Jnuc(MXVEC3D*2)
-      real   avJnuc(MXVEC3D*2)
+      real   Jnuc(MXVEC3D*3)
+      real   avJnuc(MXVEC3D*3)
 c
       common /store4d/ conc, avcnc, cncrad, sconc, Jnuc, avJnuc
 c

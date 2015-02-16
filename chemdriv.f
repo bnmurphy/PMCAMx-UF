@@ -149,8 +149,8 @@ c      integer ispc,naero
       real massum2
       real frctn, nmbr
       real dsulfdt !sulfuric acid production rate
-      double precision fndt(2) !nucleation diagnostic
-      real Jnuc(ncol,nrow,nlay,2) !Common Nucleation Diagnostic
+      double precision fndt(3) !nucleation diagnostic
+      real Jnuc(ncol,nrow,nlay,3) !Common Nucleation Diagnostic
       integer inuc
 c
 c-----Entry point
@@ -469,7 +469,7 @@ cdbg                 endif !dbg
      &                         MXSPEC,MXRADCL,NSPEC,NGAS,
      &                         con,crad,convfac,time,aero_dt(igrd),
      &                         ichm,jchm,kchm,height,dsulfdt,fndt)
-                 do inuc = 1,2
+                 do inuc = 1,3
                    Jnuc(i,j,k,inuc) = real(fndt(inuc))
                  enddo
 

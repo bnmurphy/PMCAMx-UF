@@ -70,7 +70,7 @@ c
       real tot_inert2 ! total inert mass after calling dman
 cdbg      real eps
       real cvt, cvt2
-      double precision fndt(2) !Nucleation diagnostic
+      double precision fndt(3) !Nucleation diagnostic
 c
 c-----Adjustable parameters
 c
@@ -264,7 +264,7 @@ cdbg          enddo
 cdbg        endif
 cdbg      endif
 
-      call dman(tstart,tend,Nk,Mk,h2so4,nh3ppt,dmappt,relh,tempK,pres,
+      call dman(tstart,tend,Nk,Mk,h2so4,nh3ppt,dmappt,relh,tempK,pres
      & ,dsulfdt,ich,jch,kch,fndt)
       !For a debuging purpose
 cdbg      if ((tstart.gt.0.0).and.(tstart.lt.0.5)) then

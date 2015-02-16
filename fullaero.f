@@ -80,7 +80,7 @@ c
       real  pressure
       integer     r_idx(4)
       integer ich,jch,kch
-      double precision fndt(2)
+      double precision fndt(3)
 c
 ckf
       real*4 hgt, klay

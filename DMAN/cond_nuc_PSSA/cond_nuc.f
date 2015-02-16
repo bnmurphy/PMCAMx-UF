@@ -207,7 +207,7 @@ C     Get the steady state H2SO4 concentration
             call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all,CS1,dmappt) 
 
             !Add up the nucleation from each process to temp variable 
-            do k=1,2
+            do k=1,nJnuc
                fndt(k) = fndt(k) + fn_all(k) * addt
             end do
             mass_change = 0.d0

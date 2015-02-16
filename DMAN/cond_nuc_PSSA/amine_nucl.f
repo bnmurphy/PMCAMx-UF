@@ -40,23 +40,23 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision dma                  ! concentration of gas phase dimethyl amine [ppt]
 c
       integer ii                 ! counter
-      real    ii1, ii2, ii3, ii4
-      real    ic1, ic2, ic3, ic4
+      double precision    ii1, ii2, ii3, ii4
+      double precision    ic1, ic2, ic3, ic4
       integer itemp, ics, icna, idma
       integer itemp1,ics1,icna1,idma1
 
 
 C
-      tmp  = tempi  !K
+      tmp  = dble(tempi)  !K
       cs   = csi    !s-1
       cna  = cnai   !molec cm-3
       dma  = dma_i  !molec cm-3
        
       !Limit All Values to Upper Bound on Lookup Table
-      tmp = max(min(tmp,319.9),180.1)
-      cs   = max(min(cs,1.99e-1),1.01e-5)
-      cna  = max(min(cna,3.15e9),1.01e4)
-      dma  = max(min(dma,0.99e9),1.01e4)
+      tmp = max(min(tmp,319.9d0),180.1d0)
+      cs   = max(min(cs,1.99d-1),1.01d-5)
+      cna  = max(min(cna,3.16227d9),1.0001d4)
+      dma  = max(min(dma,0.999999999d9),1.0001d4)
 
       !Locate the lower-bound indices of all the 
       !independent variables
@@ -108,7 +108,7 @@ C
       
       ! Always in the kinetic limit, so set a constant rnuc to 0.7 nm,
       ! as the mobility diameter for largest cluster in ACDC is 1.4 nm 
-      rnuc = 0.7
+      rnuc = 0.7d0
       return
 
       end subroutine
@@ -141,9 +141,11 @@ c
       include 'sizecode.COM'
 c
       integer iH2SO4, iDMA, iCS, iTEMP
+      character*99 fname
 
-      open(unit=98,file='DMAN/cond_nuc_PSSA/ACDC_H2SO4_DMA_05Feb2014.txt')
-
+      fname='DMAN/cond_nuc_PSSA/ACDC_H2SO4_DMA_05Feb2014.txt'
+      open(unit=98,file=fname)
+      
       !First read header and toss it
       read (98, *)
 
@@ -153,7 +155,8 @@ c
           do iH2SO4 = 1,amine_nuc_nH2SO4
             do iDMA = 1,amine_nuc_nDMA
 	      read (98,*) amine_nuc_tbl_H2SO4(iH2SO4), amine_nuc_tbl_DMA(iDMA),
-     &                    amine_nuc_tbl_TEMP(iTEMP),   amine_nuc_tbl_CS(iCS),
+     &                    amine_nuc_tbl_TEMP(iTEMP), 
+     &                    amine_nuc_tbl_CS(iCS),
      &                    amine_nuc_tbl_J(iTEMP, iCS, iH2SO4, iDMA)
             enddo
           enddo

@@ -13,7 +13,7 @@ set DATE2   = $2
 @ DATE4   = $DATE2 + 120
 #
 set RUN     = "PMCAMxUF_Amines"
-set OUTPUT  = "/proj/snic2014-1-155/users/x_janju/PMCAMx_Output/$RUN"
+set OUTPUT  = $PMCAMxUF_USER_OUTPUT/$RUN
 #
 if ($DATE == "01") then
   mkdir -p $OUTPUT
@@ -158,7 +158,7 @@ Staggered winds    |false
 Treat area emiss   |true
 Treat point emiss  |false
 1-day emiss inputs |true
-3-D average file   |false
+3-D average file   |true
 Source Apportion   |false
 Chemparam          |CAMx4.chemparam.6
 Photolysis rates   |$INPUT/photolysis_rates/tuv_euro_ps2str_S99.0805$DATE.txt

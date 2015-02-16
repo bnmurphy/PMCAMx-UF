@@ -121,7 +121,7 @@ cdbg	  double precision h2so4_print
 
 C Nucleation Diagnostic Variables
       integer nJnuc
-      parameter (nJnuc = 2)
+      parameter (nJnuc = 3)
 
 C Make variables common
 

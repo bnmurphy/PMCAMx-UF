@@ -3,7 +3,7 @@
 #SBATCH -J PMCAMxUF
 #SBATCH -t 2-3:00:00
 #SBATCH --mem=4000
-#SBATCH -n 1
+#SBATCH -N 1
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jan.julin@aces.su.se
 #SBATCH --constraint=vtune

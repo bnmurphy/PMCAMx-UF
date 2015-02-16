@@ -80,7 +80,7 @@ C     if requirements for nucleation are met, call nucleation subroutines
 C     and calculate nucleated mass
 C     Total mass is sum from all the nucleation pathways
       if (h2so4.gt.1.d4) then
-         if ((amine_nuc.eq.1).and.(dma_molec.gt.1.e4)) then
+         if ((amine_nuc.eq.1).and.(dma_molec.gt.1.d4)) then
             call amine_nucl(temp,cs,h2so4,dma_molec,fn,rnuc) !amine nuc
             nflg=.true.
             massnuc2 = 4.d0/3.d0*pi*(rnuc*1.d-9)**3*1350.*fn*boxvol*

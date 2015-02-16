@@ -44,8 +44,8 @@ c
       include 'chmstry.com'
       include 'flags.com'
 c
-      character*20 Snuc(2)
-      real Jnucfld(nox,noy,noz,2)
+      character*20 Snuc(3)
+      real Jnucfld(nox,noy,noz,3)
       integer iunitNuc, incf
 
       integer  iflag, idat2, iunit
@@ -79,7 +79,7 @@ c
       data nseg,izero /1,0/
       data zero /0./
 
-      data Snuc /'Ternary','Binary'/
+      data Snuc /'Ternary','Binary','AmineNuc'/
 c
 c-----Entry point
 c
@@ -185,8 +185,8 @@ c
           linit = 1   !initialization
 
           !Attributes for Variables
-          nvar = nsptmp+2
-          do l = 1,nvar   !Add 2 to make room for Nucleation Rates
+          nvar = nsptmp+3
+          do l = 1,nvar   !Add 3 to make room for Nucleation Rates
 
             if (l.gt.nsptmp) then    !Variable is a Nucleation Rate
               cvar(l)  = Snuc(l-nsptmp)      !Species shortname
@@ -212,7 +212,7 @@ c
         endif  
       
         !Add species concentrations
-        do l = 1,nsptmp+2 !Loop over Variables
+        do l = 1,nsptmp+3 !Loop over Variables
           id_var = l      !Temporary Species identifier 
                           !  It will be overwritten in P3D_T_irr
           if (l.le.nsptmp) then  !Variable is a Species
@@ -237,23 +237,25 @@ c
 
 !-----Write gridded concentration field for instantaneous concentrations
 !     Or Binary Average File Depending on Value of iflag
-      do l = 1,nsptmp
-         do k = 1,nlayer
-           write(iunit) nseg,(ispec(n,l),n=1,10),
-     &               ((cncfld(i,j,k,l),i=1,nox),j=1,noy)
+      if (iflag.eq.1) then
+         do l = 1,nsptmp
+            do k = 1,nlayer
+               write(iunit) nseg,(ispec(n,l),n=1,10),
+     &              ((cncfld(i,j,k,l),i=1,nox),j=1,noy)
+            enddo
          enddo
-      enddo
+      endif
 
 !-----Write Gridded Nucleation Rates
-      if (iflag.eq.0) then
-        write (iunitNuc) idat1,btim,idat2,etim
-	do l = 1,2
-	  do k = 1,nlayer
-	    write(iunitNuc) nseg,Snuc(l),
-     &              ((Jnucfld(i,j,k,l),i=1,nox),j=1,noy)
-          enddo 
-        enddo
-      endif
+c$$$      if (iflag.eq.0) then
+c$$$        write (iunitNuc) idat1,btim,idat2,etim
+c$$$	do l = 1,3
+c$$$	  do k = 1,nlayer
+c$$$	    write(iunitNuc) nseg,Snuc(l),
+c$$$     &              ((Jnucfld(i,j,k,l),i=1,nox),j=1,noy)
+c$$$          enddo 
+c$$$        enddo
+c$$$      endif
       
 
       return
