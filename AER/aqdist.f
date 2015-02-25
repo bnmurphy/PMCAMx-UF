@@ -109,7 +109,7 @@ c Normalize so fdist sums to 1
       
       sumx1 = 0.d0
       sumx2 = 0.d0
-      do i = isect,nsect
+      do i = 1,nsect
       if(daer(i) .gt. dactiv .and. daer(i) .lt. dsep) then
       sumx1 = sumx1+fdistx2a(i)
       else
@@ -117,7 +117,7 @@ c Normalize so fdist sums to 1
       endif
       enddo
       
-      do i = isect,nsect
+      do i = 1,nsect
       if(daer(i) .gt. dactiv .and. daer(i) .lt. dsep) then
       fdistx2(i) = fdistx2a(i)/sumx1
       else
