@@ -120,6 +120,7 @@ c
       r( 98) = rk( 98)*cncrad(kOH)*conc(kOLE2)
       r( 99) = rk( 99)*conc(kO3)*conc(kOLE2)
       r(100) = rk(100)*cncrad(kNO3)*conc(kOLE2)
+      r(101) = rk(101)*conc(kAMINE)*cncrad(kOH)
 c
       return
       end

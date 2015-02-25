@@ -123,6 +123,9 @@ c
 
         Gain(kCG4  )= +( 0.136)*r( 97)+( 0.136)*r( 98)+( 0.136)*r( 99)
      &                +( 0.136)*r(100)
+        
+        Loss(kAMINE)= +( 1.000)*r(101)
+
       do l=neq1+1,ngas
         rate(l) = gain(l) -loss(l)
       enddo
