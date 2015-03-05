@@ -45,7 +45,7 @@ C-----OUTPUTS-----------------------------------------------------------
 ccondtest      SUBROUTINE so4cond(dt,ygas)
 cdbg      SUBROUTINE so4cond(Nki,Mki,Gci,Nkf,Mkf,Gcf,dt,xkDMAN)
       SUBROUTINE so4cond(Nki,Mki,Gci,Nkf,Mkf,Gcf,dt,ichm,jchm,kchm,
-     &           iflagez)
+     &           iflagez,dmappt)
 
       IMPLICIT NONE
 
@@ -118,6 +118,8 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision sumataunh3    ! sum of atauc
 
       character*12 limit        !description of what limits time step
+
+      double precision dmappt ! dma concentration in ppt (currently not used)
 
 
 C     VARIABLE COMMENTS...

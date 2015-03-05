@@ -340,7 +340,7 @@ cjgj      data mchaero  /  0,  0,  0, 16,  0, 13,  0, 0, 0, 0 /
       data mchaero  /  0,  0,  0, 16,  0, 14,  0, 0, 0, 0 /
       data mchrad   / 14, 12, 12, 12, 18, 12,  0, 0, 0, 0 /
       data mchiessr /  4,  2,  2,  2,  2,  2,  0, 0, 0, 0 /
-      data mchrxn   /110, 91, 96,100,211,100,  0, 0, 0, 0 /
+      data mchrxn   /110, 91, 96,100,211,101,  0, 0, 0, 0 /
       data mchphot  / 14, 11, 12, 12, 30, 12,  0, 0, 0, 0 /
       data mchfast  /  4,  4,  4,  4, 13,  4,  0, 0, 0, 0 /
       data mchidmin / 1 /

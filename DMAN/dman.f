@@ -37,7 +37,7 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
       double precision Mki(ibins,icomp) !Mass in a box as kg
       real h2so4   ! h2so4 from PMCAMx [=] ppt
       real nh3ppt  ! nh3ppt from PMCAMx
-      real dmappt  ! nh3ppt from PMCAMx
+      double precision dmappt  ! dmappt from PMCAMx
       real rhi     ! relative humidity from PMCAMx
       real tempi   ! temperature from PMCAMx
       real presi   ! pressure from PMCAMx
@@ -177,6 +177,7 @@ cdbg    endif
       !Initialize ygas
       ygas(mgsvi)=h2so4
       ygas(mgnh3)=nh3ppt
+      ygas(mgdma)=dmappt
       rh=rhi
       temp=tempi
       pres=presi
@@ -264,11 +265,15 @@ cPMCAMx        else
         !Convert PPT to kg (gridcell)-1
         Gc(srtso4)=boxmass*ygas(mgsvi)*1.0d-12*gmw(srtso4)/28.9
         Gc(srtnh3)=boxmass*ygas(mgnh3)*1.0d-12*gmw(srtnh3)/28.9
+cJJ It would be reasonable to add dma to Gc as well at some point (update icomp), 
+cJJ even though that would mean that the size of Mk and Nk changes as well. 
+cJJ For now we keep passing dmappt to various subroutines
+        
 cPMCAMx        endif
 
         Call so4cond(Nk,Mk,Gc,Nkout,Mkout,Gcout,dt,ichm,jchm,kchm,
-     &              iflagez) 
-                                                           !Only ammonia
+     &              iflagez,dmappt) 
+                                                           !Only ammonia and amine
         if (iflagez.eq.1) then
           call eznh3(Gc,Mk,Nk,Gcout,Mkout,Nkout,ichm,jchm,kchm)
         endif

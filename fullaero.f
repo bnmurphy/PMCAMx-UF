@@ -405,7 +405,10 @@ c          qins((knsec-1)*nsp+knum)=con(knum_c+(knsec-1))                 !
 c                                                                         !
 c----------------------call isorropia here------------------------------  !
 c                                                                         !
-        call eqpart(t1,qins)                                              !
+!!!! commented out call to eqpart for now, it is slightly bugged beacuse
+!!!! not everything is initialized, and the location of the call is suspect
+!!!! JJ 15/02
+c        call eqpart(t1,qins)                                              !
 c-----------------------------------------------------------------------  !
                                                                           !
         do knsec=1,nsect                                                  !

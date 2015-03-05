@@ -527,6 +527,7 @@ c
       r( 90) = rk( 90)*cncrad(kOH)*cncrad(kHO2)
       r( 92) = rk( 92)*cncrad(kOH)*conc(kISPD)
       r( 98) = rk( 98)*cncrad(kOH)*conc(kOLE2)
+      r(101) = rk(101)*conc(kAMINE)*cncrad(kOH)
       if (errbig.gt.tol) goto 14
 c
 c  new group of radicals
