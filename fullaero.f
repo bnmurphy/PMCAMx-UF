@@ -404,8 +404,9 @@ c          qins((knsec-1)*nsp+knum)=con(knum_c+(knsec-1))                 !
         enddo                                                             !
 c                                                                         !
 c----------------------call isorropia here------------------------------  !
-c                                                                         !
-        call eqpart(t1,qins)                                              !
+c
+ ! eqpart commented out for now                                           !
+c        call eqpart(t1,qins)                                              !
 c-----------------------------------------------------------------------  !
                                                                           !
         do knsec=1,nsect                                                  !

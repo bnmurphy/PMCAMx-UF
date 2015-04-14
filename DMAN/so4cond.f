@@ -31,6 +31,8 @@ C     subroutine's original code. 12/03/2007 by JaeGun Jung
 C     A correction factor, corfactor is added after tested with analytic 
 C     solution. 12/11/2007 by JaeGun Jung
 
+C     Changed the correction factor to 1.0 (was 1.4) JJ 15/04/14
+
 C-----INPUTS------------------------------------------------------------
 
 C     Initial values of
@@ -139,7 +141,7 @@ C-----ADJUSTABLE PARAMETERS---------------------------------------------
       parameter(Neps=1.0d+10, zeta13=0.98483, cthresh=1.d-16)
                          !Neps is set a little higher than multicoag 
                          !to avoid redundant time step segregations.
-      parameter(corfactor=1.4) ! a correction factor
+      parameter(corfactor=1.0) ! a correction factor
 
 C-----CODE--------------------------------------------------------------
 
@@ -273,7 +275,7 @@ cdbg            density = 1000.
           endif
           mp=1.414*xk(k)
         endif
-        Dpk(k)=((mp/density)*(6./pi))**(0.333)
+        Dpk(k)=((mp/density)*(6./pi))**(1./3.)
         Dpk(k)=h2ogrowth*Dpk(k)
         if (icond_test .eq. 1) then
           beta(srtso4)=1.
@@ -530,7 +532,8 @@ C Call condensation subroutine to do mass transfer
           endif
           ! JJ comment: if atau and consequently tau got the taumax value earlier,
           ! a corfactor > 1 will try to condense more than should be allowed.
-          ! Leave it for now
+          ! Leave it for now 
+          ! Addendum: changed corfactor to 1.0 at 15/04/14 /JJ
           tau(k)=corfactor*tau(k) ! A correction factor is applied.
         enddo
 
