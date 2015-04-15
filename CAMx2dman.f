@@ -58,6 +58,7 @@ c
 c
       real h2so4      ! sulfuric acid gas [=] ppt
       real nh3ppt     ! ammonia gas [=] ppt
+      double precision dmappt ! dma gas [=] ppt
       real relh       ! relative humidity
       real tstart     ! starting time and ending time of simulation
       real tend       ! starting time and ending time of simulation

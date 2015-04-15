@@ -99,7 +99,7 @@ c-----Entry point
 c
       knh3 = 28
       kamine = 35
-      amine2nh3 = 0.01
+      amine2nh3 = 0.0057
 
 
 c-----Update concentration due to area source

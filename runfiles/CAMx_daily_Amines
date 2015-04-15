@@ -5,14 +5,14 @@
 #set INPUT  = "/home/christos/Research/ICEHT/eucaari"
 #set INPUT2 = "/home/christos/Research/ICEHT/ufeu/inputs"
 set INPUT  = "/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe"
-set INPUT2 = "/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe/ufeu/inputs"
+set INPUT2 = "/proj/snic2014-1-155/users/x_elhba/Inputs_May_Europe"
 
 set DATE    = $1
 set DATE2   = $2
 @ DATE3   = $DATE2 + 121
 @ DATE4   = $DATE2 + 120
 #
-set RUN     = "PMCAMxUF_Amines"
+set RUN     = "PMCAMxUF_UpdatedAmines"
 set OUTPUT  = $PMCAMxUF_USER_OUTPUT/$RUN
 #
 if ($DATE == "01") then
@@ -174,7 +174,7 @@ Boundary conditions|$INPUT/IC_BC_TCs/BCs43_Eucaari_2_edges.bin
 Top concentration  |$INPUT/IC_BC_TCs/TCs43_Eucaari_2.txt
 Albedo/haze/ozone  |$INPUT/ahomap/ahomap.monthEU.0805$DATE
 Point emiss        |
-Area emiss         |$INPUT/ufeu_emiss/emnnum.0805$DATE.bin
+Area emiss         |$INPUT2/ufeu_emiss/emnnum.0805$DATE.bin
 Restart file name  |$RSTF
 ieof
 #
