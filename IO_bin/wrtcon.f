@@ -237,23 +237,25 @@ c
 
 !-----Write gridded concentration field for instantaneous concentrations
 !     Or Binary Average File Depending on Value of iflag
-      do l = 1,nsptmp
-         do k = 1,nlayer
-           write(iunit) nseg,(ispec(n,l),n=1,10),
+      if (iflag.eq.1) then
+         do l = 1,nsptmp
+            do k = 1,nlayer
+               write(iunit) nseg,(ispec(n,l),n=1,10),
      &               ((cncfld(i,j,k,l),i=1,nox),j=1,noy)
+            enddo
          enddo
-      enddo
+      endif
 
 !-----Write Gridded Nucleation Rates
-      if (iflag.eq.0) then
-        write (iunitNuc) idat1,btim,idat2,etim
-	do l = 1,2
-	  do k = 1,nlayer
-	    write(iunitNuc) nseg,Snuc(l),
-     &              ((Jnucfld(i,j,k,l),i=1,nox),j=1,noy)
-          enddo 
-        enddo
-      endif
+c$$$      if (iflag.eq.0) then
+c$$$        write (iunitNuc) idat1,btim,idat2,etim
+c$$$	do l = 1,2
+c$$$	  do k = 1,nlayer
+c$$$	    write(iunitNuc) nseg,Snuc(l),
+c$$$     &              ((Jnucfld(i,j,k,l),i=1,nox),j=1,noy)
+c$$$          enddo 
+c$$$        enddo
+c$$$      endif
       
 
       return

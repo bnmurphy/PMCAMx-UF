@@ -1,10 +1,10 @@
 ./CAMx_daily 01 01
-./CAMx_daily 02 02
-./CAMx_daily 03 03
-./CAMx_daily 04 04
-./CAMx_daily 05 05
-./CAMx_daily 06 06
-./CAMx_daily 07 07
+#./CAMx_daily 02 02
+#./CAMx_daily 03 03
+#./CAMx_daily 04 04
+#./CAMx_daily 05 05
+#./CAMx_daily 06 06
+#./CAMx_daily 07 07
 #./CAMx_daily 08 8
 #./CAMx_daily 09 9
 #./CAMx_daily 10 10

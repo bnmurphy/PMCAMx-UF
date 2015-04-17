@@ -142,7 +142,7 @@ cdbg          nh3ppt = 0.d0
                enddo
             else
                write(*,*)'Coordinate =', ich, jch, kch
-               write(*,*)'Negative tracer in DMAN after dman'
+               write(*,*)'Negative tracer in DMAN before dman'
                write(*,*)'sizesection=', i
                write(*,*)'q(+knum)='
                do ii=1,ibins
@@ -167,7 +167,7 @@ cdbg          nh3ppt = 0.d0
                   iflag=1
                else
                   write(*,*)'Coordinate =', ich, jch, kch
-                  write(*,*)'Negative tracer in DMAN after dman'
+                  write(*,*)'Negative tracer in DMAN before dman'
                   write(*,*)'sizesection=', i
                   write(*,*)'q(+knum)='
                   do ii=1,ibins
