@@ -47,7 +47,7 @@ DMAN  = ./DMAN
 
 PSSA  = ./DMAN/cond_nuc_PSSA
 
-MOD   = ./mod
+MOD   = ./
 
 TARGT = CAMx
 
@@ -58,11 +58,10 @@ ifeq ($(COMPILER),ifort)
   LIB_CDF = -L$(NCDF_LIB) -lnetcdf -lnetcdff
 
   FC   := ifort
-  FLGS := -I$(INC) -module mod/ -I$(NCDF_INC) 
+  FLGS := -I$(INC) -I$(NCDF_INC) 
   FLGS := $(FLGS) -O2
   FLGS := $(FLGS) -fpe3 -reentrancy threaded -traceback -align dcommons -extend_source -convert big_endian -mcmodel=large -shared-intel
-	#make model FC="ifort" FLGS="-I$(INC) -module mod/ -I$(NCDF_INC) -O2 -fpe3 -reentrancy threaded -traceback -align dcommons -extend_source -convert big_endian -mcmodel=large -shared-intel" TARGT="PMCAMx.exe" DUM=dummy
-#	make model FC="ifort" FLGS="-I$(INC) -O2 -align dcommons -extend_source -convert big_endian -static" TARGT="PMCAMx.exe" DUM=dummy
+
 endif
 
 ifeq ($(COMPILER),pgf90)
@@ -81,7 +80,7 @@ endif
 
 default:
 	@echo '---------------------------------------------------------'
-	@echo 'To make PMCAMx.exe type make PMCAMx.exe DOMAIN=string'
+	@echo 'To make PMCAMx.exe type make PMCAMx DOMAIN=eucaari COMPILER=ifort'
 	@echo '----------------------------------------------------------'
 
 PMCAMx:
@@ -440,6 +439,7 @@ $(DMAN)/gasdiff.o \
 $(DMAN)/initbounds.o \
 $(DMAN)/multicoag.o \
 $(DMAN)/so4cond.o \
+$(DMAN)/org_cond.o \
 $(DMAN)/so4cond_oxd.o \
 $(DMAN)/tmconds.o \
 $(PSSA)/aerodens_PSSA.o \
@@ -1529,6 +1529,9 @@ $(DMAN)/multicoag.o     : $(DMAN)/multicoag.f                                  \
 $(DMAN)/so4cond.o       : $(DMAN)/so4cond.f                                    \
                         $(INC)/sizecode.COM $(INC)/aervaria.inc
 
+$(DMAN)/org_cond.o       : $(DMAN)/org_cond.f                                  \
+                        $(INC)/sizecode.COM $(INC)/aervaria.inc
+
 $(DMAN)/so4cond_oxd.o       : $(DMAN)/so4cond_oxd.f                            \
                         $(INC)/sizecode.COM $(INC)/aervaria.inc
 
@@ -1570,12 +1573,12 @@ $(PSSA)/nuc_massupd.o	  : $(PSSA)/nuc_massupd.f                               \
 $(PSSA)/mnfix_PSSA.o	  : $(PSSA)/mnfix_PSSA.f                               \
 			  $(INC)/sizecode.COM
 
+$(PSSA)/tern_nucl_acdc.o  : $(PSSA)/tern_nucl_acdc.f                           \
+                          $(INC)/sizecode.COM
+
 $(PSSA)/napa_nucl.o	  : $(PSSA)/napa_nucl.f                          
 
 $(PSSA)/nucleation.o	  : $(PSSA)/nucleation.f                               \
-			  $(INC)/sizecode.COM
-
-$(PSSA)/tern_nucl_acdc.o  : $(PSSA)/tern_nucl_acdc.f			       \
 			  $(INC)/sizecode.COM
 
 $(PSSA)/vehk_nucl.o	  : $(PSSA)/vehk_nucl.f                      

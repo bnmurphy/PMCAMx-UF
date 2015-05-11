@@ -34,7 +34,8 @@ cdbg      include 'aervaria.inc'
 
       integer ibins, icomp
       integer naqbin
-      parameter (ibins=41, icomp=4)
+c      parameter (ibins=41, icomp=4) !David
+      parameter (ibins=41, icomp=8)  !david
       parameter (naqbin=2)
 c
 c-----Argument declarations
@@ -50,8 +51,13 @@ cdbg      real dsulfdt    !sulfuric acid production rate
 c
 c-----Variable declarations
 c
-      integer srtso4, srtorg, srtnh3, srth2o !species indicators
-      parameter (srtso4=1, srtorg=2, srtnh3=3, srth2o=4)
+
+      integer srtso4, srtinrt,  srtnh3, srth2o
+      integer srtsoa1, srtsoa2, srtsoa3, srtsoa4
+
+      parameter (srtso4=1, srtinrt=2)
+      parameter (srtsoa1=3, srtsoa2= 4, srtsoa3=5, srtsoa4=6)
+      parameter (srtnh3=7, srth2o=8)
 
       integer i, j ! counter variables
       integer ii, jj ! counter variables
@@ -188,7 +194,9 @@ c         add_tot_inert(i) = moxid0(i,kna_c)+                          ! cf
          add_rt_pom(i) = moxid0(i,kpoc_c) * (1.0/add_tot_inert(i))
          add_rt_ec(i) = moxid0(i,kpec_c) * (1.0/add_tot_inert(i))
          add_rt_crst(i) = moxid0(i,kcrst_c) * (1.0/add_tot_inert(i))
-         moxid(i,srtorg) = add_tot_inert(i)*cvt*boxvol
+cd         moxid(i,srtorg) = add_tot_inert(i)*cvt*boxvol
+          moxid(i,srtinrt) = add_tot_inert(i)*cvt*boxvol
+
 cdbg         if (moxid(i).ge.0.0) then
 cdbg            moxid(i)=moxid0(i)*cvt*boxvol
 cdbg         else
@@ -285,8 +293,10 @@ c
          rt_na(i) = q((i-1)*nsp+kna) * (1.0/tot_inert(i))
          ! No SOA
          rt_no3(i) = q((i-1)*nsp+kno3) * (1.0/tot_inert(i))          !  cf
-c
-         Mk(i,srtorg) = tot_inert(i) * cvt * boxvol
+
+cd         Mk(i,srtorg) = tot_inert(i) * cvt * boxvol    !david
+         Mk(i,srtinrt) = tot_inert(i) * cvt * boxvol     !david
+
          Mk(i,srtnh3)=q((i-1)*nsp+knh4) * cvt * boxvol
          Mk(i,srth2o)=q((i-1)*nsp+kh2o) * cvt * boxvol
       enddo      
@@ -399,7 +409,8 @@ c
 c     Only POA has the sum of POA, EC, CRST, Cl, and Na. The rest of
 c     species are set to zero.
 c
-        tot_inert2(i) = Mk(i,srtorg) * cvt2 * (1.0/boxvol)
+cd        tot_inert2(i) = Mk(i,srtorg) * cvt2 * (1.0/boxvol)
+        tot_inert2(i) = Mk(i,srtinrt) * cvt2 * (1.0/boxvol)
         if (tot_inert(i).le.tot_inert2(i)) then
            dtot_inert(i)=tot_inert2(i)-tot_inert(i) !Increased mass
            q((i-1)*nsp+kpom) = q((i-1)*nsp+kpom) 

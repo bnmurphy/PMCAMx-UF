@@ -39,10 +39,19 @@ c
 c-----Variable declarations
 c
       integer ibins, icomp
-      parameter (ibins=41, icomp=4)
+cdavid      parameter (ibins=41, icomp=4)  !david
+cdavid  add 4 species for 4 organics
+      parameter (ibins=41, icomp=8)  !david
 
-      integer srtso4, srtorg, srtnh3, srth2o !species indicators
-      parameter (srtso4=1, srtorg=2, srtnh3=3, srth2o=4)
+
+cd      integer srtso4, srtinrt, srtsoa, srtnh3, srth2o !species indicators  !david
+      integer srtso4, srtinrt,  srtnh3, srth2o     !david
+      integer srtsoa1, srtsoa2, srtsoa3, srtsoa4   !david
+cd      parameter (srtso4=1, srtinrt=2, srtsoa=3, srtnh3=4, srth2o=5)  !david
+      parameter (srtso4=1, srtinrt=2)  !david
+      parameter (srtsoa1=3, srtsoa2= 4, srtsoa3=5, srtsoa4=6)   !david
+      parameter (srtnh3=7, srth2o=8)    !david
+
 
       integer i, j ! counter variables
       integer ii, jj ! counter variables
@@ -54,7 +63,10 @@ c
       double precision Neps, Meps
       double precision totmass, newmass! For updating Nk when Mk is less
                                        ! than zero.
-      double precision eps
+      double precision eps 
+C-----------------------------------------------------------  !david
+      real organic_ppt(4) !organics [=] ppt                    !david
+c-----------------------------------------------------------  !david
 c
       real h2so4      ! sulfuric acid gas [=] ppt
       real nh3ppt     ! ammonia gas [=] ppt
@@ -64,12 +76,22 @@ c
       real boxvol     ! A volume of arbitrary box
       real pres       ! Pa 
       real rt_pom(ibins), rt_ec(ibins), rt_crst(ibins), rt_cl(ibins),
-     &    rt_na(ibins), rt_soa1(ibins), rt_soa2(ibins), rt_soa3(ibins),
-     &    rt_soa4(ibins), rt_no3(ibins) ! Ratios of each inert component
+     &    rt_na(ibins), rt_no3(ibins) ! Ratios of each inert component  !david
+      
+      
+      real tot_soa1,tot_soa2   !david   
+      real rt_soa1(ibins),rt_soa2(ibins), rt_soa3(ibins),rt_soa4(ibins) !david
+       
       real tot_inert ! total inert mass
       real tot_inert2 ! total inert mass after calling dman
 cdbg      real eps
       real cvt, cvt2
+      
+      !david 
+      real sum_num_dman, sum_mass_dman, sum_soa1_dman   !david
+      real  sum_soa2_dman,  sum_soa3_dman,  sum_soa4_dman  !david
+      real  sum_init_dman, sum_nh4_dman   !david
+
       double precision fndt(2) !Nucleation diagnostic
 c
 c-----Adjustable parameters
@@ -98,7 +120,71 @@ c
       ! Converting PMCAMx variables to DMAN variables
       pres = pressure * 1.01325d5 ! Pa
       relh = rh ! Change a relative humidity variable for DMAN
-c
+
+c-----------------------------------------------------------------------
+c                                 ORGANIC
+c-----------------------------------------------------------------------
+        if (q(naer+icg1).ge.0.0) then
+          organic_ppt(1) = q(naer+icg1) * 1.0d6   ! organic 1 [=] ppt, q [=] ppm
+        else   
+          if (q(naer+icg1).gt.(-eps*1.0d-6)) then
+            organic_ppt(1) = eps
+            q(naer+icg1) = eps * 1.0d-6
+          else
+            write(*,*)'organic_ppt1 is less than zero'
+            write(*,*)'q(naer+icg1) [ppm]',q(naer+icg1)
+            write(*,*)'Coordinate =', ich, jch, kch
+            write(*,*)'organic_ppt1=',organic_ppt(1)
+            STOP
+          endif
+        endif
+c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (q(naer+icg2).ge.0.0) then
+          organic_ppt(2) = q(naer+icg2) * 1.0d6   ! organic 2 [=] ppt, q [=] ppm
+        else
+          if (q(naer+icg2).gt.(-eps*1.0d-6)) then
+            organic_ppt(2) = eps
+            q(naer+icg2) = eps * 1.0d-6
+          else
+            write(*,*)'organic_ppt2 is less than zero'
+            write(*,*)'q(naer+icg2) [ppm]',q(naer+icg2)
+            write(*,*)'Coordinate =', ich, jch, kch
+            write(*,*)'organic_ppt2=',organic_ppt(2)
+            STOP
+          endif
+        endif
+c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (q(naer+icg3).ge.0.0) then
+          organic_ppt(3) = q(naer+icg3) * 1.0d6   ! organic 3 [=] ppt, q [=] ppm
+        else
+          if (q(naer+icg3).gt.(-eps*1.0d-6)) then
+            organic_ppt(3) = eps
+            q(naer+icg3) = eps * 1.0d-6
+          else
+            write(*,*)'organic_ppt3 is less than zero'
+            write(*,*)'q(naer+icg3) [ppm]',q(naer+icg3)
+            write(*,*)'Coordinate =', ich, jch, kch
+            write(*,*)'organic_ppt3=',organic_ppt(3)
+            STOP
+          endif
+        endif
+c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (q(naer+icg4).ge.0.0) then
+          organic_ppt(4) = q(naer+icg4) * 1.0d6   ! organic 4 [=] ppt, q [=] ppm
+        else
+          if (q(naer+icg4).gt.(-eps*1.0d-6)) then
+            organic_ppt(4) = eps
+            q(naer+icg4) = eps * 1.0d-6
+          else
+            write(*,*)'organic_ppt4 is less than zero'
+            write(*,*)'q(naer+icg4) [ppm]',q(naer+icg4)
+            write(*,*)'Coordinate =', ich, jch, kch
+            write(*,*)'organic_ppt4=',organic_ppt(4)
+            STOP
+          endif
+        endif
+C========================================================================
+
 cdbg      write(*,*)'CAMx2dman.f - chkpt 1. at the very beginning'
       if (q(naer+ih2so4).ge.0.0) then 
         h2so4 = q(naer+ih2so4) * 1.0d6   ! h2so4 [=] ppt, q [=] ppm 
@@ -142,7 +228,7 @@ cdbg          nh3ppt = 0.d0
                enddo
             else
                write(*,*)'Coordinate =', ich, jch, kch
-               write(*,*)'Negative tracer in DMAN before dman'
+               write(*,*)'Negative tracer in DMAN after dman'
                write(*,*)'sizesection=', i
                write(*,*)'q(+knum)='
                do ii=1,ibins
@@ -167,7 +253,7 @@ cdbg          nh3ppt = 0.d0
                   iflag=1
                else
                   write(*,*)'Coordinate =', ich, jch, kch
-                  write(*,*)'Negative tracer in DMAN before dman'
+                  write(*,*)'Negative tracer in DMAN after dman'
                   write(*,*)'sizesection=', i
                   write(*,*)'q(+knum)='
                   do ii=1,ibins
@@ -203,9 +289,9 @@ c
                      ! CRST                Cl
      &                q((i-1)*nsp+kna)+
                      ! Na                  
-     &                q((i-1)*nsp+kcl+1)+q((i-1)*nsp+kcl+2)+
-     &                q((i-1)*nsp+kcl+3)+q((i-1)*nsp+kcl+4)+
-                     ! SOA
+c     &                q((i-1)*nsp+kcl+1)+q((i-1)*nsp+kcl+2)+    !david
+c     &                q((i-1)*nsp+kcl+3)+q((i-1)*nsp+kcl+4)+    !david
+c                     ! SOA                                      !david
      &                q((i-1)*nsp+kno3))
                      ! Nitrate
          ! Capture ratios before calling dman 
@@ -214,64 +300,27 @@ c
          rt_crst(i) = q((i-1)*nsp+kcrus) * (1.0/tot_inert)
          rt_cl(i) = q((i-1)*nsp+kcl) * (1.0/tot_inert)
          rt_na(i) = q((i-1)*nsp+kna) * (1.0/tot_inert)
-         rt_soa1(i) = q((i-1)*nsp+kcl+1) * (1.0/tot_inert)
-         rt_soa2(i) = q((i-1)*nsp+kcl+2) * (1.0/tot_inert)
-         rt_soa3(i) = q((i-1)*nsp+kcl+3) * (1.0/tot_inert)
-         rt_soa4(i) = q((i-1)*nsp+kcl+4) * (1.0/tot_inert)
          rt_no3(i) = q((i-1)*nsp+kno3) * (1.0/tot_inert)   
 c
-         Mk(i,srtorg) = tot_inert * cvt * boxvol
+c         Mk(i,srtorg) = tot_inert * cvt * boxvol           !david        
+         Mk(i,srtinrt) = tot_inert * cvt * boxvol           !david 
+         Mk(i,srtsoa1) = q((i-1)*nsp+kcl+1) * cvt * boxvol  !david
+         Mk(i,srtsoa2) = q((i-1)*nsp+kcl+2) * cvt * boxvol  !david
+         Mk(i,srtsoa3) = q((i-1)*nsp+kcl+3) * cvt * boxvol  !david
+         Mk(i,srtsoa4) = q((i-1)*nsp+kcl+4) * cvt * boxvol  !david          
+
          Mk(i,srtnh3)=q((i-1)*nsp+knh4) * cvt * boxvol
          Mk(i,srth2o)=q((i-1)*nsp+kh2o) * cvt * boxvol
       enddo      
 c
-cdbg      write(*,*)'CAMx2dman.f - chkpt 2. after converting before dman'
 c
-      !For a debuging purpose
-cdbg      if ((tstart.gt.0.0).and.(tstart.lt.0.5)) then
-cdbg        if ((ich.eq.36).and.(jch.eq.29).and.(kch.eq.1)) then
-cdbg          write(*,*)'In CAMx2dman before calling dman' 
-cdbg          write(*,*)'coordinate of (i,j,k)',ich, jch, kch
-cdbg          write(*,*)'tempK,pressure,dsulfdt=',tempK,pressure,dsulfdt
-cdbg          write(*,*)'h2so4=',h2so4,'nh3ppt=',nh3ppt
-cdbg          write(*,*)'Nk='
-cdbg          do i=1, ibins
-cdbg            write(*,*)Nk(i)
-cdbg          enddo
-cdbg          write(*,*)'Mk='
-cdbg          do j=1, icomp
-cdbg            write(*,*)'j=',j
-cdbg            do i=1, ibins
-cdbg              write(*,*)Mk(i,j)
-cdbg            enddo
-cdbg          enddo
-cdbg        endif
-cdbg      endif
 
-      call dman(tstart,tend,Nk,Mk,h2so4,nh3ppt,relh,tempK,pres,dsulfdt
-     & ,ich,jch,kch,fndt)
-      !For a debuging purpose
-cdbg      if ((tstart.gt.0.0).and.(tstart.lt.0.5)) then
-cdbg        if ((ich.eq.36).and.(jch.eq.29).and.(kch.eq.1)) then
-cdbg          write(*,*)'In CAMx2dman after calling dman' 
-cdbg          write(*,*)'coordinate of (i,j,k)',ich, jch, kch
-cdbg          write(*,*)'tempK,pressure,dsulfdt=',tempK,pressure,dsulfdt
-cdbg          write(*,*)'h2so4=',h2so4,'nh3ppt=',nh3ppt
-cdbg          write(*,*)'Nk='
-cdbg          do i=1, ibins
-cdbg            write(*,*)Nk(i)
-cdbg          enddo
-cdbg          write(*,*)'Mk='
-cdbg          do j=1, icomp
-cdbg            write(*,*)'j=',j
-cdbg            do i=1, ibins
-cdbg              write(*,*)Mk(i,j)
-cdbg            enddo
-cdbg          enddo
-cdbg        endif
-cdbg      endif
+      call dman(tstart,tend,Nk,Mk,h2so4,nh3ppt,relh,tempK,pres,dsulfdt,
+     &     organic_ppt,ich,jch,kch,fndt)
+
 c
-cdbg      write(*,*)'CAMx2dman.f - chkpt 3. after dman'
+c
+c
 c
 c-----Return DMAN values to the PMCAMx variable, check I can call initbounds
 c
@@ -341,25 +390,87 @@ c
         ! Nk [=] #, q [=] #/cm3, and boxvol [=] cm3
         q((i-1)*nsp+kso4) = Mk(i,srtso4) * cvt2 * (1.0/boxvol)
         ! Mk [=] kg, q [=] ug/m3
+        q((i-1)*nsp+kcl+1)=Mk(i,srtsoa1) * cvt2 * (1.0/boxvol)  !david
+        q((i-1)*nsp+kcl+2)=Mk(i,srtsoa2) * cvt2 * (1.0/boxvol)  !david
+        q((i-1)*nsp+kcl+3)=Mk(i,srtsoa3) * cvt2 * (1.0/boxvol)  !david
+        q((i-1)*nsp+kcl+4)=Mk(i,srtsoa4) * cvt2 * (1.0/boxvol)  !david
 c
 c     Only POA has the sum of POA, EC, CRST, Cl, and Na. The rest of
 c     species are set to zero.
 c
-        tot_inert2 = Mk(i,srtorg) * cvt2 * (1.0/boxvol)
+        tot_inert2 = Mk(i,srtinrt) * cvt2 * (1.0/boxvol)        !david  
+
         q((i-1)*nsp+kpom) = tot_inert2 * rt_pom(i)
         q((i-1)*nsp+kec) = tot_inert2 * rt_ec(i)
         q((i-1)*nsp+kcrus) = tot_inert2 * rt_crst(i)
         q((i-1)*nsp+kcl) = tot_inert2 * rt_cl(i)
         q((i-1)*nsp+kna) = tot_inert2 * rt_na(i)
-        q((i-1)*nsp+kcl+1) = tot_inert2 * rt_soa1(i)
-        q((i-1)*nsp+kcl+2) = tot_inert2 * rt_soa2(i)
-        q((i-1)*nsp+kcl+3) = tot_inert2 * rt_soa3(i)
-        q((i-1)*nsp+kcl+4) = tot_inert2 * rt_soa4(i)
         q((i-1)*nsp+kno3) = tot_inert2 * rt_no3(i)
 c
         q((i-1)*nsp+knh4) = Mk(i,srtnh3) * cvt2 * (1.0/boxvol)
         q((i-1)*nsp+kh2o) = Mk(i,srth2o) * cvt2 * (1.0/boxvol)
       enddo      
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+c--------------           ORGANIC 1       -------------------
+c     organic_ppt(1) = q(naer+icg1)           
+      if (organic_ppt(1).ge.0.0) then
+        q(naer+icg1) = organic_ppt(1) * 1.0d-6   ! organic 1 [=] ppt, q [=] ppm
+      else
+        if (organic_ppt(1).gt.-eps) then
+          q(naer+icg1) = eps * 1.0d-6  ! organic 1 [=] ppt, q [=] ppm
+          organic_ppt(1) = eps
+        else
+          write(*,*)'organic_ppt(1) is less than zero'
+          write(*,*)'organic_ppt(1) [=]ppt',organic_ppt(1)
+          write(*,*)'Coordinate =', ich, jch, kch
+          STOP
+        endif
+      endif
+c---------------------    ORGANIC 2   -------------------------  
+      if (organic_ppt(2).ge.0.0) then
+        q(naer+icg2) = organic_ppt(2) * 1.0d-6   ! organic 2 [=] ppt, q [=] ppm
+      else
+        if (organic_ppt(2).gt.-eps) then
+          q(naer+icg2) = eps * 1.0d-6  ! organic 2 [=] ppt, q [=] ppm
+          organic_ppt(2) = eps
+        else
+          write(*,*)'organic_ppt(2) is less than zero'
+          write(*,*)'organic_ppt(2) [=]ppt',organic_ppt(2)
+          write(*,*)'Coordinate =', ich, jch, kch
+          STOP
+        endif
+      endif
+C---------------------    ORGANIC 3   -------------------------
+      if (organic_ppt(3).ge.0.0) then
+        q(naer+icg3) = organic_ppt(3) * 1.0d-6   ! organic 3 [=] ppt, q [=] ppm
+      else
+        if (organic_ppt(3).gt.-eps) then
+          q(naer+icg3) = eps * 1.0d-6  ! organic 3 [=] ppt, q [=] ppm
+          organic_ppt(3) = eps
+        else
+          write(*,*)'organic_ppt(3) is less than zero'
+          write(*,*)'organic_ppt(3) [=]ppt',organic_ppt(3)
+          write(*,*)'Coordinate =', ich, jch, kch
+          STOP
+        endif
+      endif
+C---------------------    ORGANIC 4   -------------------------
+      if (organic_ppt(4).ge.0.0) then
+        q(naer+icg4) = organic_ppt(4) * 1.0d-6   ! organic 4 [=] ppt, q [=] ppm
+      else
+        if (organic_ppt(4).gt.-eps) then
+          q(naer+icg4) = eps * 1.0d-6  ! organic 4 [=] ppt, q [=] ppm
+          organic_ppt(4) = eps
+        else
+          write(*,*)'organic_ppt(4) is less than zero'
+          write(*,*)'organic_ppt(4) [=]ppt',organic_ppt(4)
+          write(*,*)'Coordinate =', ich, jch, kch
+          STOP
+        endif
+      endif
+C---------------------------------------------------------
+
 
       if (h2so4.ge.0.0) then
         q(naer+ih2so4) = h2so4 * 1.0d-6   ! h2so4 [=] ppt, q [=] ppm 
@@ -375,6 +486,7 @@ cdbg          q(naer+ih2so4) = 0.0   ! h2so4 [=] ppt, q [=] ppm
           write(*,*)'dsulfdt=',dsulfdt
           STOP
         endif
+
       endif
 
       if (nh3ppt.ge.0.0) then
@@ -392,35 +504,6 @@ cdbg          q(naer+inh3) = 0.0
           STOP
         endif
       endif
-
-      !For a debuging purpose
-cdbg      if ((tstart.gt.0.0).and.(tstart.lt.0.5)) then
-cdbg      if ((ich.eq.36).and.(jch.eq.29).and.(kch.eq.1)) then
-cdbg         write(*,*)'In CAMx2dman after converting Nk and Mk to q' 
-cdbg         write(*,*)'coordinate of (i,j,k)',ich, jch, kch
-cdbg         write(*,*)'tempK,pressure,dsulfdt=',tempK,pressure,dsulfdt
-cdbg         write(*,*)'q(naer+ih2so4)',q(naer+ih2so4)
-cdbg         write(*,*)'q(naer+inh3)',q(naer+inh3)
-cdbg         i = 4 !4th size section
-cdbg         write(*,*)'q(knum)=',q((i-1)*nsp+knum)   !number
-cdbg         write(*,*)'q(kso4)=',q((i-1)*nsp+kso4)   !1
-cdbg         write(*,*)'q(kpom)=',q((i-1)*nsp+kpom)   !2
-cdbg         write(*,*)'q(kec)=',q((i-1)*nsp+kec)     !3
-cdbg         write(*,*)'q(kcrus)=',q((i-1)*nsp+kcrus) !4
-cdbg         write(*,*)'q(kcl)=',q((i-1)*nsp+kcl)     !5
-cdbg         write(*,*)'q(kna)=',q((i-1)*nsp+kna)     !6
-cdbg         write(*,*)'q(ksoa1)=',q((i-1)*nsp+kcl+1) !7
-cdbg         write(*,*)'q(ksoa2)=',q((i-1)*nsp+kcl+2) !8
-cdbg         write(*,*)'q(ksoa3)=',q((i-1)*nsp+kcl+3) !9
-cdbg         write(*,*)'q(ksoa4)=',q((i-1)*nsp+kcl+4) !10
-cdbg         write(*,*)'q(kno3)=',q((i-1)*nsp+kno3)   !11
-cdbg         write(*,*)'q(knh4)=',q((i-1)*nsp+knh4)   !12
-cdbg         write(*,*)'q(kh2o)=',q((i-1)*nsp+kh2o)   !13
-cdbg       endif
-cdbg       endif
-
-cdbg      write(*,*)'CAMx2dman.f - chkpt 4. after converting after dman'
-
 
 
       RETURN

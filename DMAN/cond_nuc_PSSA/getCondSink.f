@@ -95,8 +95,9 @@ C     get size dependent values
             enddo
 cdbg            print*,'k=',k,'Mktot=',Mktot
 Ckpc  Density should be changed due to more species involed.             
-            density=aerodens_PSSA(Mko(k,srtso4),0.d0,
-     &              Mko(k,srtnh4),Mko(k,srtna),Mko(k,srth2o))  !assume bisulfate            
+cdavid            density=aerodens_PSSA(Mko(k,srtso4),0.d0,
+cdavid     &              Mko(k,srtnh4),Mko(k,srtna),Mko(k,srth2o))  !assume bisulfate            
+            density=1500.  !david
             mp=Mktot/Nko(k)
          else
             !nothing in this bin - set to "typical value"

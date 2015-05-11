@@ -503,7 +503,9 @@ c
      &(kmap(693),knum_37  ),(kmap(694),knum_38  ),(kmap(695),knum_39  ),
      &(kmap(696),knum_40  ),(kmap(697),knum_41  ),(kmap(698),knum_42  ),
      &(kmap(699),knum_43  ),
-     &(kmap(700),kph2o    )
+     &(kmap(700),kph2o    ),
+     &(kmap(701),kbpin),(kmap(702),klimo),(kmap(703),kmono),
+     &(kmap(704),ksesq)
 c
       integer   ko1d  ,ko    ,kclo 
       integer   kcl   ,kn2o5 ,kno3 

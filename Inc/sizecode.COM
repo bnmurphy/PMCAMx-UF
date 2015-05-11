@@ -49,14 +49,18 @@ C approach.  Most loops are from 1 to icomp-idiag as a result.
 
       integer ibins, icomp
       integer idiag ! number of diagnostic aerosol species
-cjgj      parameter(ibins=43, icomp=4, idiag=2)
-      parameter(ibins=41, icomp=4, idiag=1)
+      parameter(ibins=41, icomp=8, idiag=1)
 
-      integer srtso4, srtna, srtnh4, srth2o
+      integer srtso4, srtinrt, srtnh4, srth2o
+      integer srtsoa1,srtsoa2,srtsoa3,srtsoa4
       parameter (srtso4=1,
-     &           srtna=2,
-     &           srtnh4=3,
-     &           srth2o=4)
+     &           srtinrt=2,
+     &           srtsoa1=3,
+     &           srtsoa2=4,
+     &           srtsoa3=5,
+     &           srtsoa4=6,     
+     &           srtnh4=7,
+     &           srth2o=8)
 
 C Nk and Mk contain the number and mass size distributions of the
 C aerosol.  Units are #/grid cell or kg/grid cell, respectively.
@@ -88,9 +92,6 @@ C microphysics is operating.
 
       double precision boxvol     !volume of grid cell (cm3)
       double precision boxmass    !mass of grid cell (kg)
-cdbg      double precision temp       !temperature (K) of grid cell
-cdbg      double precision pres       !air pressure (Pa) of grid cell
-cdbg      double precision rh         !relative humidity (0-1)
 c
       real temp       !temperature (K) of grid cell
       real pres       !air pressure (Pa) of grid cell
@@ -99,25 +100,23 @@ c
 C Physical properties of aerosol components
 
       real molwt(icomp)
-cjgj      data molwt/96.,58.45,18.,18./ ! The 2nd is NaCl
-      data molwt/96.,50.,18.,18./ ! The 2nd is organic matter. NEED TO BE UPDATED. 
+      data molwt/96.,50.,200.0,200.0,200.0,200.0,18.,18./ ! The 2nd is organic matter. NEED TO BE UPDATED. 
       real gmw(icomp)
-      data gmw/98.,50.,17.,18./
+      data gmw/98.,50.,200.,200.0,200.0,200.0,17.,18./
       real alpha(icomp) ! accomodation coef  
-      data alpha/0.65,0.,0.08,0./
+      data alpha/0.65,0.,0.2,0.2,0.2,0.2,0.08,0./
            ! alpha(H2SO4) is from U. Poschl et al., J. Phys. Chem. A, 102,
                                                         !10082-10089, 1998
            ! alpha(NH3) is from E. Swartz et al., J. Phys. Chem. A, 103,
                                                         !8824-8833, 1999
       real Sv(icomp)         !parameter used for estimating diffusivity
-      data Sv /42.88,42.88,42.88,42.88/
+      data Sv /42.88,42.88,42.88,42.88,42.88,42.88,42.88,42.88/
+
 
 C Flag for which nucleation parameterizations to use
       integer bin_nuc, tern_nuc   !flags for binary and ternary nuc
       parameter(bin_nuc=1, tern_nuc=1) ! 1 = on
 
-cdbg	  double precision NH3ppt_o
-cdbg	  double precision h2so4_print
 
 C Nucleation Diagnostic Variables
       integer nJnuc

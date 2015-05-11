@@ -86,7 +86,8 @@ c=========================== Process Analysis End ==============================
 c
       dimension conc(MXSPEC+1),rate(MXSPEC+1),res(MXSPEC),rrxn(MXRXN),
      &          rloss(MXSPEC+1),xjac(MXSPEC,MXSPEC),cncrad(MXRADCL),
-     &          cncold(MXSPEC),ctmp(MXSPEC+1),avgrad(MXRADCL)
+     &          cncold(MXSPEC),ctmp(MXSPEC+1),avgrad(MXRADCL),
+     &           crold(MXRADCL)   !david
       dimension y(MXDDM+1), prod(MXDDM), stmp(MXDDM), ipvt(MXDDM),
      &          djac(MXDDM+1,MXDDM+1), amx(MXDDM,MXDDM), 
      &          bmx(MXDDM,MXDDM), cmx(MXDDM,MXDDM),
@@ -224,6 +225,7 @@ c-----Initialize time-averaging of radical concentrations
 c
       do l=1,nrad
         avgrad(l) = 0.0
+        crold(l) = cncrad(l) !VAK  !david
       enddo
 c
 c-----Start iteration loop for the solution of the fast state species
@@ -244,11 +246,11 @@ c-----Set number of fast species
 c
       neq1 = 3
       if (conc(kPAN).gt.0.01*conc(kNO2)) neq1 = nspfst
-      if (idmech.eq.5) then
-        if (conc(kNPHE).lt.1.0e-5) then
-            neq1 = nspfst-1
-        endif
-      endif
+cdavid      if (idmech.eq.5) then
+cdavid        if (conc(kNPHE).lt.1.0e-5) then
+cdavid            neq1 = nspfst-1
+cdavid        endif
+cdavid      endif
 c
 c-----Update temporary species concentrations
 c
@@ -262,7 +264,8 @@ c
 c
 c-----Solve for radical species concentrations
 c
-      call radslvr(ldark,H2O,atm,O2,CH4,H2,cncrad,ctmp,rrxn)
+      
+      call radslvr(ldark,H2O,atm,O2,CH4,H2,cncrad,ctmp,rrxn,crold,dt) !david
 c
 c-----Get rate and Jacobian for fast state species
 c
@@ -328,6 +331,7 @@ c
       enddo
       do l=1,nrad
         avgrad(l) = avgrad(l) + (dt/dtin)*cncrad(l)
+        crold(l) = cncrad(l) !VAK !david
       enddo
 c
 c-----Compute reaction rate

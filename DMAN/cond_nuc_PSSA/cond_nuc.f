@@ -129,7 +129,7 @@ c      addt = 3600.d0
       totmass = H2SO4rate*addt*96.d0/98.d0
 
       !Get change size distribution due to nucleation with initial guess
-      call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all, CS1)          
+      call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all, CS1) 
 
       mass_change = 0.d0
       do k=1,ibins

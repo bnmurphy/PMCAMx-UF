@@ -232,5 +232,12 @@ c
       r(210) = rk(210)*conc(kOLE2)*cncrad(kNO3)
       r(211) = rk(211)*conc(kOLE2)*cncrad(kO)
 c
+C     SOA Aging Reactions
+      r(212) = rk(212)*cncrad(kOH)*conc(kCG1)
+      r(213) = rk(213)*cncrad(kOH)*conc(kCG2)
+      r(214) = rk(214)*cncrad(kOH)*conc(kCG3)
+      r(215) = rk(215)*cncrad(kOH)*conc(kCG4)
+
+
       return
       end

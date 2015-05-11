@@ -173,7 +173,8 @@ c     aero_dt  : actual time interval for each grid (hr) (accumulated dtchem)
       aero_tchk = time
       aero_dt(igrd) = aero_dt(igrd) + dtchem
       laero_upd = .false.
-      if (idmech.eq.6) then ! bkoo_dbg
+cd      if (idmech.eq.6) then ! david
+      if (idmech.eq.5) then ! david
       write(*,*) 'aerotchk,grdtime: ',aero_tchk,grd_time(igrd)
       if ( (aero_tchk-grd_time(igrd)) .ge. -0.01 .and.
      &     (date .eq. date_aer(igrd)) ) then
@@ -244,12 +245,7 @@ c
             tcell = tempk(i,j,k)
             pcell = press(i,j,k)
             convfac = densfac*(273./tcell)*(pcell/1013.)
-cbk            if (kcg1.ne.nspec+1) then
-cbk              conc(i,j,k,kcg1) = conc(i,j,k,kcg1)*convfac
-cbk              conc(i,j,k,kcg2) = conc(i,j,k,kcg2)*convfac
-cbk              conc(i,j,k,kcg3) = conc(i,j,k,kcg3)*convfac
-cbk              conc(i,j,k,kcg4) = conc(i,j,k,kcg4)*convfac
-cbk            endif
+
             do is = 1,ngas
               con(is) = conc(i,j,k,is)/convfac
               if (con(is).lt.0.) then
@@ -432,38 +428,41 @@ c
                  call aerochem(water(i,j,k),tcell,pcell,cwc(i,j,k),con,
      &                                  convfac,dtchem,ldoipr,ipa_idx)
                elseif (idmech.eq.5) then
+
+                 if (ldark(i,j)) then
+                   nflag=1.0d0
+                 else
+                   nflag=1.0d0
+                 endif
+
                  call trap(rxnrate5,radslvr5,ratejac5,rateslo5,dtchem,
      &             ldark(i,j),water(i,j,k),atm,O2,CH4,H2,con,crad,
      &             avgrad,tcell,
      &             sddm,nddmsp,ngas,ddmjac5,lddm,nirrrxn,titrt,rrxn_irr,
-     &             lirr)
+     &             lirr,dsulfdt) ! to get sulfuric acid production rate
+
+                 if ( laero_upd )
+     &           call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
+     &                         MXSPEC,MXRADCL,NSPEC,NGAS,
+     &                         con,crad,convfac,time,aero_dt(igrd),
+     &                         ichm,jchm,kchm,height,dsulfdt,fndt)
+                 do inuc = 1,2
+                   Jnuc(i,j,k,inuc) = real(fndt(inuc))
+                 enddo
+
                elseif (idmech.eq.6) then
                  if (ldark(i,j)) then
                    nflag=0.0d0
                  else
                    nflag=1.0d0
                  endif
-cdbg                 if ((ichm.eq.31).and.(jchm.eq.2).and.(kchm.eq.1)) then!dbg
-cdbg                   print*,'before trap'
-cdbg                   print*,'coordinate of (31,2,1)' !dbg
-cdbg                   print*,'tempk,pressure,dsulfdt=',tempk(i,j,k)
-cdbg     &                  ,pressure,dsulfdt !dbg
-cdbg                 endif !dbg
+
                  call trap(rxnrate6,radslvr6,ratejac6,rateslo6,dtchem,
      &             ldark(i,j),water(i,j,k),atm,O2,CH4,H2,con,crad,
      &             avgrad,tcell,
      &             sddm,nddmsp,ngas,ddmjac6,lddm,nirrrxn,titrt,rrxn_irr,
      &             lirr,dsulfdt) ! to get sulfuric acid production rate
-cjgj     &             lirr)
-cdbg                 if ((i.eq.65).and.(j.eq.51).and.(k.eq.1)) then
-cdbg                 if (k.eq.1) then
-cdbg               call mnratios(conc,ncol,nrow,nlay,nspec,31) 
-cdbg                 if ((ichm.eq.31).and.(jchm.eq.2).and.(kchm.eq.1)) then!dbg
-cdbg                   print*,'after trap and before fullaero'
-cdbg                   print*,'coordinate of (31,2,1)' !dbg
-cdbg                   print*,'tempk,pressure,dsulfdt=',tempk,pressure
-cdbg     &                  ,dsulfdt !dbg
-cdbg                 endif !dbg
+
                  if ( laero_upd )
      &           call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
      &                         MXSPEC,MXRADCL,NSPEC,NGAS,
@@ -499,6 +498,11 @@ c
                    call iehsolv(ierxn5,ierate5,iejac5,ieslow5,
      &                  dtchem,water(i,j,k),atm,O2,CH4,H2,con,crad,
      &                  ldark(i,j),tcell,nirrrxn,rrxn_irr,lirr)
+                   if ( laero_upd )
+     &             call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
+     &                           MXSPEC,MXRADCL,NSPEC,NGAS,
+     &                           con,crad,convfac,time,aero_dt(igrd),fndt)
+c------------------------------------------------------------------------
                elseif (idmech.eq.6) then
                    call iehsolv(ierxn6,ierate6,iejac6,ieslow6,
      &                  dtchem,water(i,j,k),atm,O2,CH4,H2,con,crad,
@@ -640,6 +644,14 @@ cbk              con(kcg2) = con(kcg2)/convfac
 cbk              con(kcg3) = con(kcg3)/convfac
 cbk              con(kcg4) = con(kcg4)/convfac
 cbk            endif
+
+c            do is=1,nspec
+c               if(con(is).lt.1.0e-37) then
+c                  con(is)=1.0e-37
+c               endif
+c            enddo
+
+
             do is=1,ngas
               con(is) = amax1(bdnl(is),con(is)) ! bkoo (03/12/03)
               conc(i,j,k,is) = con(is)*convfac
@@ -654,11 +666,12 @@ c       problem in TOMAS.
 c                                                  12/6/06 jgj
 c
 c     added by LA
-            do is=1,nspec
+           do is=1,nspec
                if(con(is).lt.1.0e-37) then
                   con(is)=1.0e-37
                endif
             enddo
+
 c     end LA
             if (ngas.lt.nspec) then
               ispc=ngas

@@ -5,5 +5,5 @@ I am working on M/N ratio conservation in this directory. Don't delete this.
 emiss.f is modified to turn off sulfuric acid emission.
 Mass concentration below boundary values in chemdriv.f is modified.
 
-Testing commits for github. Demonstration for Tinja
+Testing commits for github. Demonstration for Elham.
 

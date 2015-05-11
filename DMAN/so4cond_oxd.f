@@ -110,6 +110,11 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision Mknh3max !Maximum allowable NH3
       double precision taumax   !Maxmum tau for ammonia condensation
       double precision moxd(ibins) !moxid/Nact, NOT USING IT!
+      double precision tot_dm(icomp) !the total amount of new sulfate
+                      !produced in the particular (adams and Seinfeld
+                      !2002 (eq 10)
+      double precision sum_tot_dm
+
 
       character*12 limit        !description of what limits time step
 
@@ -197,10 +202,23 @@ C-----Calculate tau values for all species/bins
 
       enddo
 
+cccccccccccccccccccccccccccccccccccccccccccccccc      
+c      bug 7
+cccccccccccccccccccccccccccccccccccccccccccccccc        
+      do j=1,icomp-1
+       sum_tot_dm=0.0d0
+       do k=1,ibins
+         sum_tot_dm=sum_tot_dm+moxid(k,j)
+       enddo
+       tot_dm(j)=sum_tot_dm
+      end do 
+cccccccccccccccccccccccccccccccccccccccccccccccc
+
       !Update atau considering the amount added by aqueous chemistry
       do k=iact,ibins
          do j=1,icomp-1
-            Mko(k,j)=Mkf(k,j)+(moxid(k,j)*(1./Nkf(k)))
+c            Mko(k,j)=Mkf(k,j)+(moxid(k,j)*(1./Nkf(k)))  !david bug 7
+             Mko(k,j)=Mkf(k,j)+(tot_dm(j)*(1./Nkf(k)))
             atau(k,j)=1.5*((Mko(k,j)**tdt)-(Mkf(k,j)**tdt)) 
          enddo
       enddo
@@ -231,7 +249,7 @@ C Call condensation subroutine to do mass transfer
           tau(k)=corfactor*tau(k) ! A correction factor is applied.
         enddo
 
-        call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm)
+        call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm,8)
             ! adjust average mass in each size bin within boundaries
 
         !oxidated mass calculation, dummy, not using it, jgj
@@ -258,7 +276,7 @@ C Update time
  100  continue   !skip to here if there is no gas phase to condense
 
       ! Adjust finally before return
-      call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm)
+      call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm,9)
 
       RETURN
       END

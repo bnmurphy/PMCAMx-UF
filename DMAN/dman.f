@@ -19,7 +19,7 @@ C     For the details of development history, see history.help file.
 
 cPMCAMx      PROGRAM DMAN
       SUBROUTINE dman(tstart,tend,Nki,Mki,h2so4,nh3ppt,rhi,tempi,presi
-     &               ,dsulfdt,ichm, jchm, kchm, fndt)
+     &               ,dsulfdt,organic_ppt,ichm, jchm, kchm, fndt)
 
       IMPLICIT NONE
 
@@ -44,7 +44,10 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
       integer ichm ! i coordinate in PMCAMx
       integer jchm ! j coordinate in PMCAMx
       integer kchm ! k coordinate in PMCAMx
-      double precision fndt(nJnuc)  !nucleation diagnostic
+cd    david new variable
+      integer icond_soa  
+
+      double precision fndt(njnuc) !nucleation diagnostic
 
 C-----VARIABLE DECLARATIONS---------------------------------------------
 
@@ -58,6 +61,7 @@ C     tend : simulation end time from midnight (hr)
 
 ctest      real cn
       double precision cn
+      double precision xkDMAN(ibins+1),Moo
       real deltat
 cPMCAMx      real dtgas
 cPMCAMx      real dndlog(nsect)
@@ -89,7 +93,7 @@ cPMCAMx      real tend !moved up as an argument variable
 cPMCAMx      real tstart !moved up as argument variable
 cPMCAMx      real winddat(inmax)
       real ygas(ngas) ! [=] ppt
-
+      real organic_ppt(4)
       ! for PSSA_cond_nuc
       double precision Nkout(ibins) ! Number output
       double precision Mkout(ibins,icomp) ! Mass output
@@ -114,7 +118,11 @@ cPMCAMx      integer nh3terms ! a number of lines in NH3 input files
 cPMCAMx      integer PM25cutpoint ! PM2.5 cutpoint in terms of TOMAS
 
 cPMCAMx      character*6 date ! simulation date
+      double precision sum_mass_dman,sum_num_dman
+      double precision sum_so4_dman,sum_init_dman,sum_nh4_dman
 
+      double precision sum_soa1_dman,sum_soa2_dman,sum_soa3_dman
+      double precision sum_soa4_dman 
 C-----EXTERNAL FUNCTIONS------------------------------------------------
 
 C-----ADJUSTABLE PARAMETERS---------------------------------------------
@@ -130,7 +138,7 @@ C-----Initialize variables
       icond = 1
       icoag = 1
       inucl = 1
-
+      icond_soa = 1 
 cdbg      print*,'In dman, check arguments'
 cdbg      print*,'tstart=', tstart ! start time
 cdbg      print*,'tend=', tend   ! end time
@@ -146,6 +154,14 @@ cdbg      if ((ichm.eq.65).and.(jchm.eq.51).and.(kchm.eq.1)) then
 cdbg        write(*,*)'dsulfdt in Pittsburgh=',dsulfdt
 cdbg        write(*,*)'ygas(mgsvi)=',ygas(mgsvi)
 cdbg      endif
+     
+       Moo = 3.7531528494783419e-25 ! 0.8 nm diameter particle assuming 1400 kg m-3 density
+
+      do k=1,ibins+1
+         xkDMAN(k)=Moo*2.d0**(k-1)
+      enddo
+        
+
 
       do i=1,ibins
         Nk(i)=Nki(i)
@@ -154,24 +170,6 @@ cdbg      endif
         enddo
       enddo
 
-      !For a debuging purpose
-cdbg      if ((ichm.eq.65).and.(jchm.eq.51).and.(kchm.eq.1)) then
-cdbg         write(*,*)'In dman at the very beginning' 
-cdbg         write(*,*)'coordinate of (i,j,k)',ichm, jchm, kchm
-cdbg         write(*,*)'tempi,presi,dsulfdt=',tempi,presi,dsulfdt
-cdbg         write(*,*)'h2so4=',h2so4,'nh3ppt=',nh3ppt
-cdbg         write(*,*)'Nk='
-cdbg         do i=1, ibins
-cdbg           write(*,*)Nk(i)
-cdbg         enddo
-cdbg         write(*,*)'Mk='
-cdbg         do j=1, icomp
-cdbg           write(*,*)'j=',j
-cdbg           do i=1, ibins
-cdbg             write(*,*)Mk(i,j)
-cdbg           enddo
-cdbg         enddo
-cdbg       endif
     
       !Initialize ygas
       ygas(mgsvi)=h2so4
@@ -196,15 +194,12 @@ C-----Read and initialize
       !Convert pn to Nk
       Call initbounds()
 
-      !Check pt 0 for debug
-cdbg      if ((ichm.eq.79).and.(jchm.eq.54).and.(kchm.eq.1).and.
-cdbg     &  (time.ge.7.)) then
-cdbg      if ((ichm.eq.82).and.(jchm.eq.32).and.(kchm.eq.4).and.
-cdbg     &  (time.gt.2.25)) then
-cdbg        write(*,*)'dt=',dt,'Coord. (i,j,k)=',ichm,jchm,kchm
-cdbg        write(*,*)'dsulfdt=',dsulfdt
-cdbg        write(*,*)'rh=',rh,'temp=',temp,'pres=',pres
-cdbg      endif
+
+       Gc(srtsoa1)=boxmass*organic_ppt(1)*1.0d-12*200.0/28.9
+       Gc(srtsoa2)=boxmass*organic_ppt(2)*1.0d-12*200.0/28.9
+       Gc(srtsoa3)=boxmass*organic_ppt(3)*1.0d-12*200.0/28.9
+       Gc(srtsoa4)=boxmass*organic_ppt(4)*1.0d-12*200.0/28.9
+          
 
 C
 C-----DO A MAIN LOOP----------------------------------------------------  
@@ -232,37 +227,13 @@ cPMCAMx      Call printf(deltat, pn, tend, time, tstart, ygas)
 
 C-----Micro physical processes 6/9/04
 
-      !Check pt 1 for debug
-cdbg      if ((time.gt.10.75).and.(time.lt.11.25)) then
-cdbg        if ((ichm.eq.76).and.(jchm.eq.44).and.(kchm.eq.1)) then
-cdbg          write(*,*)'In dman at the beginning' 
-cdbg          write(*,*)'coordinate of (i,j,k)',ichm, jchm, kchm
-cdbg          write(*,*)'tempi,presi,dsulfdt=',tempi,presi,dsulfdt
-cdbg          write(*,*)'h2so4=',h2so4,'nh3ppt=',nh3ppt
-cdbg          write(*,*)'deltat=',deltat
-cdbg          write(*,*)'Nk='
-cdbg          do i=1, ibins
-cdbg            write(*,*)Nk(i)
-cdbg          enddo
-cdbg            write(*,*)'Mk='
-cdbg          do j=1, icomp
-cdbg            write(*,*)'j=',j
-cdbg            do i=1, ibins
-cdbg              write(*,*)Mk(i,j)
-cdbg            enddo
-cdbg          enddo
-cdbg        endif
-cdbg      endif
 
       !Call condensation with "dt"
       if (icond .eq. 1) then
-        !Converting gas unit from ppt to kg
-cPMCAMx        if (icond_test.eq.1) then
-cPMCAMx          Gc(srtso4)=boxmass*ygas(mgsvi)*1.0e-12*100.0/28.9
-cPMCAMx        else
+c
         Gc(srtso4)=boxmass*ygas(mgsvi)*1.0d-12*gmw(srtso4)/28.9
         Gc(srtnh3)=boxmass*ygas(mgnh3)*1.0d-12*gmw(srtnh3)/28.9
-cPMCAMx        endif
+
 
         Call so4cond(Nk,Mk,Gc,Nkout,Mkout,Gcout,dt,ichm,jchm,kchm,
      &              iflagez) 
@@ -295,26 +266,6 @@ cPMCAMx        endif
         endif
       endif
 
-      !Check pt 2 for debug
-cdbg      if ((time.gt.10.75).and.(time.lt.11.25)) then
-cdbg        if ((ichm.eq.76).and.(jchm.eq.44).and.(kchm.eq.1)) then
-cdbg          write(*,*)'In dman after so4cond' 
-cdbg          write(*,*)'coordinate of (i,j,k)',ichm, jchm, kchm
-cdbg          write(*,*)'tempi,presi,dsulfdt=',tempi,presi,dsulfdt
-cdbg          write(*,*)'h2so4=',h2so4,'nh3ppt=',nh3ppt
-cdbg          write(*,*)'Nk='
-cdbg          do i=1, ibins
-cdbg            write(*,*)Nk(i)
-cdbg          enddo
-cdbg            write(*,*)'Mk='
-cdbg          do j=1, icomp
-cdbg            write(*,*)'j=',j
-cdbg            do i=1, ibins
-cdbg              write(*,*)Mk(i,j)
-cdbg            enddo
-cdbg          enddo
-cdbg        endif
-cdbg      endif
 
       !Call coagulation with dt/2
       if (icoag .eq. 1) then
@@ -331,26 +282,6 @@ cPMCAMx        call neutral(2)
 cdbg        write(*,*)'2'
       endif
       
-      !Check pt 3 for debug
-cdbg      if ((time.gt.10.75).and.(time.lt.11.25)) then
-cdbg        if ((ichm.eq.76).and.(jchm.eq.44).and.(kchm.eq.1)) then
-cdbg          write(*,*)'In dman after 1st multicoag' 
-cdbg          write(*,*)'coordinate of (i,j,k)',ichm, jchm, kchm
-cdbg          write(*,*)'tempi,presi,dsulfdt=',tempi,presi,dsulfdt
-cdbg          write(*,*)'h2so4=',h2so4,'nh3ppt=',nh3ppt
-cdbg          write(*,*)'Nk='
-cdbg          do i=1, ibins
-cdbg            write(*,*)Nk(i)
-cdbg          enddo
-cdbg            write(*,*)'Mk='
-cdbg          do j=1, icomp
-cdbg            write(*,*)'j=',j
-cdbg            do i=1, ibins
-cdbg              write(*,*)Mk(i,j)
-cdbg            enddo
-cdbg          enddo
-cdbg        endif
-cdbg      endif
 
       !Convert sulfuric acid production rate from ppt hr-1
       H2SO4rate = dsulfdt*1.0d-12*boxmass/28.9*gmw(srtso4)/3600. !PSSA
@@ -359,7 +290,7 @@ cdbg      endif
       !Call Pseudo Steady State condensation and nucleation
       if (inucl .eq. 1) then
         call cond_nuc(Nk,Mk,Gc,Nkout,Mkout,Gcout,H2SO4rate,dt,
-     &   ichm,jchm,kchm,fndt)
+     &   ichm,jchm,kchm, fndt )
       endif
 
       do i=1,ibins
@@ -374,26 +305,44 @@ cdbg      endif
       ygas(mgsvi)=Gc(srtso4)*1.0d+12/boxmass*28.9/gmw(srtso4)
       ygas(mgnh3)=Gc(srtnh3)*1.0d+12/boxmass*28.9/gmw(srtnh3)
 
-      !Check pt 4 for debug
-cdbg      if ((time.gt.10.75).and.(time.lt.11.25)) then
-cdbg        if ((ichm.eq.76).and.(jchm.eq.44).and.(kchm.eq.1)) then
-cdbg          write(*,*)'In dman after cond_nuc' 
-cdbg          write(*,*)'coordinate of (i,j,k)',ichm, jchm, kchm
-cdbg          write(*,*)'tempi,presi,dsulfdt=',tempi,presi,dsulfdt
-cdbg          write(*,*)'h2so4=',h2so4,'nh3ppt=',nh3ppt
-cdbg          write(*,*)'Nk='
-cdbg          do i=1, ibins
-cdbg            write(*,*)Nk(i)
-cdbg          enddo
-cdbg            write(*,*)'Mk='
-cdbg          do j=1, icomp
-cdbg            write(*,*)'j=',j
-cdbg            do i=1, ibins
-cdbg              write(*,*)Mk(i,j)
-cdbg            enddo
-cdbg          enddo
-cdbg        endif
-cdbg      endif
+        call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm)
+
+
+c---------------------------------------------------------------------------
+c     !Call condensation with "dt" of organics 
+      if (icond_soa.eq.1) then
+
+        !Converting gas unit from ppt to kg
+       Gc(srtsoa1)=boxmass*organic_ppt(1)*1.0d-12*200.0d0/28.9d0
+       Gc(srtsoa2)=boxmass*organic_ppt(2)*1.0d-12*200.0d0/28.9d0
+       Gc(srtsoa3)=boxmass*organic_ppt(3)*1.0d-12*200.0d0/28.9d0
+       Gc(srtsoa4)=boxmass*organic_ppt(4)*1.0d-12*200.0d0/28.9d0
+
+
+        call org_cond(Nk,Mk,Gc,Nkout,Mkout,Gcout,dt,xkDMAN,
+     &     ichm,jchm,kchm)
+
+        do i=1,ibins
+          do j=1,icomp
+            Mk(i,j)=Mkout(i,j)
+          enddo
+          Nk(i)=Nkout(i)
+        enddo
+        Gc(srtsoa1) = Gcout(srtsoa1)
+        Gc(srtsoa2) = Gcout(srtsoa2)
+        Gc(srtsoa3) = Gcout(srtsoa3)
+        Gc(srtsoa4) = Gcout(srtsoa4)
+
+       organic_ppt(1)=Gc(srtsoa1)*1.0d+12/boxmass*28.9d0/200.0d0 !gmw(srtsoa1)
+       organic_ppt(2)=Gc(srtsoa2)*1.0d+12/boxmass*28.9d0/200.0d0 !gmw(srtsoa2)
+       organic_ppt(3)=Gc(srtsoa3)*1.0d+12/boxmass*28.9d0/200.0d0 !gmw(srtsoa3)
+       organic_ppt(4)=Gc(srtsoa4)*1.0d+12/boxmass*28.9d0/200.0d0 !gmw(srtsoa4)
+
+       call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm)
+      end if
+c---------------------------------------------------------------------------
+
+cd      call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm)
 
       !Call coagulation with dt/2
       if (icoag .eq. 1) then
@@ -406,82 +355,13 @@ c
           Nk(i)=Nkout(i)
         enddo
 
-      !Check pt 4.5 for debug
-cdbg      if ((time.gt.10.75).and.(time.lt.11.25)) then
-cdbg        if ((ichm.eq.76).and.(jchm.eq.44).and.(kchm.eq.1)) then
-cdbg          write(*,*)'In dman after 2nd multicoag' 
-cdbg          write(*,*)'coordinate of (i,j,k)',ichm, jchm, kchm
-cdbg          write(*,*)'tempi,presi,dsulfdt=',tempi,presi,dsulfdt
-cdbg          write(*,*)'h2so4=',h2so4,'nh3ppt=',nh3ppt
-cdbg          write(*,*)'Nk='
-cdbg          do i=1, ibins
-cdbg            write(*,*)Nk(i)
-cdbg          enddo
-cdbg            write(*,*)'Mk='
-cdbg          do j=1, icomp
-cdbg            write(*,*)'j=',j
-cdbg            do i=1, ibins
-cdbg              write(*,*)Mk(i,j)
-cdbg            enddo
-cdbg          enddo
-cdbg        endif
-cdbg      endif
         call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm)
 cPMCAMx        call neutral(4) 
       endif
 
 C-----Print cn, cn20, ccn and H2SO4 [kg] on screen
-cPMCAMx      if (icond_test.eq.1) then
-cPMCAMx        remainder=mod(time,1.667d-2) ! every 1 min
-cPMCAMx        if ((remainder.le.deltat/2.).or.((1.667d-2-remainder)
-cPMCAMx     &    .le.deltat/2.)) then
-cPMCAMx          call Nk2pn(pn,cn) ! converting Nk to pn
-cPMCAMx          write(6,101)time,temp,rh,cn,ygas(mgsvi),ygas(mgnh3)
-cPMCAMx        endif
-cPMCAMx      else  
-cPMCAMx        if (time.le.(itcommon+deltat/2)) then
-cPMCAMx          call Nk2pn(pn,cn) ! converting Nk to pn
-cPMCAMx          cn=0.0
-cPMCAMx          do i=1,22 ! about 0.1 um
-cPMCAMx            cn=cn+Nk(i)/boxvol
-cPMCAMx          enddo
-cPMCAMx          print*,'boxvol=',boxvol
-cPMCAMx          pause
-cPMCAMx          ygas(mgsvi)=Gc(srtso4)*1.0d+12/boxmass*28.9/gmw(srtso4)
-cPMCAMx          ygas(mgnh3)=Gc(srtnh3)*1.0d+12/boxmass*28.9/gmw(srtnh3)
-cdbg          write(6,101)time,temp,rh,cn,ygas(mgsvi),ygas(mgnh3)
-cPMCAMx        endif
-cPMCAMx      endif
-cPMCAMx 101  format(6g13.5)
-   
-      !Re-initialize pn
-cPMCAMx      do i=1, nsect
-cPMCAMx        if (pn(i) .lt. 0.) pn(i)=0.
-cPMCAMx      enddo
-
-      !Check pt 5 for debug
-cdbg      if ((time.gt.10.75).and.(time.lt.11.25)) then
-cdbg        if ((ichm.eq.76).and.(jchm.eq.44).and.(kchm.eq.1)) then
-cdbg          write(*,*)'In dman after 2nd multicoag and mnfix' 
-cdbg          write(*,*)'coordinate of (i,j,k)',ichm, jchm, kchm
-cdbg          write(*,*)'tempi,presi,dsulfdt=',tempi,presi,dsulfdt
-cdbg          write(*,*)'h2so4=',h2so4,'nh3ppt=',nh3ppt
-cdbg          write(*,*)'Nk='
-cdbg          do i=1, ibins
-cdbg            write(*,*)Nk(i)
-cdbg          enddo
-cdbg            write(*,*)'Mk='
-cdbg          do j=1, icomp
-cdbg            write(*,*)'j=',j
-cdbg            do i=1, ibins
-cdbg              write(*,*)Mk(i,j)
-cdbg            enddo
-cdbg          enddo
-cdbg        endif
-cdbg      endif
 
       time = time +deltat
-cPMCAMx      kcount = kcount +1
 
       enddo    ! main loop
 
@@ -499,9 +379,77 @@ cPMCAMx      kcount = kcount +1
       h2so4 = ygas(mgsvi)
       nh3ppt = ygas(mgnh3)
 
-cdbg      write(*,*)'h2so4=',h2so4,' nh3ppt=',nh3ppt
+      
+       organic_ppt(1)=Gc(srtsoa1)*1.0d+12/boxmass*28.9d0/200.0d0 !gmw(srtsoa1)
+       organic_ppt(2)=Gc(srtsoa2)*1.0d+12/boxmass*28.9d0/200.0d0 !gmw(srtsoa2)
+       organic_ppt(3)=Gc(srtsoa3)*1.0d+12/boxmass*28.9d0/200.0d0 !gmw(srtsoa3)
+       organic_ppt(4)=Gc(srtsoa4)*1.0d+12/boxmass*28.9d0/200.0d0 !gmw(srtsoa4)
 
-    
+
+
+      !For a debuging purpose
+      if ((ichm.eq.90).and.(jchm.eq.97).and.(kchm.eq.1)) then
+         write(*,*)'-------------------------------------------------'
+         write(*,*)'In dman at the finishing dman finokalia'
+         write(*,*)'coordinate of (i,j,k)',ichm, jchm, kchm
+         write(*,*)'tempi,dsulfdt=',tempi,dsulfdt
+         write(*,*)'organic(ppt)=',organic_ppt
+         write(*,*)'h2so4=',h2so4,'nh3ppt=',nh3ppt
+         write(*,*)'Nk='
+         sum_num_dman=0.0
+         do i=1, ibins
+           sum_num_dman=sum_num_dman+Nki(i)
+         enddo
+         write(*,*)'sum_num_dman=',sum_num_dman
+         write(*,*)'Mk='
+         sum_mass_dman=0.0
+         sum_soa1_dman=0.0
+         sum_soa2_dman=0.0
+         sum_soa3_dman=0.0
+         sum_soa4_dman=0.0
+
+         sum_so4_dman=0.0
+         sum_init_dman=0.0
+         sum_nh4_dman=0.0
+
+         do j=1, icomp-1
+           do i=1, ibins
+             sum_mass_dman=sum_mass_dman+Mki(i,j)
+             if (j.eq.srtsoa1) then
+             sum_soa1_dman=sum_soa1_dman+Mki(i,j)
+             end if
+             if (j.eq.srtsoa2) then
+             sum_soa2_dman=sum_soa2_dman+Mki(i,j)
+             end if
+             if (j.eq.srtsoa3) then
+             sum_soa3_dman=sum_soa3_dman+Mki(i,j)
+             end if
+             if (j.eq.srtsoa4) then
+             sum_soa4_dman=sum_soa4_dman+Mki(i,j)
+             end if
+
+             if (j.eq.srtso4) then
+             sum_so4_dman=sum_so4_dman+Mki(i,j)
+             end if
+             if (j.eq.srtinrt) then
+             sum_init_dman=sum_init_dman+Mki(i,j)
+             end if
+             if (j.eq.srtnh4) then
+             sum_nh4_dman=sum_nh4_dman+Mki(i,j)
+             end if
+           enddo
+         enddo
+
+         write(*,*)'sum_so4_dman=',sum_so4_dman,srtso4
+         write(*,*)'sum_soa1_dman=',sum_soa1_dman,srtsoa1
+         write(*,*)'sum_soa2_dman=',sum_soa2_dman,srtsoa2
+         write(*,*)'sum_soa3_dman=',sum_soa3_dman,srtsoa3
+         write(*,*)'sum_soa4_dman=',sum_soa4_dman,srtsoa4
+
+         write(*,*)'sum_init_dman=',sum_init_dman
+         write(*,*)'sum_nh4_dman=',sum_nh4_dman
+         write(*,*)'========================================'
+      endif    
 
 
       RETURN

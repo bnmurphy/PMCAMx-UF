@@ -4,16 +4,30 @@
 #
 #set INPUT  = "/home/christos/Research/ICEHT/eucaari"
 #set INPUT2 = "/home/christos/Research/ICEHT/ufeu/inputs"
-set INPUT  = "/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe"
-set INPUT2 = "/proj/snic2014-1-155/users/x_elhba/Inputs_May_Europe"
 
+#set INPUT  = "/home/x_elhba/PMCAMxUF/Research/eucaari"
+#set INPUT2 = "/home/x_elhba/PMCAMxUF/Research/ufeu/inputs"
+
+set INPUT  = "/proj/snic2014-1-155/users/x_elhba/Inputs_May_Europe"
+set INPUT2 = $INPUT
+
+#set INPUT  = "/home/x_larah/PMCAMxUF/Research/eucaari"
+#set INPUT2 = "/home/x_larah/PMCAMxUF/Research/ufeu/inputs"
 set DATE    = $1
 set DATE2   = $2
-@ DATE3   = $DATE2 + 121
-@ DATE4   = $DATE2 + 120
+
+@ DATE3   = ${DATE2} + 121
+@ DATE4   = ${DATE2} + 120
+
+if ($DATE < 10) then
+  set DATE = 0$DATE
+endif
+
 #
-set RUN     = "PMCAMxUF_testing"
-set OUTPUT  = $PMCAMxUF_USER_OUTPUT/$RUN
+set RUN     = "PMCAMX-UF_ORG_AG_2"
+#set OUTPUT  = "/home/x_elhba/PMCAMxUF/Research/ufeu/default/outputs/$RUN"
+
+set OUTPUT  = "/proj/snic2014-1-155/users/x_elhba/outputs/$RUN"
 #
 if ($DATE == "01") then
   mkdir -p $OUTPUT
@@ -21,19 +35,21 @@ if ($DATE == "01") then
   set RSTF = ""
 else
   set RST  = "true"
-  set RSTF = $OUTPUT/Eucaari.May.$DATE4.$RUN.inst.2
+  set RSTF = $OUTPUT/Eucaari.ORG_AG_2.$DATE4.$RUN.inst.2
 endif 
-echo $OUTPUT/Eucaari.May.$DATE4.$RUN.inst.2
+echo $OUTPUT/Eucaari.ORG_AG_2.$DATE4.$RUN.inst.2
 #
 date 
 #
 #  --- Create the input file (always called CAMx.in)
 #
-rm -f ../CAMx.in
-cat << ieof > ../CAMx.in
+#
+#
+rm -f CAMx.in
+cat << ieof > CAMx.in
 CAMx Version       |VERSION4.0 
 Run Message        |PMCAMx v4.0 Europe PM Test Run May 01-29 2008
-Root output name   |$OUTPUT/Eucaari.May.$DATE3.$RUN
+Root output name   |$OUTPUT/Eucaari.ORG_AG_2.$DATE3.$RUN
 Start yr/mo/dy/hr  |08 05 $DATE 0000.
 End   yr/mo/dy/hr  |08 05 $DATE 2400.
 DT:max,met,ems,out |5. 60. 60. 60.
@@ -42,7 +58,7 @@ sCoordinate ID     |POLAR
 xorg,yorg,dx,dy    |0. 0. 36. 36. -32. 60. -27.528389 34.245880
 time zone          |0
 PiG parameters     |2000. 12.
-Avg output species |615
+Avg output species |610
                    |NO        NO2       O3        HNO3      NH3       SO2
                    |SOA1_1    SOA1_2    SOA1_3    SOA1_4    SOA1_5    SOA1_6
                    |SOA1_7    SOA1_8    SOA1_9    SOA1_10   SOA1_11   SOA1_12
@@ -144,8 +160,7 @@ Avg output species |615
                    |NUM_24    NUM_25    NUM_26    NUM_27    NUM_28    NUM_29
                    |NUM_30    NUM_31    NUM_32    NUM_33    NUM_34    NUM_35
                    |NUM_36    NUM_37    NUM_38    NUM_39    NUM_40    NUM_41
-                   |NUM_42    NUM_43    SULF      FORM      PAN       ETH
-                   |CO        TOL       XYL
+                   |NUM_42    NUM_43    SULF      CO 
 # nested grids     |0
 SMOLAR,BOTT, PPM?  |PPM
 Chemistry solver   |CMC
@@ -158,9 +173,9 @@ Staggered winds    |false
 Treat area emiss   |true
 Treat point emiss  |false
 1-day emiss inputs |true
-3-D average file   |false
+3-D average file   |true
 Source Apportion   |false
-Chemparam          |CAMx4.chemparam.6
+Chemparam          |/home/x_elhba/PMCAMx-UF_ORG/CAMx4.chemparam.5.VBS.aging.Base
 Photolysis rates   |$INPUT/photolysis_rates/tuv_euro_ps2str_S99.0805$DATE.txt
 Landuse            |$INPUT/Metfields/lu_d02.bin
 Height/pressure    |$INPUT/Metfields/zp_d02.200805$DATE.bin
@@ -169,9 +184,9 @@ Temperature        |$INPUT/Metfields/tp_d02.200805$DATE.bin
 Water vapor        |$INPUT/Metfields/qa_d02.200805$DATE.bin
 Cloud/rain         |$INPUT/cr_files/cr_patched/cr_d02.200805$DATE.patched.bin
 Vertical diffsvty  |$INPUT/Metfields/kv_d02.200805$DATE.patched.bin
-Initial conditions |$INPUT/IC_BC_TCs/ICs43_Eucaari_2.bin
-Boundary conditions|$INPUT/IC_BC_TCs/BCs43_Eucaari_2_edges.bin
-Top concentration  |$INPUT/IC_BC_TCs/TCs43_Eucaari_2.txt
+Initial conditions |$INPUT2/IC_BC_TCs/ICs43_Eucaari_2.bin
+Boundary conditions|$INPUT2/IC_BC_TCs/BCs43_Eucaari_2_edges.bin
+Top concentration  |$INPUT2/IC_BC_TCs/TCs43_Eucaari_2.txt
 Albedo/haze/ozone  |$INPUT/ahomap/ahomap.monthEU.0805$DATE
 Point emiss        |
 Area emiss         |$INPUT2/ufeu_emiss/emnnum.0805$DATE.bin
@@ -180,15 +195,7 @@ ieof
 #
 #  --- Execute the model ---
 #
-cd ../
-/usr/bin/time ./PMCAMx.exe
-
-
-#setenv OMP_NUM_THREADS 16
-#setenv OMP_STACKSIZE 1024M
-#amplxe-cl -c hotspots -result-dir ${OUTPUT}/Vtune/Hotspots_$DATE -- ./PMCAMx.exe
-
-
+/usr/bin/time /home/x_elhba/PMCAMx-UF_ORG/PMCAMx-UF_new_2/PMCAMx.exe
 date 
 #
 

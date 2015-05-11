@@ -304,7 +304,10 @@ c
      &             'NUM_37    ','NUM_38    ','NUM_39    ',
      &             'NUM_40    ','NUM_41    ','NUM_42    ',
      &             'NUM_43    ',
-     &             'PH2O      '/
+     &             'PH2O      ',
+     &             'BPIN      ','LIMO      ','MONO      ',
+     &             'SESQ      '/
+                                      
 c
       data crsspc /'CCRS      ','CPRM      '/
 c
@@ -333,12 +336,12 @@ c
      &             'CXO2      ','HCO3      ','TBUO      ',
      &             'BZO       ','BZNO      '/
 c
-      data mchgas   / 34, 24, 25, 34, 56, 34,  0, 0, 0, 0 /
+      data mchgas   / 34, 24, 25, 34, 67, 34,  0, 0, 0, 0 /
 cjgj      data mchaero  /  0,  0,  0, 16,  0, 13,  0, 0, 0, 0 /
-      data mchaero  /  0,  0,  0, 16,  0, 14,  0, 0, 0, 0 /
+      data mchaero  /  0,  0,  0, 16, 14, 14,  0, 0, 0, 0 /
       data mchrad   / 14, 12, 12, 12, 18, 12,  0, 0, 0, 0 /
       data mchiessr /  4,  2,  2,  2,  2,  2,  0, 0, 0, 0 /
-      data mchrxn   /110, 91, 96,100,211,100,  0, 0, 0, 0 /
+      data mchrxn   /110, 91, 96,100,215,100,  0, 0, 0, 0 /
       data mchphot  / 14, 11, 12, 12, 30, 12,  0, 0, 0, 0 /
       data mchfast  /  4,  4,  4,  4, 13,  4,  0, 0, 0, 0 /
       data mchidmin / 1 /
@@ -403,7 +406,8 @@ c     For compilers with no OMP support you should link in the
 c     routine in the dummy.f file.
 c
         ncpus = omp_get_num_procs()
-        if( (idmech .EQ. 4 .OR. idmech .EQ. 6) .AND. ncpus .GT. 1 ) then
+cd        if( (idmech .EQ. 4 .OR. idmech .EQ. 6) .AND. ncpus .GT. 1 ) then
+        if( (idmech .EQ. 5 .OR. idmech .EQ. 6) .AND. ncpus .GT. 1 ) then
            write(iout,'(//,a)') 'ERROR in READCHM:'
            write(iout,'(1X,2A)') 'OMP (multiprocessing) is not ',
      &                           'supported for Mechanism 4 or 6.'
@@ -444,18 +448,19 @@ c
         endif
 c
         if (idmech.eq.2.or.idmech.eq.3.or.idmech.eq.4
-     &                                .or.idmech.eq.6) then
-          do i = 1,nrad
-            do j = 1,nradnm
-              if (nmrad2(i).eq.radlist(j)) then
-                 krad(j) = i
-                 nmrad(i) = radlist(j)
-              endif
-            enddo
-          enddo
-        endif
-c
-        if (idmech.eq.5) then
+     &                 .or.idmech.eq.5.or.idmech.eq.6) then
+
+cdavid          do i = 1,nrad
+cdavid            do j = 1,nradnm
+cdavid              if (nmrad2(i).eq.radlist(j)) then
+cdavid                 krad(j) = i
+cdavid                 nmrad(i) = radlist(j)
+cdavid              endif
+cdavid            enddo
+cdavid          enddo
+cdavid        endif
+
+
           do i = 1,nrad
             do j = 1,nradnm
               if (nmrad5(i).eq.radlist(j)) then
@@ -465,6 +470,18 @@ c
             enddo
           enddo
         endif
+
+c
+cdavid        if (idmech.eq.5) then
+cdavid          do i = 1,nrad
+cdavid            do j = 1,nradnm
+cdavid              if (nmrad5(i).eq.radlist(j)) then
+cdavid                 krad(j) = i
+cdavid                 nmrad(i) = radlist(j)
+cdavid              endif
+cdavid            enddo
+cdavid          enddo
+cdavid        endif
 c
         nmrad(nrad+1) = blank
         write(idiag,'(a)') 'The radicals are'
@@ -478,7 +495,8 @@ c
       read(ichem,'(a)') record
       read(record(21:80),*) naero
       nspec = ngas + naero 
-      if (idmech.EQ.6 .AND. naero.GT.0) then
+cdavid      if (idmech.EQ.6 .AND. naero.GT.0) then
+      if (idmech.EQ.5.AND. naero.GT.0) then
         read(record(21:80),*) naero,nsec_c,dt_aero
         read(ichem,'(a)') record
         read(record(21:),*) (dsec_i(i),i=1,nsec_c+1)
@@ -683,7 +701,8 @@ c
       if (naero.ne.0) then
         read(ichem,'(a)') record
         write(idiag,'(a)') record(:istrln(record))
-        if (idmech.EQ.6) then
+cdavid        if (idmech.EQ.6) then
+        if (idmech.EQ.5) then
           do iaero = 1, naero
             read(ichem,'(5x,a10,e10.0,f10.0)')
      &           tmpnam,bdnl_tmp,roprt_tmp
@@ -756,7 +775,8 @@ c
 c-----Check for a consistent set of ammonium/nitrate/sulfate 
 c     species
 c
-        if (idmech.EQ.6) then ! MECH 6
+      if (idmech.EQ.6) then ! MECH 6   (david oxi mechanismos 6)
+cd--        if (idmech.EQ.5) then ! MECH 5
           if (kso2.eq.nspec+1    .or. kh2o2.eq.nspec+1
      &   .or. kform.eq.nspec+1   .or. khono.eq.nspec+1
      &   .or. ko3.eq.nspec+1     .or. koh.eq.nspec+1
@@ -781,6 +801,26 @@ c
             write(iout,'(a)')   ' PSO4 to use Chemistry Mechanism 6.'
             goto 910
           endif
+
+        elseif(idmech.EQ.5 ) then  ! MECH 5
+          if (knh3.lt.nspec+1 .and. kpnh4_1.lt.nspec+1 .and.
+     &       kso2.lt.nspec+1 .and. ksulf.lt.nspec+1 .and.
+     &        kpso4_1.lt.nspec+1 .and. khno3.lt.nspec+1 .and.
+     &         kpno3_1.lt.nspec+1 ) then
+            continue
+          elseif (kpnh4_1.eq.nspec+1 .and. kpso4_1.eq.nspec+1 .and.
+     &         kpno3_1.eq.nspec+1 ) then
+            continue
+          else
+            write(iout,'(/,a)') ' You must have all of the '
+            write(iout,'(a)')   ' ammonium/sulfate/nitrate species '
+            write(iout,'(a)')   ' NH3,NH4,SO2,SULF,PSO4,HNO3,PNO3. '
+            write(iout,'(a)')   ' Or: '
+            write(iout,'(a)')   ' Any combination of the gas-phase'
+            write(iout,'(a)')   ' species NH3,SO2,HNO3. '
+            goto 910
+          endif
+
         else                  ! OTHER THAN MECH 6
           if (knh3.lt.nspec+1 .and. kpnh4.lt.nspec+1 .and.
      &       kso2.lt.nspec+1 .and. ksulf.lt.nspec+1 .and.
@@ -837,12 +877,13 @@ c
             write(iout,'(a)')   ' CG1,CG2,CG3,CG4,SOA1,SOA2,SOA3,SOA4 '
             goto 910
           endif
-        endif                 ! MECH 6 ?
+        endif                 ! MECH 6 ?    david (mech 5)
       endif
 c
 c-----Set up section diameters and check parameters for AERO routines
 c
-      if ( lchem .AND. idmech.EQ.6 .AND. naero.GT.0 ) then
+cdavid      if ( lchem .AND. idmech.EQ.6 .AND. naero.GT.0 ) then
+      if ( lchem .AND. idmech.EQ.5 .AND. naero.GT.0 ) then
         ierr = 0 
         call aeroset(nsec_c,dsec_i,ierr)
         if ( ierr .ne. 0 ) goto 910
@@ -875,9 +916,11 @@ c
         call exptbl(rxntyp,rxnord,rxnpar)
 
 c
-c-----Read Ternary Nucleation Rate Lookup Table
+c------  Read Ternary Nucleation Rate Lookup Table
 c
-        call read_tern_nuc_table
+         call read_tern_nuc_table
+
+
 
 c
 c-----Provide diagnostic info for checking rate expressions
@@ -900,7 +943,8 @@ c
 c
 c-----Set reaction pointers for pig chemistry
 c
-        if(idmech.le.4 .OR. idmech.eq.6)then
+cdavid        if(idmech.le.4 .OR. idmech.eq.6)then
+        if(idmech.le.5 .OR. idmech.eq.6)then
           do i=1,9
             ipigrxn(i)=ipigcb4(i)
           enddo
