@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #SBATCH -J PMCAMxUF_OMP
-#SBATCH -t 5-20:00:00
+#SBATCH -t 4-10:00:00
 #SBATCH --mem=4000
 #SBATCH -N 1
 #SBATCH --mail-type=ALL

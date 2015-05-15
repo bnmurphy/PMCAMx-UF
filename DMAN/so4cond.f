@@ -141,7 +141,7 @@ C-----ADJUSTABLE PARAMETERS---------------------------------------------
       parameter(Neps=1.0d+10, zeta13=0.98483, cthresh=1.d-16)
                          !Neps is set a little higher than multicoag 
                          !to avoid redundant time step segregations.
-      parameter(corfactor=1.0) ! a correction factor
+      parameter(corfactor=1.4) ! a correction factor
 
 C-----CODE--------------------------------------------------------------
 
@@ -259,10 +259,10 @@ cdbg     &           0.0,Mkf(k,srtnh3))
           endif
 c          mp=(Mkf(k,srtso4)+Mkf(k,srtnh3))/Nkf(k)
           ! JJ bugfix: Nkf refers to total particle number so must
-          ! include mass of all particulate species or we end up with mp below
+          ! include mass of all particulate species (except water) or we end up with mp below
           ! the mass bin lower bound. Although why not take the geometric mean
           ! here as well?
-          mp=(Mkf(k,srtso4)+Mkf(k,srtnh3)+Mkf(k,srtna)+Mkf(k,srth2o))/Nkf(k)
+          mp=(Mkf(k,srtso4)+Mkf(k,srtnh3)+Mkf(k,srtna))/Nkf(k)
         else
           !nothing in this bin - set to "typical value"
           if (icond_test .eq. 1) then !cond test 6/24/04 jgj
