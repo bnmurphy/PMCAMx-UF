@@ -384,35 +384,11 @@ cdbg      write(*,*) 't=',tsum+dts,' ',limit
          !Iteration
          itr=itr+1
          if (itr.lt.10000) then
-c            write(*,*) 'Coord.(i,j,k)=',ichm,jchm,kchm
-c            write(*,*) 'An iteration in multicoag exceeds 5000'
-c            write(*,*) 'dt=',dt,'tsum=',tsum,'dts=',dts
-c            write(*,*) 'Nk='
-c            do k=1,ibins
-c              write(*,*)Nkf(k)
-c            enddo
-c            write(*,*) 'Mkf='
-c            do j=1,icomp
-c              write(*,*)'j=',j
-c              do k=1,ibins
-c                write(*,*)Mkf(k,j)
-c              enddo
-c            enddo
-c            write(*,*) 'dNdt='
-c            do k=1,ibins
-c              write(*,*)dNdt(k)
-c            enddo
-c            write(*,*) 'dMdt='
-c            do j=1,icomp
-c              write(*,*)'j=',j
-c              do k=1,ibins
-c                write(*,*)dMdt(k,j)
-c              enddo
-c            enddo
-c            STOP
-c         endif
 
          goto 10
+         else
+            print*, 'An iteration in multicoag exceeds 10000'
+            print*, 'dt=',dt,'tsum=',tsum,'dts=',dts
          endif
       endif
 

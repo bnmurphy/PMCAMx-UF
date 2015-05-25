@@ -253,6 +253,10 @@ cdbg            enddo
 cdbg          enddo
 cdbg        endif
 cdbg      endif
+      !moved these two lines here from inside the icond if statement
+      !otherwise icond=0 means that there is junk values in Gc
+      Gc(srtso4)=boxmass*ygas(mgsvi)*1.0d-12*gmw(srtso4)/28.9
+      Gc(srtnh3)=boxmass*ygas(mgnh3)*1.0d-12*gmw(srtnh3)/28.9
 
       !Call condensation with "dt"
       if (icond .eq. 1) then
@@ -260,8 +264,7 @@ cdbg      endif
 cPMCAMx        if (icond_test.eq.1) then
 cPMCAMx          Gc(srtso4)=boxmass*ygas(mgsvi)*1.0e-12*100.0/28.9
 cPMCAMx        else
-        Gc(srtso4)=boxmass*ygas(mgsvi)*1.0d-12*gmw(srtso4)/28.9
-        Gc(srtnh3)=boxmass*ygas(mgnh3)*1.0d-12*gmw(srtnh3)/28.9
+        
 cPMCAMx        endif
 
         Call so4cond(Nk,Mk,Gc,Nkout,Mkout,Gcout,dt,ichm,jchm,kchm,
