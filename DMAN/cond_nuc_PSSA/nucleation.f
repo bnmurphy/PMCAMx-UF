@@ -94,6 +94,7 @@ c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
       Nkf=Nki
       Gcf=Gci
 
+
 cdbg      print*,'h2so4',h2so4,'nh3ppt',nh3ppt
 
 C     if requirements for nucleation are met, call nucleation subroutines
@@ -182,8 +183,9 @@ Cjrp         print*,'frac', frac
 Cjrpc         frac = 1.d0
 
 cdbg         print*,'Nk_NUC',Nki(nuc_bin),Nkf(nuc_bin)
-c$$$         Gcf(srtso4) = Gci(srtso4)! - (Mkf(nuc_bin,srtso4)-mold)
-c$$$                                  !PSSA decide Gc as a diagnostic way
+	  ! no PSSA
+      Gcf(srtso4) = Gci(srtso4) - (Mkf(nuc_bin,srtso4) -
+	      &  Mki(nuc_bin,srtso4))/molwt(srtso4)*gmw(srtso4)
 
 
 C there is a chance that Gcf will go less than zero because we are artificially growing

@@ -192,7 +192,7 @@ cdbg      endif
       if (Gci(srtnh3) .lt. cthresh*boxmass) Gcflag(srtnh3)=1 ! =1, Skip
 
       !If PSSA is on, turn on Gcflag(srtso4) for ezcond does H2SO4 condensatoin.
-      Gcflag(srtso4)=1 !PSSA
+      ! Gcflag(srtso4)=1 !PSSA -> not in use
 
 C Repeat from this point if multiple internal time steps are needed
  10   continue

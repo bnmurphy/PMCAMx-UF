@@ -71,6 +71,7 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision totmass  !the total mass of H2SO4 generated during the timestep
       double precision tmass
       double precision CSch     !fractional change in condensation sink
+      double precision H2SO4ch  !fractional change in H2SO4 concentration
       double precision CSch_tol !tolerance in change in condensation sink
       double precision addt     !adaptive timestep time
       double precision time_rem !time remaining
@@ -122,123 +123,187 @@ C     Make sure that H2SO4 concentration doesn't exceed the amount generated
 C     during that timestep (this will happen when the condensation sink is very low)
 
       !Get the steady state H2SO4 concentration
-      call getH2SO4conc(H2SO4rate,CS1,Gc1(srtnh4),gasConc)
-      Gc1(srtso4) = gasConc
-      addt = min_tstep
+C_no_PSSA      call getH2SO4conc(H2SO4rate,CS1,Gc1(srtnh4),gasConc)
+C_no_PSSA      Gc1(srtso4) = gasConc
+C_no_PSSA      addt = min_tstep
 c      addt = 3600.d0
-      totmass = H2SO4rate*addt*96.d0/98.d0
-
+C_no_PSSA      totmass = H2SO4rate*addt*96.d0/98.d0
+      addt = dt
       !Get change size distribution due to nucleation with initial guess
-      call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all, CS1)          
+      call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all, CS1)
+      call ezwatereqm(Mk2)
 
-      mass_change = 0.d0
-      do k=1,ibins
-         mass_change = mass_change + (Mk2(k,srtso4)-Mk1(k,srtso4))
-      enddo
-      mcond = totmass-mass_change ! mass of h2so4 to condense
+	  ! See the change in H2SO4 for the non-PSSA test
+	  ! (use the same tolerance as for CS, for now)
+      H2SO4ch = abs(Gc2(srtso4) - Gc1(srtso4))/Gc1(srtso4)    
 
-      if (mcond.lt.0.d0)then
-         tmass = 0.d0
-         do k=1,ibins
-            do j=1,icomp-idiag
-               tmass = tmass + Mk2(k,j)
-            enddo
-         enddo
-         if (abs(mcond).gt.totmass*1.0d-8) then
-            if (-mcond.lt.Mk2(nuc_bin,srtso4)) then
-               tmass = 0.d0
-               do j=1,icomp-idiag
-                  tmass = tmass + Mk2(nuc_bin,j)
-               enddo
-               Nk2(nuc_bin) = Nk2(nuc_bin)*(tmass+mcond)/tmass
-               Mk2(nuc_bin,srtso4) = Mk2(nuc_bin,srtso4) + mcond
-               mcond = 0.d0
-            else
-            print*,'mcond < 0 in cond_nuc', mcond, totmass
-            stop
-            endif
-         else
-            mcond = 0.d0
-         endif
-      endif
-
-      tmass = 0.d0
-      do k=1,ibins
-         do j=1,icomp-idiag
-            tmass = tmass + Mk2(k,j)
-         enddo
-      enddo
-
-C     Get guess for condensation
-      call ezcond(Nk2,Mk2,mcond,srtso4,Nk3,Mk3,ichm,jchm,kchm)
-
-      Gc3(srtnh4) = Gc1(srtnh4)   
-
-cdynamic      call eznh3eqm(Gc3,Mk3) ! NH3 condensation is calculated dynamically.-on
-      call ezwatereqm(Mk3) !Do not count water amount for a while.
-
-      ! check to see how much condensation sink changed
-      call getCondSink(Nk3,Mk3,srtso4,CS2,sinkfrac)
-      CSch = abs(CS2 - CS1)/CS1    
-       
-c      if (CSch.gt.CSch_tol) then ! condensation sink didn't change much use whole timesteps
-         ! get starting adaptive timestep to not allow condensationk sink
-         ! to change that much
-         addt = addt*CSch_tol/CSch/2
+      if (H2SO4ch.gt.CSch_tol) then
+         ! get starting adaptive timestep to not allow the conc.
+         ! to change that much		 
+         addt = addt*CSch_tol/H2SO4ch/2
          addt = min(addt,dt)
          addt = max(addt,min_tstep)
          time_rem = dt ! time remaining
          
          num_iter = 0
-         sumH2SO4=0.d0
          ! do adaptive timesteps
          do while (time_rem .gt. 0.d0)
             num_iter = num_iter + 1
 
-C     Get the steady state H2SO4 concentration
-            if (num_iter.gt.1)then ! no need to recalculate for first step
-               call getH2SO4conc(H2SO4rate,CS1,Gc1(srtnh4),gasConc)
-               Gc1(srtso4) = gasConc
-            endif
-
-            sumH2SO4 = sumH2SO4 + Gc1(srtso4)*addt
-            totmass = H2SO4rate*addt*96.d0/98.d0
             call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all,CS1)
+            call ezwatereqm(Mk2)
 
             !Add up the nucleation from each process to temp variable 
             do k=1,2
                fndt(k) = fndt(k) + fn_all(k) * addt
             end do
-            mass_change = 0.d0
-            do k=1,ibins
-               mass_change = mass_change + (Mk2(k,srtso4)-Mk1(k,srtso4))
-            enddo
-            mcond = totmass-mass_change ! mass of h2so4 to condense
-
-            if (mcond.lt.0.d0)then
-               tmass = 0.d0
+            time_rem = time_rem - addt
+            if (time_rem .gt. 0.d0) then
+               H2SO4ch = abs(Gc2(srtso4) - Gc1(srtso4))/Gc1(srtso4)
+               if(H2SO4ch.le.eps) then
+                  addt=addt*1.5d0
+               else
+                  addt=min(addt*CSch_tol/H2SO4ch,addt*1.5d0)
+               end if
+                     
+               addt = min(addt,time_rem) ! allow adaptive timestep to change
+               addt = max(addt,min_tstep)
+               
+			   ! Update Gc1, Nk1, Mk1, CS1
+               Gc1(srtso4) = Gc2(srtso4)
                do k=1,ibins
-                  do j=1,icomp-idiag
-                     tmass = tmass + Mk2(k,j)
+                  Nk1(k)=Nk2(k)
+                  do j=1,icomp
+                     Mk1(k,j)=Mk2(k,j)
                   enddo
                enddo
-               if (abs(mcond).gt.totmass*1.0d-8) then
-                  if (-mcond.lt.Mk2(nuc_bin,srtso4)) then
-                     tmass = 0.d0
-                     do j=1,icomp-idiag
-                        tmass = tmass + Mk2(nuc_bin,j)
-                     enddo
-                     Nk2(nuc_bin) = Nk2(nuc_bin)*(tmass+mcond)/tmass
-                     Mk2(nuc_bin,srtso4) = Mk2(nuc_bin,srtso4) + mcond
-                     mcond = 0.d0
-                  else
-                  print*,'mcond < 0 in cond_nuc', mcond, totmass
-                  stop
-                  endif
-               else
-                  mcond = 0.d0
-               endif
+               call getCondSink(Nk1,Mk1,srtso4,CS1,sinkfrac)
             endif
+			
+         enddo
+
+      endif
+	  
+      do k=1,ibins
+         Nkf(k)=Nk2(k)
+         do j=1,icomp
+            Mkf(k,j)=Mk2(k,j)
+         enddo
+      enddo      
+      Gcf(srtso4)=Gc2(srtso4)
+
+
+
+	  
+
+C_no_PSSA      mass_change = 0.d0
+C_no_PSSA      do k=1,ibins
+C_no_PSSA         mass_change = mass_change + (Mk2(k,srtso4)-Mk1(k,srtso4))
+C_no_PSSA      enddo
+C_no_PSSA      mcond = totmass-mass_change ! mass of h2so4 to condense
+
+C_no_PSSA      if (mcond.lt.0.d0)then
+C_no_PSSA         tmass = 0.d0
+C_no_PSSA         do k=1,ibins
+C_no_PSSA            do j=1,icomp-idiag
+C_no_PSSA               tmass = tmass + Mk2(k,j)
+C_no_PSSA            enddo
+C_no_PSSA         enddo
+C_no_PSSA         if (abs(mcond).gt.totmass*1.0d-8) then
+C_no_PSSA            if (-mcond.lt.Mk2(nuc_bin,srtso4)) then
+C_no_PSSA               tmass = 0.d0
+C_no_PSSA              do j=1,icomp-idiag
+C_no_PSSA                  tmass = tmass + Mk2(nuc_bin,j)
+C_no_PSSA               enddo
+C_no_PSSA               Nk2(nuc_bin) = Nk2(nuc_bin)*(tmass+mcond)/tmass
+C_no_PSSA               Mk2(nuc_bin,srtso4) = Mk2(nuc_bin,srtso4) + mcond
+C_no_PSSA               mcond = 0.d0
+C_no_PSSA            else
+C_no_PSSA            print*,'mcond < 0 in cond_nuc', mcond, totmass
+C_no_PSSA            stop
+C_no_PSSA            endif
+C_no_PSSA         else
+C_no_PSSA            mcond = 0.d0
+C_no_PSSA         endif
+C_no_PSSA      endif
+
+C_no_PSSA      tmass = 0.d0
+C_no_PSSA      do k=1,ibins
+C_no_PSSA         do j=1,icomp-idiag
+C_no_PSSA            tmass = tmass + Mk2(k,j)
+C_no_PSSA         enddo
+C_no_PSSA      enddo
+
+C     Get guess for condensation
+C_no_PSSA      call ezcond(Nk2,Mk2,mcond,srtso4,Nk3,Mk3,ichm,jchm,kchm)
+
+C_no_PSSA      Gc3(srtnh4) = Gc1(srtnh4)   
+
+cdynamic      call eznh3eqm(Gc3,Mk3) ! NH3 condensation is calculated dynamically.-on
+C_no_PSSA      call ezwatereqm(Mk3) !Do not count water amount for a while.
+
+      ! check to see how much condensation sink changed
+C_no_PSSA      call getCondSink(Nk3,Mk3,srtso4,CS2,sinkfrac)
+C_no_PSSA      CSch = abs(CS2 - CS1)/CS1    
+
+c      if (CSch.gt.CSch_tol) then ! condensation sink didn't change much use whole timesteps
+         ! get starting adaptive timestep to not allow condensationk sink
+         ! to change that much
+C_no_PSSA         addt = addt*CSch_tol/CSch/2
+C_no_PSSA         addt = min(addt,dt)
+C_no_PSSA         addt = max(addt,min_tstep)
+C_no_PSSA         time_rem = dt ! time remaining
+         
+C_no_PSSA         num_iter = 0
+C_no_PSSA         sumH2SO4=0.d0
+         ! do adaptive timesteps
+C_no_PSSA         do while (time_rem .gt. 0.d0)
+C_no_PSSA            num_iter = num_iter + 1
+
+C     Get the steady state H2SO4 concentration
+C_no_PSSA            if (num_iter.gt.1)then ! no need to recalculate for first step
+C_no_PSSA               call getH2SO4conc(H2SO4rate,CS1,Gc1(srtnh4),gasConc)
+C_no_PSSA               Gc1(srtso4) = gasConc
+C_no_PSSA            endif
+
+C_no_PSSA            sumH2SO4 = sumH2SO4 + Gc1(srtso4)*addt
+C_no_PSSA            totmass = H2SO4rate*addt*96.d0/98.d0
+C_no_PSSA            call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all,CS1)
+
+            !Add up the nucleation from each process to temp variable 
+C_no_PSSA            do k=1,2
+C_no_PSSA               fndt(k) = fndt(k) + fn_all(k) * addt
+C_no_PSSA            end do
+C_no_PSSA            mass_change = 0.d0
+C_no_PSSA            do k=1,ibins
+C_no_PSSA               mass_change = mass_change + (Mk2(k,srtso4)-Mk1(k,srtso4))
+C_no_PSSA            enddo
+C_no_PSSA            mcond = totmass-mass_change ! mass of h2so4 to condense
+
+C_no_PSSA            if (mcond.lt.0.d0)then
+C_no_PSSA               tmass = 0.d0
+C_no_PSSA               do k=1,ibins
+C_no_PSSA                  do j=1,icomp-idiag
+C_no_PSSA                     tmass = tmass + Mk2(k,j)
+C_no_PSSA                  enddo
+C_no_PSSA               enddo
+C_no_PSSA               if (abs(mcond).gt.totmass*1.0d-8) then
+C_no_PSSA                  if (-mcond.lt.Mk2(nuc_bin,srtso4)) then
+C_no_PSSA                     tmass = 0.d0
+C_no_PSSA                     do j=1,icomp-idiag
+C_no_PSSA                        tmass = tmass + Mk2(nuc_bin,j)
+C_no_PSSA                     enddo
+C_no_PSSA                     Nk2(nuc_bin) = Nk2(nuc_bin)*(tmass+mcond)/tmass
+C_no_PSSA                     Mk2(nuc_bin,srtso4) = Mk2(nuc_bin,srtso4) + mcond
+C_no_PSSA                     mcond = 0.d0
+C_no_PSSA                  else
+C_no_PSSA                  print*,'mcond < 0 in cond_nuc', mcond, totmass
+C_no_PSSA                  stop
+C_no_PSSA                  endif
+C_no_PSSA               else
+C_no_PSSA                  mcond = 0.d0
+C_no_PSSA               endif
+C_no_PSSA            endif
             
 c            Gc2(srtnh4) = Gc1(srtnh4)
 c            call eznh3eqm(Gc2,Mk2,Mnuc2)
@@ -246,17 +311,17 @@ c            call ezwatereqm(Mk2,Mnuc2)
 
 c            call getCondSink(Nk2,Mk2,Nnuc2,Mnuc2,srtso4,CStest,sinkfrac)  
 
-            call ezcond(Nk2,Mk2,mcond,srtso4,Nk3,Mk3,ichm,jchm,kchm)
-            Gc3(srtnh4) = Gc1(srtnh4)
+C_no_PSSA            call ezcond(Nk2,Mk2,mcond,srtso4,Nk3,Mk3,ichm,jchm,kchm)
+C_no_PSSA            Gc3(srtnh4) = Gc1(srtnh4)
 cdynamic            call eznh3eqm(Gc3,Mk3) ! NH3 is calculated dynamically.-on
-            call ezwatereqm(Mk3)
+C_no_PSSA            call ezwatereqm(Mk3)
             
             ! check to see how much condensation sink changed
-            call getCondSink(Nk3,Mk3,srtso4,CS2,sinkfrac)  
+C_no_PSSA            call getCondSink(Nk3,Mk3,srtso4,CS2,sinkfrac)  
 
-            time_rem = time_rem - addt
-            if (time_rem .gt. 0.d0) then
-               CSch = abs(CS2 - CS1)/CS1
+C_no_PSSA            time_rem = time_rem - addt
+C_no_PSSA            if (time_rem .gt. 0.d0) then
+C_no_PSSA               CSch = abs(CS2 - CS1)/CS1
 Cjrp               if (CSch.lt.0.d0) then
 Cjrp                  print*,''
 Cjrp                  print*,'CSch LESS THAN ZERO!!!!!', CS1,CStest,CS2
@@ -266,38 +331,38 @@ Cjrp
 Cjrp                  addt = min(addt,time_rem)
 Cjrp               else
 c               addt = min(addt*CSch_tol/CSch,addt*1.5d0) ! allow adaptive timestep to change  commented out by LA
-               if(CSch.le.eps) then   ! added by LA
-                  addt=addt*1.5d0
-               else
-                  addt=min(addt*CSch_tol/CSch,addt*1.5d0)
-               end if
+C_no_PSSA               if(CSch.le.eps) then   ! added by LA
+C_no_PSSA                  addt=addt*1.5d0
+C_no_PSSA               else
+C_no_PSSA                  addt=min(addt*CSch_tol/CSch,addt*1.5d0)
+C_no_PSSA               end if
                      
-               addt = min(addt,time_rem) ! allow adaptive timestep to change
-               addt = max(addt,min_tstep)
+C_no_PSSA               addt = min(addt,time_rem) ! allow adaptive timestep to change
+C_no_PSSA               addt = max(addt,min_tstep)
 Cjrp               endif
-               CS1 = CS2
-               Gc1(srtnh4)=Gc3(srtnh4)
-               do k=1,ibins
-                  Nk1(k)=Nk3(k)
-                  do j=1,icomp
-                     Mk1(k,j)=Mk3(k,j)
-                  enddo
-               enddo         
-            endif
-         enddo
-         Gcf(srtso4)=sumH2SO4/dt
+C_no_PSSA               CS1 = CS2
+C_no_PSSA               Gc1(srtnh4)=Gc3(srtnh4)
+C_no_PSSA               do k=1,ibins
+C_no_PSSA                  Nk1(k)=Nk3(k)
+C_no_PSSA                  do j=1,icomp
+C_no_PSSA                     Mk1(k,j)=Mk3(k,j)
+C_no_PSSA                  enddo
+C_no_PSSA               enddo         
+C_no_PSSA            endif
+C_no_PSSA         enddo
+C_no_PSSA         Gcf(srtso4)=sumH2SO4/dt
 Cjrp      else
 Cjrp         num_iter = 1
 Cjrp         Gcf(srtso4)=Gc1(srtso4)
 Cjrp      endif
       
-      do k=1,ibins
-         Nkf(k)=Nk3(k)
-         do j=1,icomp
-            Mkf(k,j)=Mk3(k,j)
-         enddo
-      enddo      
-      Gcf(srtnh4)=Gc3(srtnh4)
+C_no_PSSA      do k=1,ibins
+C_no_PSSA         Nkf(k)=Nk3(k)
+C_no_PSSA         do j=1,icomp
+C_no_PSSA            Mkf(k,j)=Mk3(k,j)
+C_no_PSSA         enddo
+C_no_PSSA      enddo      
+C_no_PSSA      Gcf(srtnh4)=Gc3(srtnh4)
 
       !Divide Nucleation Diagnostic Variable by Master Time step to get rates
       fndt = fndt / dt
