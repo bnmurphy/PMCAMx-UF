@@ -290,6 +290,21 @@ c
      &             'PSO4_36   ','PSO4_37   ','PSO4_38   ',
      &             'PSO4_39   ','PSO4_40   ','PSO4_41   ',
      &             'PSO4_42   ','PSO4_43   ',
+     &             'PAMINE_1  ','PAMINE_2  ','PAMINE_3  ',
+     &             'PAMINE_4  ','PAMINE_5  ','PAMINE_6  ',
+     &             'PAMINE_7  ','PAMINE_8  ','PAMINE_9  ',
+     &             'PAMINE_10 ','PAMINE_11 ','PAMINE_12 ',
+     &             'PAMINE_13 ','PAMINE_14 ','PAMINE_15 ',
+     &             'PAMINE_16 ','PAMINE_17 ','PAMINE_18 ',
+     &             'PAMINE_19 ','PAMINE_20 ','PAMINE_21 ',
+     &             'PAMINE_22 ','PAMINE_23 ','PAMINE_24 ',
+     &             'PAMINE_25 ','PAMINE_26 ','PAMINE_27 ',
+     &             'PAMINE_28 ','PAMINE_29 ','PAMINE_30 ',
+     &             'PAMINE_31 ','PAMINE_32 ','PAMINE_33 ',
+     &             'PAMINE_34 ','PAMINE_35 ','PAMINE_36 ',
+     &             'PAMINE_37 ','PAMINE_38 ','PAMINE_39 ',
+     &             'PAMINE_40 ','PAMINE_41 ','PAMINE_42 ',
+     &             'PAMINE_43 ',
      &             'NUM_1     ','NUM_2     ','NUM_3     ',
      &             'NUM_4     ','NUM_5     ','NUM_6     ',
      &             'NUM_7     ','NUM_8     ','NUM_9     ',
@@ -337,7 +352,7 @@ c
 c     Chemical Mechanism Specs
       data mchgas   / 34, 24, 25, 34, 56, 35,  0, 0, 0, 0 /
 cjgj      data mchaero  /  0,  0,  0, 16,  0, 13,  0, 0, 0, 0 /
-      data mchaero  /  0,  0,  0, 16,  0, 14,  0, 0, 0, 0 /
+      data mchaero  /  0,  0,  0, 16,  0, 15,  0, 0, 0, 0 /
       data mchrad   / 14, 12, 12, 12, 18, 12,  0, 0, 0, 0 /
       data mchiessr /  4,  2,  2,  2,  2,  2,  0, 0, 0, 0 /
       data mchrxn   /110, 91, 96,100,211,101,  0, 0, 0, 0 /

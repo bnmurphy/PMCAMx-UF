@@ -12,7 +12,7 @@ set DATE2   = $2
 @ DATE3   = $DATE2 + 121
 @ DATE4   = $DATE2 + 120
 #
-set RUN     = "PMCAMxUF_UpdatedAmines"
+set RUN     = "PMCAMxUF_testing3"
 set OUTPUT  = $PMCAMxUF_USER_OUTPUT/$RUN
 #
 if ($DATE == "01") then
@@ -42,8 +42,8 @@ sCoordinate ID     |POLAR
 xorg,yorg,dx,dy    |0. 0. 36. 36. -32. 60. -27.528389 34.245880
 time zone          |0
 PiG parameters     |2000. 12.
-Avg output species |616
-                   |NO        NO2       O3        HNO3      NH3       SO2
+Avg output species |659
+                   |NO        NO2       O3        HNO3      NH3       SO2    
                    |SOA1_1    SOA1_2    SOA1_3    SOA1_4    SOA1_5    SOA1_6
                    |SOA1_7    SOA1_8    SOA1_9    SOA1_10   SOA1_11   SOA1_12
                    |SOA1_13   SOA1_14   SOA1_15   SOA1_16   SOA1_17   SOA1_18
@@ -137,15 +137,22 @@ Avg output species |616
                    |PH2O_25   PH2O_26   PH2O_27   PH2O_28   PH2O_29   PH2O_30
                    |PH2O_31   PH2O_32   PH2O_33   PH2O_34   PH2O_35   PH2O_36
                    |PH2O_37   PH2O_38   PH2O_39   PH2O_40   PH2O_41   PH2O_42
-                   |PH2O_43   NUM_1     NUM_2     NUM_3     NUM_4     NUM_5
-                   |NUM_6     NUM_7     NUM_8     NUM_9     NUM_10    NUM_11
-                   |NUM_12    NUM_13    NUM_14    NUM_15    NUM_16    NUM_17
-                   |NUM_18    NUM_19    NUM_20    NUM_21    NUM_22    NUM_23
-                   |NUM_24    NUM_25    NUM_26    NUM_27    NUM_28    NUM_29
-                   |NUM_30    NUM_31    NUM_32    NUM_33    NUM_34    NUM_35
-                   |NUM_36    NUM_37    NUM_38    NUM_39    NUM_40    NUM_41
-                   |NUM_42    NUM_43    SULF      FORM      PAN       ETH
-                   |CO        TOL       XYL       AMINE
+                   |PH2O_43   PAMINE_1  PAMINE_2  PAMINE_3  PAMINE_4  PAMINE_5
+                   |PAMINE_6  PAMINE_7  PAMINE_8  PAMINE_9  PAMINE_10 PAMINE_11
+                   |PAMINE_12 PAMINE_13 PAMINE_14 PAMINE_15 PAMINE_16 PAMINE_17
+                   |PAMINE_18 PAMINE_19 PAMINE_20 PAMINE_21 PAMINE_22 PAMINE_23
+                   |PAMINE_24 PAMINE_25 PAMINE_26 PAMINE_27 PAMINE_28 PAMINE_29
+                   |PAMINE_30 PAMINE_31 PAMINE_32 PAMINE_33 PAMINE_34 PAMINE_35
+                   |PAMINE_36 PAMINE_37 PAMINE_38 PAMINE_39 PAMINE_40 PAMINE_41
+                   |PAMINE_42 PAMINE_43 NUM_1     NUM_2     NUM_3     NUM_4
+                   |NUM_5     NUM_6     NUM_7     NUM_8     NUM_9     NUM_10
+                   |NUM_11    NUM_12    NUM_13    NUM_14    NUM_15    NUM_16
+                   |NUM_17    NUM_18    NUM_19    NUM_20    NUM_21    NUM_22
+                   |NUM_23    NUM_24    NUM_25    NUM_26    NUM_27    NUM_28
+                   |NUM_29    NUM_30    NUM_31    NUM_32    NUM_33    NUM_34
+                   |NUM_35    NUM_36    NUM_37    NUM_38    NUM_39    NUM_40
+                   |NUM_41    NUM_42    NUM_43    SULF      FORM      PAN
+                   |ETH       CO        TOL       XYL       AMINE
 # nested grids     |0
 SMOLAR,BOTT, PPM?  |PPM
 Chemistry solver   |CMC

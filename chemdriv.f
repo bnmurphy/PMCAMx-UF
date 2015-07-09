@@ -193,7 +193,6 @@ c     The order(kk) saves the order of species as the same way
 c     as increasing the order of size bins.
 c
       nsect = 43
-      naero = 14
 c
       do kk=1,ngas
          order(kk) = kk
@@ -438,18 +437,18 @@ c
      &             sddm,nddmsp,ngas,ddmjac5,lddm,nirrrxn,titrt,rrxn_irr,
      &             lirr)
                elseif (idmech.eq.6) then
-                 if (ldark(i,j)) then
-                   nflag=0.0d0
-                 else
-                   nflag=1.0d0
-                 endif
+                  if (ldark(i,j)) then
+                     nflag=0.0d0
+                  else
+                     nflag=1.0d0
+                  endif
 cdbg                 if ((ichm.eq.31).and.(jchm.eq.2).and.(kchm.eq.1)) then!dbg
 cdbg                   print*,'before trap'
 cdbg                   print*,'coordinate of (31,2,1)' !dbg
 cdbg                   print*,'tempk,pressure,dsulfdt=',tempk(i,j,k)
 cdbg     &                  ,pressure,dsulfdt !dbg
 cdbg                 endif !dbg
-                 call trap(rxnrate6,radslvr6,ratejac6,rateslo6,dtchem,
+                  call trap(rxnrate6,radslvr6,ratejac6,rateslo6,dtchem,
      &             ldark(i,j),water(i,j,k),atm,O2,CH4,H2,con,crad,
      &             avgrad,tcell,
      &             sddm,nddmsp,ngas,ddmjac6,lddm,nirrrxn,titrt,rrxn_irr,
@@ -464,7 +463,7 @@ cdbg                   print*,'coordinate of (31,2,1)' !dbg
 cdbg                   print*,'tempk,pressure,dsulfdt=',tempk,pressure
 cdbg     &                  ,dsulfdt !dbg
 cdbg                 endif !dbg
-                 if ( laero_upd )
+                  if ( laero_upd )
      &           call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
      &                         MXSPEC,MXRADCL,NSPEC,NGAS,
      &                         con,crad,convfac,time,aero_dt(igrd),

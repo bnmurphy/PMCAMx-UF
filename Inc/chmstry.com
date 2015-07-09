@@ -263,7 +263,11 @@ c      Aerosols
       integer   kpno3_10 ,kpso4_1  ,kpso4_2
       integer   kpso4_3  ,kpso4_4  ,kpso4_5
       integer   kpso4_6  ,kpso4_7  ,kpso4_8
-      integer   kpso4_9  ,kpso4_10 ,kph2o
+      integer   kpso4_9  ,kpso4_10 ,kpamine_1
+      integer   kpamine_2,kpamine_3,kpamine_4
+      integer   kpamine_5,kpamine_6,kpamine_7
+      integer   kpamine_8,kpamine_9,kpamine_10
+      integer   kph2o
 c
       equivalence (kmap(1), kno  ), (kmap(2), kno2 ), (kmap(3), ko3  ),
      &            (kmap(4), kpan ), (kmap(5), kcres), (kmap(6), kpan2),
@@ -493,21 +497,36 @@ c
      &(kmap(650),kpso4_36 ),(kmap(651),kpso4_37 ),(kmap(652),kpso4_38 ),
      &(kmap(653),kpso4_39 ),(kmap(654),kpso4_40 ),(kmap(655),kpso4_41 ),
      &(kmap(656),kpso4_42 ),(kmap(657),kpso4_43 ),
-     &(kmap(658),knum_1   ),(kmap(659),knum_2   ),(kmap(660),knum_3   ),
-     &(kmap(661),knum_4   ),(kmap(662),knum_5   ),(kmap(663),knum_6   ),
-     &(kmap(664),knum_7   ),(kmap(665),knum_8   ),(kmap(666),knum_9   ),
-     &(kmap(667),knum_10  ),(kmap(668),knum_11  ),(kmap(669),knum_12  ),
-     &(kmap(670),knum_13  ),(kmap(671),knum_14  ),(kmap(672),knum_15  ),
-     &(kmap(673),knum_16  ),(kmap(674),knum_17  ),(kmap(675),knum_18  ),
-     &(kmap(676),knum_19  ),(kmap(677),knum_20  ),(kmap(678),knum_21  ),
-     &(kmap(679),knum_22  ),(kmap(680),knum_23  ),(kmap(681),knum_24  ),
-     &(kmap(682),knum_25  ),(kmap(683),knum_26  ),(kmap(684),knum_27  ),
-     &(kmap(685),knum_28  ),(kmap(686),knum_29  ),(kmap(687),knum_30  ),
-     &(kmap(688),knum_31  ),(kmap(689),knum_32  ),(kmap(690),knum_33  ),
-     &(kmap(691),knum_34  ),(kmap(692),knum_35  ),(kmap(693),knum_36  ),
-     &(kmap(694),knum_37  ),(kmap(695),knum_38  ),(kmap(696),knum_39  ),
-     &(kmap(697),knum_40  ),(kmap(698),knum_41  ),(kmap(699),knum_42  ),
-     &(kmap(700),knum_43  ),(kmap(701),kph2o    )
+     &(kmap(658),kpamine_1 ),(kmap(659),kpamine_2 ),(kmap(660),kpamine_3 ),
+     &(kmap(661),kpamine_4 ),(kmap(662),kpamine_5 ),(kmap(663),kpamine_6 ),
+     &(kmap(664),kpamine_7 ),(kmap(665),kpamine_8 ),(kmap(666),kpamine_9 ),
+     &(kmap(667),kpamine_10),(kmap(668),kpamine_11),(kmap(669),kpamine_12),
+     &(kmap(670),kpamine_13),(kmap(671),kpamine_14),(kmap(672),kpamine_15),
+     &(kmap(673),kpamine_16),(kmap(674),kpamine_17),(kmap(675),kpamine_18),
+     &(kmap(676),kpamine_19),(kmap(677),kpamine_20),(kmap(678),kpamine_21),
+     &(kmap(679),kpamine_22),(kmap(680),kpamine_23),(kmap(681),kpamine_24),
+     &(kmap(682),kpamine_25),(kmap(683),kpamine_26),(kmap(684),kpamine_27),
+     &(kmap(685),kpamine_28),(kmap(686),kpamine_29),(kmap(687),kpamine_30),
+     &(kmap(688),kpamine_31),(kmap(689),kpamine_32),(kmap(690),kpamine_33),
+     &(kmap(691),kpamine_34),(kmap(692),kpamine_35),(kmap(693),kpamine_36),
+     &(kmap(694),kpamine_37),(kmap(695),kpamine_38),(kmap(696),kpamine_39),
+     &(kmap(697),kpamine_40),(kmap(698),kpamine_41),(kmap(699),kpamine_42),
+     &(kmap(700),kpamine_43),
+     &(kmap(701),knum_1   ),(kmap(702),knum_2   ),(kmap(703),knum_3   ),
+     &(kmap(704),knum_4   ),(kmap(705),knum_5   ),(kmap(706),knum_6   ),
+     &(kmap(707),knum_7   ),(kmap(708),knum_8   ),(kmap(709),knum_9   ),
+     &(kmap(710),knum_10  ),(kmap(711),knum_11  ),(kmap(712),knum_12  ),
+     &(kmap(713),knum_13  ),(kmap(714),knum_14  ),(kmap(715),knum_15  ),
+     &(kmap(716),knum_16  ),(kmap(717),knum_17  ),(kmap(718),knum_18  ),
+     &(kmap(719),knum_19  ),(kmap(720),knum_20  ),(kmap(721),knum_21  ),
+     &(kmap(722),knum_22  ),(kmap(723),knum_23  ),(kmap(724),knum_24  ),
+     &(kmap(725),knum_25  ),(kmap(726),knum_26  ),(kmap(727),knum_27  ),
+     &(kmap(728),knum_28  ),(kmap(729),knum_29  ),(kmap(730),knum_30  ),
+     &(kmap(731),knum_31  ),(kmap(732),knum_32  ),(kmap(733),knum_33  ),
+     &(kmap(734),knum_34  ),(kmap(735),knum_35  ),(kmap(736),knum_36  ),
+     &(kmap(737),knum_37  ),(kmap(738),knum_38  ),(kmap(739),knum_39  ),
+     &(kmap(740),knum_40  ),(kmap(741),knum_41  ),(kmap(742),knum_42  ),
+     &(kmap(743),knum_43  ),(kmap(744),kph2o    )
 c
       integer   ko1d  ,ko    ,kclo 
       integer   kcl   ,kn2o5 ,kno3 

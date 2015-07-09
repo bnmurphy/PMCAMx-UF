@@ -195,7 +195,7 @@ c
 
             elseif (lavmap(l).le.ngas) then  !Species is a gas
               cvar(l)  = spname(lavmap(l))  !Species shortname
-              cunit(l) = 'ppbv'   !Units
+              cunit(l) = 'ppmv'   !Units
               cln(l)   = cvar(l)  !Long Name
 
             else    !Species is an Aerosol

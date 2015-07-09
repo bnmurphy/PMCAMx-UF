@@ -131,7 +131,7 @@ c cf      parameter ( PRESLO  = 126.0 )
       parameter ( PRESLO  = 80.0 )      
       parameter ( PRESHI  = 1100. )
       parameter ( MXRXN   =   600 )
-      parameter ( NSPNAM  =   701 )
+      parameter ( NSPNAM  =   744 )
       parameter ( NRADNM  =    26 )
 c
 c-----------------------------------------------------------------------
