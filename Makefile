@@ -59,7 +59,7 @@ ifeq ($(COMPILER),ifort)
 
   FC   := ifort
   FLGS := -I$(INC) -module mod/ -I$(NCDF_INC) 
-  FLGS := $(FLGS) -O2
+  FLGS := $(FLGS) -O0 -g
   FLGS := $(FLGS) -fpe3 -reentrancy threaded -traceback -align dcommons -extend_source -convert big_endian -mcmodel=large -shared-intel
 	#make model FC="ifort" FLGS="-I$(INC) -module mod/ -I$(NCDF_INC) -O2 -fpe3 -reentrancy threaded -traceback -align dcommons -extend_source -convert big_endian -mcmodel=large -shared-intel" TARGT="PMCAMx.exe" DUM=dummy
 #	make model FC="ifort" FLGS="-I$(INC) -O2 -align dcommons -extend_source -convert big_endian -static" TARGT="PMCAMx.exe" DUM=dummy

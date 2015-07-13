@@ -15,7 +15,7 @@ c  ** changes in nsec necesitate changes in formats for subroutine SPCPRINT **
       parameter(neqsec=4)             ! Number of equilibrium sections
 cbk      parameter(neqsec=2)
       parameter(nsecd=nsec-neqsec)    ! Number of dynamic sections
-      parameter(nexti=6)              ! Number of external inorganic aerosol species
+      parameter(nexti=7)              ! Number of external inorganic aerosol species + amines
 c
       parameter(imovsec=1)         ! 0 is fixed sections 1 is moving sections
 c      parameter(imovsec=0)         ! 0 is fixed sections 1 is moving sections
@@ -38,7 +38,9 @@ c
       parameter (KEC  = 12)!pointer for external Elemental Carbon Aerosol
       parameter (KCRUS =13)!pointer for external Crustal Aerosol 
 c
-      parameter (KNUM = 14)!pointer for number concentration
+      parameter (KPAMI=14) !pointer for external aerosol amines
+c
+      parameter (KNUM = 15)!pointer for number concentration
 c
 c
 c      parameter(ninti=18)       ! Number of internal inorganic aerosol species

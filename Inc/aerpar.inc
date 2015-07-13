@@ -40,7 +40,8 @@ c
       parameter (nar = 10)           ! crustal
       parameter (nahso5 = 11)        ! hso5-
       parameter (nahmsa = 12)        ! hmsa
-      parameter (naspec = 12)        ! number of aerosol species
+      parameter (naami  = 13)	     ! amine
+      parameter (naspec = 13)        ! number of aerosol species
 c
 c condensible gas-phase components in local arrays
 c
