@@ -265,14 +265,12 @@ cPMCAMx        else
         !Convert PPT to kg (gridcell)-1
         Gc(srtso4)=boxmass*ygas(mgsvi)*1.0d-12*gmw(srtso4)/28.9
         Gc(srtnh3)=boxmass*ygas(mgnh3)*1.0d-12*gmw(srtnh3)/28.9
-cJJ It would be reasonable to add dma to Gc as well at some point (update icomp), 
-cJJ even though that would mean that the size of Mk and Nk changes as well. 
-cJJ For now we keep passing dmappt to various subroutines
+        Gc(srtdma)=boxmass*ygas(mgdma)*1.0d-12*gmw(srtdma)/28.9
         
 cPMCAMx        endif
 
         Call so4cond(Nk,Mk,Gc,Nkout,Mkout,Gcout,dt,ichm,jchm,kchm,
-     &              iflagez,dmappt) 
+     &              iflagez) 
                                                            !Only ammonia and amine
         if (iflagez.eq.1) then
           call eznh3(Gc,Mk,Nk,Gcout,Mkout,Nkout,ichm,jchm,kchm)
@@ -286,6 +284,7 @@ cPMCAMx        endif
         enddo
         Gc(srtnh3) = Gcout(srtnh3)
         Gc(srtso4) = Gcout(srtso4)
+        Gc(srtdma) = Gcout(srtdma)
 
         !Converting Nk, Mk, and Gc
         do i=1,ibins
@@ -297,8 +296,10 @@ cPMCAMx        endif
         if (icond_test .ne. 1) then !Notice that not equal,"ne"
           Gc(srtso4)=Gcout(srtso4)
           Gc(srtnh3)=Gcout(srtnh3)
+          Gc(srtdma)=Gcout(srtdma)
           ygas(mgsvi)=Gc(srtso4)*1.0d+12/boxmass*28.9/gmw(srtso4)
           ygas(mgnh3)=Gc(srtnh3)*1.0d+12/boxmass*28.9/gmw(srtnh3)
+          ygas(mgdma)=Gc(srtdma)*1.0d+12/boxmass*28.9/gmw(srtdma)
         endif
       endif
 
@@ -365,7 +366,7 @@ cdbg      endif
 
       !Call Pseudo Steady State condensation and nucleation
       if (inucl .eq. 1) then
-        call cond_nuc(Nk,Mk,Gc,Nkout,Mkout,Gcout,H2SO4rate,dmappt,dt,
+        call cond_nuc(Nk,Mk,Gc,Nkout,Mkout,Gcout,H2SO4rate,dt,
      &   ichm,jchm,kchm, fndt)
       endif
 

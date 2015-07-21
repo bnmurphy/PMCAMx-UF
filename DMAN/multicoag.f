@@ -145,6 +145,7 @@ C If any Nk are zero, then set them to a small value to avoid division by zero
             Mkf(k,srtso4)=0.5*1.414*xk(k)*Neps*0.727273 !sulfate
             Mkf(k,srtorg)=0.5*1.414*xk(k)*Neps !organic matter
             Mkf(k,srtnh3)=0.5*1.414*xk(k)*Neps*0.272727 !ammonium
+            Mkf(k,srtdma)=0.0 ! dma
             Mkf(k,srth2o)=0.0 ! water
          endif
       enddo
@@ -360,6 +361,7 @@ cdbg                  write(*,*) Mkf(k,j), dMdt(k,j)
             Mkf(k,srtso4)=0.5*1.414*xk(k)*Neps*0.727273 !sulfate
             Mkf(k,srtorg)=0.5*1.414*xk(k)*Neps !organic matter
             Mkf(k,srtnh3)=0.5*1.414*xk(k)*Neps*0.272727 !ammonium
+            Mkf(k,srtdma)=0.0 ! dma
             Mkf(k,srth2o)=0.0 ! water
             !make sure mass/number don't go negative
             if (dNdt(k) .lt. 0.0) dNdt(k)=0.0

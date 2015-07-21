@@ -34,7 +34,7 @@ cdbg      include 'aervaria.inc'
 
       integer ibins, icomp
       integer naqbin
-      parameter (ibins=41, icomp=4)
+      parameter (ibins=41, icomp=5)
       parameter (naqbin=2)
 c
 c-----Argument declarations
@@ -52,8 +52,8 @@ cdbg      real dsulfdt    !sulfuric acid production rate
 c
 c-----Variable declarations
 c
-      integer srtso4, srtorg, srtnh3, srth2o !species indicators
-      parameter (srtso4=1, srtorg=2, srtnh3=3, srth2o=4)
+      integer srtso4, srtorg, srtnh3, srtdma, srth2o !species indicators
+      parameter (srtso4=1, srtorg=2, srtnh3=3, srtdma=4, srth2o=5)
 
       integer i, j ! counter variables
       integer ii, jj ! counter variables
@@ -170,9 +170,11 @@ cnogas      endif
       if (moxid0(i,nae).lt.0.0) moxid0(i,nae)=0.0
       if (moxid0(i,nar).lt.0.0) moxid0(i,nar)=0.0
       if (moxid0(i,nac).lt.0.0) moxid0(i,nac)=0.0
+      if (moxid0(i,naami).lt.0.0) moxid0(i,naami)=0.0       ! amine /JJ
 c
          moxid(i,srtnh3)=moxid0(i,naa)*cvt*boxvol
          moxid(i,srtso4)=moxid0(i,na4)*cvt*boxvol
+         moxid(i,srtdma)=moxid0(i,naami)*cvt*boxvol        !amine /JJ
          add_tot_inert(i) = moxid0(i,nan)+moxid0(i,nas)+         ! cf
 c                            ! Nitrate            Na              !
 c         add_tot_inert(i) = moxid0(i,kna_c)+                          ! cf
@@ -210,8 +212,9 @@ cdbg         endif
          if (q((i-1)*nsp+knum).lt.0.0) then
             if (q((i-1)*nsp+knum).gt.(-Neps*(1./boxvol)))then
                q((i-1)*nsp+knum) = Neps*(1./boxvol)
-               do j=2, 13 ! from KNa to KEC, all mass species wo H2O 
-                  q((i-1)*nsp+j) = Neps*(1./boxvol)*1.4*xk(i)*(1./12.)
+c$$$               do j=2, 13 ! from KNa to KEC, all mass species wo H2O
+               do j=2, nsp-1 ! all mass species wo H2O
+                  q((i-1)*nsp+j) = Neps*(1./boxvol)*1.4*xk(i)*(1./real(nsp-2))
                enddo
             else
                write(*,*)'CAMx2so4cond'
@@ -223,7 +226,8 @@ cdbg         endif
                   write(*,*)q((ii-1)*nsp+knum)
                enddo
                write(*,*)'q(+k...)='
-               do jj=2, 13 ! from KNa to KEC, all mass species wo H2O 
+c$$$               do jj=2, 13 ! from KNa to KEC, all mass species wo H2O
+               do jj=2, nsp-1 ! all mass species wo H2O
                   write(*,*)'species=',jj
                   do ii=1,ibins
                      write(*,*)q((ii-1)*nsp+jj)
@@ -233,7 +237,8 @@ cdbg         endif
             endif
          endif
          totmass=0.0
-         do j=2, 13 ! from KNa to KEC, all mass species wo H2O 
+c$$$         do j=2, 13 ! from KNa to KEC, all mass species wo H2O
+         do j=2, nsp-1 ! all mass species wo H2O
             totmass=totmass+q((i-1)*nsp+j)
             if (q((i-1)*nsp+j).lt.0.0) then
                if (q((i-1)*nsp+j).gt.(-Meps*(1./(cvt*boxvol)))) then
@@ -248,7 +253,8 @@ cdbg         endif
                      write(*,*)q((ii-1)*nsp+knum)
                   enddo
                   write(*,*)'q(+k...)='
-                  do jj=2, 13 ! from KNa to KEC, all mass species wo H2O 
+c$$$                  do jj=2, 13 ! from KNa to KEC, all mass species wo H2O
+                  do jj=2, nsp-1 ! all mass species wo H2O
                      write(*,*)'species=',jj
                      do ii=1,ibins
                         write(*,*)q((ii-1)*nsp+jj)
@@ -260,7 +266,8 @@ cdbg         endif
          enddo
          if (iflag.eq.1) then
             newmass=0.0
-            do jj=2, 13 ! from KNa to KEC, all mass species wo H2O 
+c$$$            do jj=2, 13 ! from KNa to KEC, all mass species wo H2O
+            do jj=2, nsp-1 ! all mass species wo H2O
                newmass=newmass+q((i-1)*nsp+jj)
             enddo
             q((i-1)*nsp+knum)=q((i-1)*nsp+knum)*newmass/totmass
@@ -291,6 +298,7 @@ c
 c
          Mk(i,srtorg) = tot_inert(i) * cvt * boxvol
          Mk(i,srtnh3)=q((i-1)*nsp+knh4) * cvt * boxvol
+         Mk(i,srtdma)=q((i-1)*nsp+kpami)* cvt * boxvol   !amine /JJ
          Mk(i,srth2o)=q((i-1)*nsp+kh2o) * cvt * boxvol
       enddo      
 c
@@ -437,6 +445,7 @@ cdbg           STOP
          endif   
 c
          q((i-1)*nsp+knh4) = Mk(i,srtnh3) * cvt2 * (1.0/boxvol)
+         q((i-1)*nsp+kpami)= Mk(i,srtdma) * cvt2 * (1.0/boxvol)
          ! Water is not changed by this process
       enddo      
 

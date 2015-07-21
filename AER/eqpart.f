@@ -105,6 +105,16 @@ C     Ambient temperature expressed in Kelvins.
 C
 C *** CONVERT INPUT CONCENTRATIONS TO moles/m3 **************************
 C
+      nsecx2 = nsec                         ! PMCAMx-UF does not define nsecx2 elsewhere/ JJ 13/07/15
+      ! PMCAMx-UF does not calculate qn elsewhere/ JJ 13/07/15
+      do i=1,nsec
+        qt(i)=0.d0
+        do ki=2,nsp-1 ! use dry basis first, tmg (01/23/02)
+          qt(i)=qt(i)+q((i-1)*nsp+ki) ! total mass per section(ug/m3)
+        enddo  
+        qn(i)=qt(i)/dsec(i)**3 ! calculate 0th moment(number of particles)
+      enddo
+
       ng = nsp*nsecx2                       ! gases
       prod=rgas*temp/(1.01325D5*pres)       ! conversion from ppm to umoles/m3
                                             ! pres (bkoo, 06/09/00)

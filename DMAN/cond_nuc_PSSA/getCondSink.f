@@ -95,12 +95,15 @@ C     get size dependent values
             enddo
 cdbg            print*,'k=',k,'Mktot=',Mktot
 Ckpc  Density should be changed due to more species involed.             
-            density=aerodens_PSSA(Mko(k,srtso4),0.d0,
-     &              Mko(k,srtnh4),Mko(k,srtna),Mko(k,srth2o))  !assume bisulfate            
+c$$$            density=aerodens_PSSA(Mko(k,srtso4),0.d0,
+c$$$     &              Mko(k,srtnh4),Mko(k,srtna),Mko(k,srth2o))  !assume bisulfate
+            density=1400.  ! using the same value as other subroutines instead of aerodens_PSSA
+                           ! Should update aerodens_PSSA to include dma if you want to use it with amine version
             mp=Mktot/Nko(k)
          else
             !nothing in this bin - set to "typical value"
-            density=1500.
+            density=1400. ! to be consistent with other subroutines /JJ 20/07/15
+c$$$            density=1500.
             mp=1.4*xk(k)
          endif
          Dpk(k)=((mp/density)*(6./pi))**(0.333)

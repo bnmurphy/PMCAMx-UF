@@ -7,8 +7,8 @@ C     WRITTEN BY Jeff Pierce, April 2007
 
 C     UPDATED BY Ben Murphy & Jan Julin, October-November 2014
 
-C     This subroutine calls the Vehkamaki 2002 and Napari 2002 nucleation
-C     parameterizations and the amine nucleation routine based on the 
+C     This subroutine calls the Vehkamaki 2002 nucleation
+C     parameterizations and the NH3 and amine nucleation routines based on the 
 C     Atmospheric Cluster Dynamic Code (ACDC)and gets the nucleation rates.
 
 C-----INPUTS------------------------------------------------------------
@@ -26,7 +26,7 @@ C-----OUTPUTS-----------------------------------------------------------
 
 C     Nkf, Mkf, Gcf - same as above, but final values
 
-      SUBROUTINE nucleation(Nki,Mki,Gci,Nkf,Mkf,Gcf,nuc_bin,dt,fn_all,cs,dmappt)
+      SUBROUTINE nucleation(Nki,Mki,Gci,Nkf,Mkf,Gcf,nuc_bin,dt,fn_all,cs)
 
       IMPLICIT NONE
 
@@ -87,7 +87,7 @@ C-----CODE--------------------------------------------------------------
       ! ACDC Lookup table ternary nuclation does not need this in ppt
 c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
       nh3_molec = Gci(srtnh4)/boxvol*1000.d0/17.d0*6.022d23 
-      dma_molec = dmappt*1.d-18 * pres/8.314d0/temp * 6.022d23 !molec cm-3
+      dma_molec = Gci(srtdma)/boxvol*1000.d0/45.d0*6.022d23 !molec cm-3
 
       fn = 0.d0
       rnuc = 0.d0
@@ -107,25 +107,33 @@ C     and get the nucleation rate and critical cluster size
          if (amine_nuc.eq.1.and.dma_molec.gt.1.d4) then
             call amine_nucl(temp,cs,h2so4,dma_molec,fn,rnuc) !amine nuc
 
-            !Update DMA Concentration
-	    !The 0.31 factor should be the mass fraction of DMA in
-	    !the nucleated particles.
-            d_dma = 0.31d0 * (4.d0/3.d0*pi*(rnuc*1D-9)**3)*1350.d0*fn*1.d6*dt !kg m-3
-            dmappt = dmappt - d_dma/0.045d0 / (pres/(8.314d0*temp)) * 1.d12 !pptv
-
-            !nucleation could use all of the DMA so check that we do not get negative
-            if (dmappt.lt.0.d0) then
-               print*, 'Neg DMA in nucleation', dmappt
-               dmappt = 0.d0
-            end if
+c$$$            !Update DMA Concentration
+c$$$	    !The 0.31 factor should be the mass fraction of DMA in
+c$$$	    !the nucleated particles.
+c$$$            d_dma = 0.31d0 * (4.d0/3.d0*pi*(rnuc*1D-9)**3)*1350.d0*fn*1.d6*dt !kg m-3
+c$$$            dmappt = dmappt - d_dma/0.045d0 / (pres/(8.314d0*temp)) * 1.d12 !pptv
+c$$$
+c$$$            !nucleation could use all of the DMA so check that we do not get negative
+c$$$            if (dmappt.lt.0.d0) then
+c$$$               print*, 'Neg DMA in nucleation', dmappt
+c$$$               dmappt = 0.d0
+c$$$            end if
 
             if (fn.gt.0.d0) then
                !update mass and number
                !nuclei consist of sulfate and amine compounds
-	       !assume 1-to-1 ratio of DMA and sulfuric acid, put DMA 
-               !in to particle phase as Ammonia
-               mfrac = (/0.69, 0.0, 0.31, 0.0/)
+	       !assume 1-to-1 ratio of DMA and sulfuric acid
+               mfrac = (/0.69, 0.0, 0.0, 0.31, 0.0/)
                call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+               
+               !Update DMA gas phase concentration
+               Gcf(srtdma)=Gcf(srtdma)-Mkf(nuc_bin,srtdma)   ! kg/grid cell
+               !nucleation could use all of the DMA so check that we do not get negative
+               if (Gcf(srtdma).lt.0.d0) then
+                  print*, 'Neg DMA in nucleation', Gcf(srtdma)
+                  Gcf(srtdma) = 0.d0
+               end if
+
                !set amine nucleation rate as number 3 for now (it is
                !the latest addition to fn_all
                fn_all(3)=fn
@@ -140,7 +148,7 @@ c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
             if (fn.gt.0.d0) then
                !update mass and number
                !nuclei are assumed as ammonium bisulfte
-               mfrac = (/0.8144, 0.0, 0.1856, 0.0/)
+               mfrac = (/0.8144, 0.0, 0.1856, 0.0, 0.0/)
                call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
                fn_all(1) = fn
             endif
@@ -152,7 +160,7 @@ c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
             if (fn.gt.0.d0) then
                !update mass and number
                !nuclei are assumed to be sulfuric acid
-               mfrac = (/1.0, 0.0, 0.0, 0.0/)
+               mfrac = (/1.0, 0.0, 0.0, 0.0, 0.0/)
                call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
                fn_all(2) = fn
             endif

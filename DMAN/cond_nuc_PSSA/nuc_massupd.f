@@ -70,6 +70,7 @@ C---------------------------------------------------------------------
       Mkif(nuc_bin,srtso4) = Mkif(nuc_bin,srtso4)+mfrac(srtso4)*fn*mnuc*boxvol*dt
       Mkif(nuc_bin,srtna) = Mkif(nuc_bin,srtna)+mfrac(srtna)*fn*mnuc*boxvol*dt
       Mkif(nuc_bin,srtnh4) = Mkif(nuc_bin,srtnh4)+mfrac(srtnh4)*fn*mnuc*boxvol*dt
+      Mkif(nuc_bin,srtdma) = Mkif(nuc_bin,srtdma)+mfrac(srtdma)*fn*mnuc*boxvol*dt
       Mkif(nuc_bin,srth2o) = Mkif(nuc_bin,srth2o)+mfrac(srth2o)*fn*mnuc*boxvol*dt
 
       !update number distribution

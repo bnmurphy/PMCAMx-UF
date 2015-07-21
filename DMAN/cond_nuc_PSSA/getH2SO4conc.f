@@ -21,6 +21,7 @@ C     =================
 C     H2SO4rate - H2SO4 generation rate [kg box-1 s-1]
 C     CS - condensation sink [s-1]
 C     NH3conc - ammonium in box [kg box-1]
+C     dmaconc - dma in box [kg box-1]
 Cxxxxx     prev - logical flag saying if a previous guess should be used or not
 Cxxxxx     gasConc_prev - the previous guess [kg/box] (not used if prev is false)
 
@@ -28,7 +29,7 @@ C-----OUTPUTS-----------------------------------------------------------
 
 C     gasConc - gas H2SO4 [kg/box]
 
-      SUBROUTINE getH2SO4conc(H2SO4rate,CS,NH3conc,gasConc, dmappt)
+      SUBROUTINE getH2SO4conc(H2SO4rate,CS,NH3conc,gasConc,dmaconc)
 
       IMPLICIT NONE
 
@@ -41,6 +42,7 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
       double precision H2SO4rate
       double precision CS
       double precision NH3conc
+      double precision dmaconc
       double precision gasConc
       logical prev
       double precision gasConc_prev
@@ -90,7 +92,7 @@ C-----CODE--------------------------------------------------------------
       Gci=0.d0
       
       Gci(srtnh4)=NH3conc
-
+      Gci(srtdma)=dmaconc
 
 	! make sure CS doesn't equal zero
 c	CS = max(CS,CSeps)
@@ -137,7 +139,7 @@ C Checks for when condensation sink is very small
 	gasConc = min(gasConc,max_H2SO4conc)
       Gci(srtso4) = gasConc
 c      call getNucRate(Gci,fn,rnuc,nflg,CS,dmappt)
-      call getNucMass(Gci,massnuc,nflg,CS,dmappt)
+      call getNucMass(Gci,massnuc,nflg,CS)
       
       if (nflg) then ! nucleation occured
          gasConc_lo = H2SO4min*boxvol/(1000.d0/98.d0*6.022d23) !convert to kg/box
@@ -145,7 +147,7 @@ c      call getNucRate(Gci,fn,rnuc,nflg,CS,dmappt)
 C     Test to see if gasConc_lo gives a res < 0 (this means ANY nucleation is too high)
          Gci(srtso4) = gasConc_lo*1.000001d0
 c         call getNucRate(Gci,fn1,rnuc1,nflg,CS,dmappt)
-         call getNucMass(Gci,massnuc1,nflg,CS,dmappt)
+         call getNucMass(Gci,massnuc1,nflg,CS)
          if (nflg) then
 c$$$            massnuc = 4.d0/3.d0*pi*(rnuc1*1.d-9)**3*1350.*fn1*boxvol*
 c$$$c            massnuc = 4.d0/3.d0*pi*(rnuc1*1.d-9)**3*1800.*fn1*boxvol*
@@ -194,7 +196,7 @@ Cjrp            print*,'gasConc_lo',gasConc_lo,'gasConc_hi',gasConc_hi
             gasConc = sqrt(gasConc_hi*gasConc_lo) ! take new guess as logmean
             Gci(srtso4) = gasConc
 c            call getNucRate(Gci,fn,rnuc,nflg,CS,dmappt)
-            call getNucMass(Gci,massnuc,nflg,CS,dmappt)
+            call getNucMass(Gci,massnuc,nflg,CS)
 c$$$            massnuc = 4.d0/3.d0*pi*(rnuc*1.d-9)**3*1350.*fn*boxvol*
 c$$$c 	      massnuc = 4.d0/3.d0*pi*(rnuc*1.d-9)**3*1800.*fn*boxvol*
 c$$$     &           98.d0/96.d0

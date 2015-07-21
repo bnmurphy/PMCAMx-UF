@@ -29,7 +29,7 @@ C-----OUTPUTS-----------------------------------------------------------
 
 C     Nkf, Mkf, Gcf - same as above, but final values
 
-      SUBROUTINE cond_nuc(Nki,Mki,Gci,Nkf,Mkf,Gcf,H2SO4rate,dmappt,dt
+      SUBROUTINE cond_nuc(Nki,Mki,Gci,Nkf,Mkf,Gcf,H2SO4rate,dt
      & ,ichm,jchm,kchm, fndt)             
       IMPLICIT NONE
 
@@ -123,14 +123,14 @@ C     Make sure that H2SO4 concentration doesn't exceed the amount generated
 C     during that timestep (this will happen when the condensation sink is very low)
 
       !Get the steady state H2SO4 concentration
-      call getH2SO4conc(H2SO4rate,CS1,Gc1(srtnh4),gasConc,dmappt)
+      call getH2SO4conc(H2SO4rate,CS1,Gc1(srtnh4),gasConc,Gc1(srtdma))
       Gc1(srtso4) = gasConc
       addt = min_tstep
 c      addt = 3600.d0
       totmass = H2SO4rate*addt*96.d0/98.d0
 
       !Get change size distribution due to nucleation with initial guess
-      call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all,CS1,dmappt)
+      call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all,CS1)
 
       mass_change = 0.d0
       do k=1,ibins
@@ -198,13 +198,14 @@ c      if (CSch.gt.CSch_tol) then ! condensation sink didn't change much use who
 
 C     Get the steady state H2SO4 concentration
             if (num_iter.gt.1)then ! no need to recalculate for first step
-               call getH2SO4conc(H2SO4rate,CS1,Gc1(srtnh4),gasConc,dmappt)
+               call getH2SO4conc(H2SO4rate,CS1,Gc1(srtnh4),gasConc,Gc1(srtdma))
                Gc1(srtso4) = gasConc
             endif
 
             sumH2SO4 = sumH2SO4 + Gc1(srtso4)*addt
             totmass = H2SO4rate*addt*96.d0/98.d0
-            call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all,CS1,dmappt) 
+            call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all,CS1)
+            Gc1(srtdma)=Gc2(srtdma)  !update gas phase dma
 
             !Add up the nucleation from each process to temp variable 
             do k=1,nJnuc
@@ -299,6 +300,8 @@ Cjrp      endif
          enddo
       enddo      
       Gcf(srtnh4)=Gc3(srtnh4)
+      Gcf(srtdma)=Gc1(srtdma)   ! update final dma gas phase conecntration - why are the
+                                ! gas phase concentrations done in so complicated manner? /JJ
 
       !Divide Nucleation Diagnostic Variable by Master Time step to get rates
       fndt = fndt / dt

@@ -27,7 +27,7 @@ C-----OUTPUTS-----------------------------------------------------------
 C     massnuc - nucleated mass [kg s-1 box-1]
 C     nflg - says if nucleation happend
 
-      SUBROUTINE getNucMass(Gci,massnuc,nflg,cs,dmappt)
+      SUBROUTINE getNucMass(Gci,massnuc,nflg,cs)
 
       IMPLICIT NONE
 
@@ -68,7 +68,7 @@ C-----CODE--------------------------------------------------------------
       h2so4  = Gci(srtso4)/boxvol*1000.d0/98.d0*6.022d23 ![molec cm-3]
 c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4)) ![ppt]      
       nh3_molec = Gci(srtnh4)/boxvol*1000.d0/17.d0*6.022d23  ![molec cm-3]
-      dma_molec = dmappt*1.e-18 * pres/8.314/temp * 6.022d23 !molec cm-3
+      dma_molec = Gci(srtdma)/boxvol*1000.d0/45.d0*6.022d23  !molec cm-3
 
       fn = 0.d0
       rnuc = 0.d0

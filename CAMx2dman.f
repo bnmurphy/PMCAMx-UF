@@ -39,10 +39,10 @@ c
 c-----Variable declarations
 c
       integer ibins, icomp
-      parameter (ibins=41, icomp=4)
+      parameter (ibins=41, icomp=5)
 
-      integer srtso4, srtorg, srtnh3, srth2o, srtdma !species indicators
-      parameter (srtso4=1, srtorg=2, srtnh3=3, srth2o=4, srtdma=5)
+      integer srtso4, srtorg, srtnh3, srtdma, srth2o !species indicators
+      parameter (srtso4=1, srtorg=2, srtnh3=3, srtdma=4, srth2o=5)
 
       integer i, j ! counter variables
       integer ii, jj ! counter variables
@@ -154,8 +154,9 @@ cdbg          nh3ppt = 0.d0
          if (q((i-1)*nsp+knum).lt.0.0) then
             if (q((i-1)*nsp+knum).gt.(-Neps*(1./boxvol)))then
                q((i-1)*nsp+knum) = Neps*(1./boxvol)
-               do j=2, 13 ! from KNa to KEC, all mass species wo H2O 
-                  q((i-1)*nsp+j) = Neps*(1./boxvol)*1.4*xk(i)*(1./12.)
+c$$$               do j=2, 13 ! from KNa to KEC, all mass species wo H2O 
+               do j=2, nsp-1 ! all mass species wo H2O
+                  q((i-1)*nsp+j) = Neps*(1./boxvol)*1.4*xk(i)*(1./real(nsp-2))
                enddo
             else
                write(*,*)'Coordinate =', ich, jch, kch
@@ -166,7 +167,8 @@ cdbg          nh3ppt = 0.d0
                   write(*,*)q((ii-1)*nsp+knum)
                enddo
                write(*,*)'q(+k...)='
-               do jj=2, 13 ! from KNa to KEC, all mass species wo H2O 
+c$$$               do jj=2, 13 ! from KNa to KEC, all mass species wo H2O
+               do jj=2, nsp-1 ! all mass species wo H2O
                   write(*,*)'species=',jj
                   do ii=1,ibins
                      write(*,*)q((ii-1)*nsp+jj)
@@ -176,7 +178,8 @@ cdbg          nh3ppt = 0.d0
             endif
          endif
          totmass=0.0
-         do j=2, 13 ! from KNa to KEC, all mass species wo H2O 
+c$$$         do j=2, 13 ! from KNa to KEC, all mass species wo H2O
+         do j=2, nsp-1 ! all mass species wo H2O
             totmass=totmass+q((i-1)*nsp+j)
             if (q((i-1)*nsp+j).lt.0.0) then
                if (q((i-1)*nsp+j).gt.(-Meps*(1./(cvt*boxvol)))) then
@@ -191,7 +194,8 @@ cdbg          nh3ppt = 0.d0
                      write(*,*)q((ii-1)*nsp+knum)
                   enddo
                   write(*,*)'q(+k...)='
-                  do jj=2, 13 ! from KNa to KEC, all mass species wo H2O 
+c$$$                  do jj=2, 13 ! from KNa to KEC, all mass species wo H2O
+                  do jj=2, nsp-1 ! all mass species wo H2O
                      write(*,*)'species=',jj
                      do ii=1,ibins
                         write(*,*)q((ii-1)*nsp+jj)
@@ -203,7 +207,8 @@ cdbg          nh3ppt = 0.d0
          enddo
          if (iflag.eq.1) then
             newmass=0.0
-            do jj=2, 13 ! from KNa to KEC, all mass species wo H2O 
+c$$$            do jj=2, 13 ! from KNa to KEC, all mass species wo H2O
+            do jj=2, nsp-1 ! all mass species wo H2O
                newmass=newmass+q((i-1)*nsp+jj)
             enddo
             q((i-1)*nsp+knum)=q((i-1)*nsp+knum)*newmass/totmass
@@ -239,6 +244,7 @@ c
 c
          Mk(i,srtorg) = tot_inert * cvt * boxvol
          Mk(i,srtnh3)=q((i-1)*nsp+knh4) * cvt * boxvol
+         Mk(i,srtdma)=q((i-1)*nsp+kpami)* cvt * boxvol     !amine /JJ
          Mk(i,srth2o)=q((i-1)*nsp+kh2o) * cvt * boxvol
       enddo      
 c
@@ -375,6 +381,7 @@ c
         q((i-1)*nsp+kno3) = tot_inert2 * rt_no3(i)
 c
         q((i-1)*nsp+knh4) = Mk(i,srtnh3) * cvt2 * (1.0/boxvol)
+        q((i-1)*nsp+kpami)= Mk(i,srtdma) * cvt2 * (1.0/boxvol)
         q((i-1)*nsp+kh2o) = Mk(i,srth2o) * cvt2 * (1.0/boxvol)
       enddo      
 

@@ -31,8 +31,7 @@ C     subroutine's original code. 12/03/2007 by JaeGun Jung
 C     A correction factor, corfactor is added after tested with analytic 
 C     solution. 12/11/2007 by JaeGun Jung
 
-C     Added amine condensation,gas phase amine (passed in as dmappt) will 
-C     condense to particle phase ammonium JJ 2015/02
+C     Added amine condensation. JJ 2015/07
 
 C-----INPUTS------------------------------------------------------------
 
@@ -48,7 +47,7 @@ C-----OUTPUTS-----------------------------------------------------------
 ccondtest      SUBROUTINE so4cond(dt,ygas)
 cdbg      SUBROUTINE so4cond(Nki,Mki,Gci,Nkf,Mkf,Gcf,dt,xkDMAN)
       SUBROUTINE so4cond(Nki,Mki,Gci,Nkf,Mkf,Gcf,dt,ichm,jchm,kchm,
-     &           iflagez,dmappt)
+     &           iflagez)
 
       IMPLICIT NONE
 
@@ -122,25 +121,17 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
 
       character*12 limit        !description of what limits time step
 
-      double precision dmappt ! dma concentration in ppt
-      double precision dmaGc  ! dma gas conc in kg/gridcell
-      real dmaMw  ! molecular weight of dma (real because of gasdiff subr.)
-      real molwtdma ! mol. weight dma ion form
-      double precision dpdma(ibins) ! pressure difference for dma (assume 0 sat.vap.pres)
-      double precision tjdma ! tj factor for dma
-      double precision tkdma(ibins) ! tk factor for dma
-      double precision sKdma ! sk decay constant for dma
-      double precision ataudma(ibins) !cond. parameter for dma
-      double precision ataucdma(ibins) !another cond parameter for dma
-      real betadma ! trans. regime correction for dma
-      real alphadma ! accommodation coefficient for dma
-      integer Gcflagdma ! flag to check insignificant gas conc.
+      double precision nh4so4_neut(ibins)  ! amount of so4 that can be neutralized by existing particle phase ammonia
+      double precision dmaso4_neut(ibins)  ! amount of so4 that can be neutralized by existing particle phase dma
+      double precision Mkfreeso4(ibins)  ! amount of so4 mass that is not yet neutralized
+      double precision Mso4fornh3   ! so4 left to neutralize by nh3 after dma condenses
+      double precision dmaso4_nratio  ! dma/so4 ratio in dma sulfate
+      double precision Mkdmamax     ! Maximum allowable dma
       double precision Gckdma(ibins) ! Fractional dma gas to be condensed
                                      ! when ammonia+dma is limited.
       double precision sumataudma    ! sum of atau for dma
-      double precision ataufrac ! nh3 atau divided by dma+nh3 ataus in a bin
-      double precision midma,mfdma ! condensed phase nh4 mass before and after
-                                   ! dma condensation (used to update dmaGc)
+      double precision taumaxdma   ! Maximum tau for dma condensation
+
 
 C     VARIABLE COMMENTS...
 
@@ -170,17 +161,6 @@ cdbg      print*,'boxmass=',boxmass
 cdbg      pause
 cdbg      write(*,*) '\n Coord.(i,j,k)=',ichm,jchm,kchm
 
-      !initialize dma related constants JJ 150228
-      dmaMw=45.0
-      molwtdma=46.0
-      alphadma=1.0
-      betadma=0.0
-      dpdma=0.d0
-      Gcflagdma=0
-      tkdma=0.0d0
-
-!dma converting from ppt to kg/gridcell
-      dmaGc=dmappt*pres*boxvol*dmaMw*1.0d-21/(R*temp)
 
       !Initialization
       k=0
@@ -225,9 +205,7 @@ cdbg      endif
       !Skip negative gas concentration if command
       if (Gci(srtso4) .lt. cthresh*boxmass) Gcflag(srtso4)=1 ! =1, Skip 
       if (Gci(srtnh3) .lt. cthresh*boxmass) Gcflag(srtnh3)=1 ! =1, Skip
-
-! Skip also dma condensation if too small gas concentration
-      if (dmaGc .lt. cthresh*boxmass) Gcflagdma=1 ! =1, Skip
+      if (Gci(srtdma) .lt. cthresh*boxmass) Gcflag(srtdma)=1 ! =1, Skip
 !!!!!!!!!!!!!!!!!
 
       !If PSSA is on, turn on Gcflag(srtso4) for ezcond does H2SO4 condensatoin.
@@ -259,23 +237,26 @@ C Ammonia Condensation Strategy by jgj
       
       !dp is only used for calculation of "atauc", which is not used for
       !the condensation, only for checking if taumax should be used
+
+      !New ammonia and dimethylamine condensation strategy: still not allowing
+      ! more to condense than what is needed to neutralize so4, but need to account
+      ! for both existing dma and ammonia /JJ
+
+      dmaso4_nratio = 2.d0*molwt(srtdma)/molwt(srtso4) ! ratio for dma to fully neutralize so4
+
       do k=1,ibins
-        if (Mkf(k,srtso4) .gt. 0.) then
-          ratio=Mkf(k,srtnh3)/Mkf(k,srtso4)
-        else
-          ratio=0.375 ! skip calculating of dp(k,srtnh3)
-        endif
-        if (ratio .lt. 0.375) then ! 0.375 is max ratio
-          dp(k,srtnh3)=(Gcf(srtnh3)/molwt(srtnh3))/(boxmass/28.9)*pres
-        endif
-
-       !for dma
-        if (ratio .lt. 0.375) then ! 0.375 is max ratio
-          dpdma(k)=(dmaGc/molwtdma)/(boxmass/28.9)*pres
-        endif
+         if (Mkf(k,srtso4) .gt. 0.) then
+            ! amount of so4 mass that could be neutralized by existing dma
+            dmaso4_neut(k)=Mkf(k,srtdma)/dmaso4_nratio
+            !amount of so4 mass that could be neutralized by existing ammonia
+            nh4so4_neut(k)=Mkf(k,srtnh3)/0.375
+            Mkfreeso4(k)=Mkf(k,srtso4)-dmaso4_neut(k)-nh4so4_neut(k)
+            if (Mkfreeso4(k).gt.0.d0) then !if still space to condense
+               dp(k,srtdma)=(Gcf(srtdma)/molwt(srtdma))/(boxmass/28.9)*pres
+               dp(k,srtnh3)=(Gcf(srtnh3)/molwt(srtnh3))/(boxmass/28.9)*pres
+            endif
+         endif
       enddo
-
-
 
 
 C Calculate tj and tk factors needed to calculate tau values
@@ -290,14 +271,7 @@ C Calculate tj and tk factors needed to calculate tau values
         tj(j)=2.*pi*Di*molwt(j)*1.0d-3/(R*temp)
       enddo
 
-C Calculate diffusivity and tj for dma, Sv is the same as for all species currently
-      Di=gasdiff(temp,pres,dmaMw,42.88)
-      tjdma=2.d0*pi*Di*molwtdma*1.0d-3/(R*temp)
-      sKdma=0.0d0
-CCCCCCCCCCCCC
-
-      sK(srtso4)=0.0d0
-      sK(srtnh3)=0.0d0
+      sK=0.0d0
 
       do k=1,ibins
         if (Nkf(k) .gt. Neps) then
@@ -311,7 +285,7 @@ cdbg             density=aerodens_PSSA(Mkf(k,srtso4),0.0,Mkf(k,srtso4),
 cdbg     &           0.0,Mkf(k,srtnh3)) 
             density=1400.0 ! [=] kg/m3
           endif
-          mp=(Mkf(k,srtso4)+Mkf(k,srtnh3))/Nkf(k)
+          mp=(Mkf(k,srtso4)+Mkf(k,srtnh3)+Mkf(k,srtna)+Mkf(k,srtdma))/Nkf(k)
         else
           !nothing in this bin - set to "typical value"
           if (icond_test .eq. 1) then !cond test 6/24/04 jgj
@@ -336,13 +310,13 @@ cdbg           alphanh3=alpha_nh3(Mkf(srtnh3),Mkf(srtso4),rh) ! Pathak et al.
 cdbg           beta(srtnh3)=(1.+Kn)/(1.+2.*Kn*(1.+Kn)/alphanh3) ! method
           beta(srtnh3)=(1.+Kn)/(1.+2.*Kn*(1.+Kn)/alpha(srtnh3))
           ! DMA
-          betadma=(1.+Kn)/(1.+2.*Kn*(1.+Kn)/alphadma)
+          beta(srtdma)=(1.+Kn)/(1.+2.*Kn*(1.+Kn)/alpha(srtdma))
           !
         endif
         tk(k,srtso4)=(6./(pi*density))**(1./3.)*beta(srtso4)
         tk(k,srtnh3)=(6./(pi*density))**(1./3.)*beta(srtnh3)
         ! DMA
-        tkdma(k)=(6./(pi*density))**(1./3.)*betadma
+        tk(k,srtdma)=(6./(pi*density))**(1./3.)*beta(srtdma)
         !
         if (Nkf(k) .gt. 0.0) then
           Mtot=0.0
@@ -354,7 +328,7 @@ cdbg           beta(srtnh3)=(1.+Kn)/(1.+2.*Kn*(1.+Kn)/alphanh3) ! method
           sK(srtnh3)=sK(srtnh3)+tk(k,srtnh3)*Nkf(k)*(Mtot
      &             /Nkf(k))**(1.d0/3.d0)
           ! DMA
-          sKdma=sKdma+tkdma(k)*Nkf(k)*(Mtot
+          sK(srtdma)=sK(srtdma)+tk(k,srtdma)*Nkf(k)*(Mtot
      &             /Nkf(k))**(1.d0/3.d0)
           !
         endif
@@ -364,7 +338,7 @@ cdbg           beta(srtnh3)=(1.+Kn)/(1.+2.*Kn*(1.+Kn)/alphanh3) ! method
       sK(srtnh3)=sK(srtnh3)*zeta13*tj(srtnh3)*R*temp/(molwt(srtnh3)
      &      *1.d-3)/(boxvol*1.d-6)
       ! DMA
-      sKdma=sKdma*zeta13*tjdma*R*temp/(molwtdma
+      sK(srtdma)=sK(srtdma)*zeta13*tj(srtdma)*R*temp/(molwt(srtdma)
      &      *1.d-3)/(boxvol*1.d-6)
       !
 
@@ -390,10 +364,6 @@ C-----Calculate tau values for all species/bins
             atauc(k,j)=0.0  
             atau(k,j)=0.0
          enddo
-         !DMA 
-         ataucdma(k)=0.0d0
-         ataudma(k)=0.d0
-         ! 
 
         !atauc is tau that is a parameter to describe condensation
         !driving force when pressure difference is equal to constant.
@@ -405,10 +375,7 @@ C-----Calculate tau values for all species/bins
         atauc(k,srtso4)=tj(srtso4)*tk(k,srtso4)*dp(k,srtso4)*cdt
         atauc(k,srtnh3)=tj(srtnh3)*tk(k,srtnh3)*dp(k,srtnh3)*cdt
         !DMA
-        ataucdma(k)=tjdma*tkdma(k)*dpdma(k)*cdt
-        !since dma is condensing to nh4 scaling is necessary
-        ataucdma(k)=molwt(srtnh3)/molwtdma*ataucdma(k)
-        !
+        atauc(k,srtdma)=tj(srtdma)*tk(k,srtdma)*dp(k,srtdma)*cdt
 
         !Calculate a driving force for sulfuric acid condensation
         if (sK(srtso4) .gt. 0.0) then
@@ -419,96 +386,119 @@ C-----Calculate tau values for all species/bins
           atau(k,srtso4)=0.0  !nothing to condense onto
         endif
 
+        ! JJ bugfix: since atau is the one that is being used for the 
+        ! driving force we need to set that to zero when there is already
+        ! enough nh4 to neutralize the so4. This check was done above with
+        ! dp, but that is used to calculate atauc, not atau!
+
         !Calculate a driving force for ammonia condensation
-        if (sK(srtnh3) .gt. 0.0) then
+        if (sK(srtnh3) .gt. 0.0 .and. atauc(k,srtnh3).gt.0.D0) then
           atau(k,srtnh3)=tj(srtnh3)*R*temp/(molwt(srtnh3)*1.d-3)
      &      /(boxvol*1.d-6)*tk(k,srtnh3)*Gcf(srtnh3)/sK(srtnh3)
      &      *(1.d0-exp(-1.d0*sK(srtnh3)*cdt))
         else
-          atau(k,srtnh3)=0.0  !nothing to condense onto
+          atau(k,srtnh3)=0.0  !nothing to condense onto or already enough ammonia
         endif
 
         !Calculate a driving force for amine condensation
-        if (sKdma .gt. 0.0 .and. ataucdma(k).gt.0.0) then
-          ataudma(k)=tjdma*R*temp/(molwtdma*1.d-3)
-     &      /(boxvol*1.d-6)*tkdma(k)*dmaGc/sKdma
-     &      *(1.d0-exp(-1.d0*sKdma*cdt))
-          ! again scale because of dma->nh4
-          ataudma(k)=molwt(srtnh3)/molwtdma*ataudma(k)
+        if (sK(srtdma) .gt. 0.0 .and. atauc(k,srtdma).gt.0.0) then
+          atau(k,srtdma)=tj(srtdma)*R*temp/(molwt(srtdma)*1.d-3)
+     &      /(boxvol*1.d-6)*tk(k,srtdma)*Gcf(srtdma)/sK(srtdma)
+     &      *(1.d0-exp(-1.d0*sK(srtdma)*cdt))
         else
-          ataudma(k)=0.0  !nothing to condense onto or too much nh3 already
+          atau(k,srtdma)=0.0  !nothing to condense onto or too much nh3 already
         endif
 
-        Mktot(srtso4)=0.0
-        do kk=1,ibins
-          Mktot(srtso4)=Mktot(srtso4)+Mkf(kk,srtso4)
-        enddo
-        Mktot(srtnh4)=0.0
-        do kk=1,ibins
-          Mktot(srtnh4)=Mktot(srtnh4)+Mkf(kk,srtnh4)
-        enddo
+        ! JJ bugfix: if we do not end the do loop over the bins here, the following 
+        ! calculation with atau for sumtaunh3 is not using correct ataus for k>current step
+
+      end do ! added by JJ
+
+      ! it is needless to recalculate these Mktot:s within an outer loop so start next
+      ! loop over k after these / JJ
+      Mktot(srtso4)=0.0
+      do kk=1,ibins
+         Mktot(srtso4)=Mktot(srtso4)+Mkf(kk,srtso4)
+      enddo
+      Mktot(srtnh4)=0.0
+      do kk=1,ibins
+         Mktot(srtnh4)=Mktot(srtnh4)+Mkf(kk,srtnh4)
+      enddo
         
 
-c$$$        !DMA
-c$$$        sumataudma=0.0
-c$$$        do kk=1,ibins
-c$$$           sumataudma=sumataudma+ataudma(kk)
-c$$$        enddo
-c$$$        Gckdma(k)=dmaGc*ataudma(k)/sumataudma
-c$$$        !
+      do k=1,ibins ! added by JJ: now we can loop over the bins and do the next part
+         ! JJ change: instead of comparing total so4 to total ammonia in order to get
+         ! taumax for the current bin, check the so4 and ammonia in the current bin.
+         ! For this purpose calculate Gcknh3 already outside of the if statement
+         sumataunh3=0.0
+         do kk=1,ibins
+            sumataunh3=sumataunh3+atau(kk,srtnh4)
+         enddo
+         Gcknh3(k)=Gcf(srtnh4)*atau(k,srtnh4)/sumataunh3
 
+        !DMA
+        sumataudma=0.0
+        do kk=1,ibins
+           sumataudma=sumataudma+atau(kk,srtdma)
+        enddo
+        Gckdma(k)=Gcf(srtdma)*atau(k,srtdma)/sumataudma
+        !
         !Separate the cases of total ammonia and amine (!) is greater than existing sulfate
         ! or not.
-        !Note that the gas phase mass of dma is multiplied by the ammonia/dma mass ratio
-        !since the current treatment has the amine transforming into ammonium in the particle
-        !phase
-        !The following procedure has ammonia condensing before dma: the order is otherwise 
-        !irrelevant, but if we have ammonia rich conditions, and if the individual taus are 
-        !defined through the final and initial masses as for taumax below they will depend on the order of condensation
+        !The following procedure has dma condensing before ammonia. If dma is enough to neutralize the
+        !remaining so4 then no ammonia condenses to that bin
 
-        !150305 lets do this the old fashioned way, if there is no space for amine to condense then too bad...
+        if (atau(k,srtdma).gt.0.d0) then ! check if there is need to condense to this bin (could also use nh3 atau)
+           !first check the space for dma to condense
+           if (dmaso4_nratio*Mkfreeso4(k).gt.Gckdma(k)) then
+              !Sulfate rich condition              
+              Mkdmamax=Mkf(k,srtdma)+Gckdma(k) !maximally allowable dma mass
+              !calculate what is there left to neutralize by nh3
+              Mso4fornh3=Mkfreeso4(k)-Gckdma(k)/dmaso4_nratio
 
-        if (0.375*Mktot(srtso4).gt.(Mktot(srtnh4)+Gcf(srtnh4))) then
-c        if (0.375*Mktot(srtso4).gt.(Mktot(srtnh4)+Gcf(srtnh4)+dmaGc*17.d0/45.d0)) then
-        !Sulfate rich condition
-           sumataunh3=0.0
-           do kk=1,ibins
-              sumataunh3=sumataunh3+atau(kk,srtnh4)
-           enddo
-           Gcknh3(k)=Gcf(srtnh4)*atau(k,srtnh4)/sumataunh3
-           Mknh3max=Mkf(k,srtnh3)+Gcknh3(k)
-c           Mknh3max=Mkf(k,srtnh3)+Gcknh3(k)+Gckdma(k)*17.d0/45.d0
+              if (0.375*Mso4fornh3.gt.Gcknh3(k)) then
+               !Sulfate rich condition           
+                 Mknh3max=Mkf(k,srtnh3)+Gcknh3(k)
                                          ! maximally allowable NH4 mass
-c        else if (Mkf(k,srtnh3).gt.0.375*Mkf(k,srtso4)) then !Total ammonia rich condition
-        else
-           Mknh3max=0.375*Mkf(k,srtso4) ! maximally allowable NH4 mass
-c$$$        else
-c$$$           ! this is the tricky part, current solution: let ammonia and dma condense in the 
-c$$$           ! same ratio that they would if the condition for sulfate neutralization is not in effect
-c$$$
-c$$$           Mknh3max=Mkf(k,srtnh3)+Gcknh3(k)/(Gcknh3(k)+Gckdma(k))*
-c$$$     &      (0.375*Mkf(k,srtso4)-Mkf(k,srtnh3)) ! maximally allowable NH4 mass
-        endif
+
+              else    !Total ammonia rich condition
+                 Mknh3max=0.375*Mso4fornh3 
+                               ! maximally allowable NH4 mass
+              endif
+
+           else ! more gas phase dma than what is needed to neutralize so4
+              Mkdmamax=dmaso4_nratio*Mkfreeso4(k)
+              Mknh3max=0.0
+           endif
 cdbg        if (Nkf(k) .gt. 0.) then
-        if (Nkf(k) .gt. Neps) then
-          taumax=1.5*((Mknh3max**tdt)-(Mkf(k,srtnh3)**tdt))/(Nkf(k)
-     &     **tdt) 
+           if (Nkf(k) .gt. Neps) then
+              taumax=1.5*((Mknh3max**tdt)-(Mkf(k,srtnh3)**tdt))/(Nkf(k)
+     &             **tdt) 
             ! See Eq.(9) in Adams and Seinfeld (2002, JGR)
-        else
-          taumax=0. !For safety
-        endif
+              taumaxdma=1.5*((Mkdmamax**tdt)-(Mkf(k,srtdma)**tdt))/(Nkf(k)
+     &             **tdt)
+           else
+              taumax=0.         !For safety
+           endif
+        ! JJ change: since atau is the one that is used for tmcond, there seems
+        ! to be no reason to compare taumax to atauc here
 c        if (atauc(k,srtnh3) .gt. taumax) then
 !     taumax here refers to nh3
-        if ((atauc(k,srtnh3)) .gt. taumax) then
-          if (taumax .ge. 0.) then
-c            ataufrac=atau(k,srtnh3)/(atau(k,srtnh3)+ataudma(k)) 
-            atau(k,srtnh3)=taumax
-c            atau(k,srtnh3)=ataufrac*taumax
-c            ataudma(k)=(1-ataufrac)*taumax
-          else
-            atau(k,srtnh3)=0. !For safety
-c            ataudma(k)=0. !for safety
-          endif
+           if ((atau(k,srtnh3)) .gt. taumax) then
+              if (taumax .ge. 0.) then 
+                 atau(k,srtnh3)=taumax
+              else
+                 atau(k,srtnh3)=0. !For safety
+              endif
+           endif
+           !DMA
+           if ((atau(k,srtdma)) .gt. taumaxdma) then
+              if (taumaxdma .ge. 0.) then 
+                 atau(k,srtdma)=taumaxdma
+              else
+                 atau(k,srtdma)=0. !For safety
+              endif
+           endif
         endif
       enddo
 
@@ -524,56 +514,32 @@ C-----Adjust a time step
                                    ! condensation. 12/06/07 jgj
         if(j.eq.srtorg) goto 30 ! OM does not have condensation process.
         do k=1,ibins
-          if (Nkf(k) .gt. Neps) then
-            mc=0.0
-            do jj=1,icomp-1
-              mc=mc+Mkf(k,jj)/Nkf(k)
-            enddo
-            if (mc/xk(k) .gt. 1.0d-3) then
+           if (Nkf(k) .gt. Neps) then
+              mc=0.0
+              do jj=1,icomp-1
+                 mc=mc+Mkf(k,jj)/Nkf(k)
+              enddo
+              if (mc/xk(k) .gt. 1.0d-3) then
               !species has significant mass in particle - limit change
-              ! check if species ammonia
-               if (j.eq.srtnh4) then
-                  !first check with ammonia
-                  if (abs(atau(k,j))/(mc**tdt) .gt. 0.1) then
-                     ttr=abs(atau(k,j))/(mc**tdt)/0.05
-                     if (ttr. gt. tr) then 
-                        tr=ttr
-                     endif
-                  endif
-                  ! check also with dma if there is dma to condense
-                  !for now lets just assume dma will change particle mass minimally
-                  ! because the timestep iteration seems to have trouble
-c$$$                  if (Gcflagdma.eq.0) then
-c$$$                     if (abs(ataudma(k))/(mc**tdt) .gt. 0.1) then
-c$$$                        ttr=abs(ataudma(k))/(mc**tdt)/0.05
-c$$$                        if (ttr. gt. tr) then 
-c$$$                           tr=ttr
-c$$$                        endif
-c$$$                     endif
-c$$$                  endif               
-               else ! other species
-                  if (abs(atau(k,j))/(mc**tdt) .gt. 0.1) then
-                     ttr=abs(atau(k,j))/(mc**tdt)/0.05
-                     if (ttr. gt. tr) then 
-cdbg                  limit='amass'
-cdbg                  write(limit(7:11),'(I2,X,I2)') k,j
-                        tr=ttr
-                     endif
-                  endif
-               endif
-            else
-              !maybe should do something here to account for dma but this else and tr
-              !does not seem to make much sense anyway, and the apparently huge tr
-              !will be limited below to max value of 2 / JJ 150228
+                 if (abs(atau(k,j))/(mc**tdt) .gt. 0.1) then
+                    ttr=abs(atau(k,j))/(mc**tdt)/0.05
+                    if (ttr. gt. tr) then 
+                       tr=ttr
+                    endif
+                 endif
+              else
+              !this else and tr does not seem to make much sense, 
+              !and the apparently huge tr will be limited below to
+              !max value of 2 / JJ
 
               !species is new to particle - set max time step
-              if ((cdt/tr .gt. 0.1) .and. (atau(k,j).gt. 0.0)) then 
-                tr=cdt/0.1
+                 if ((cdt/tr .gt. 0.1) .and. (atau(k,j).gt. 0.0)) then 
+                    tr=cdt/0.1
 cdbg                  limit='nspec'
 cdbg                  write(limit(7:11),'(I2,X,I2)') k,j
+                 endif
               endif
-            endif
-          endif
+           endif
         enddo
         !Make sure gas phase concentrations don't change too much
         !control gas reduction rate on 12/15/07, jgj
@@ -601,28 +567,17 @@ cdbg        if (j .eq. srtso4) then ! Deal only sulfuric acid by jgj
 cdbg          if (exp(-1.d0*sK(srtso4)*cdt) .lt. 0.25) then
 cdbg            ttr=-2.d0*cdt*sK(j)/log(0.25)
         if (exp(-1.d0*sK(j)*cdt) .lt. gasfrac) then
-          ttr=-2.d0*cdt*sK(j)/log(gasfrac)
-          if (ttr .gt. tr) then 
-            tr=ttr
+           ttr=-2.d0*cdt*sK(j)/log(gasfrac)
+           if (ttr .gt. tr) then 
+              tr=ttr
 cdbg              limit='gphas'
 cdbg              write(limit(7:8),'(I2)') j
-          endif
+           endif
         endif
 cdbg        endif
  30   continue
       enddo
 
-      !DMA
-      !check the change in dma gas phase concentration and adjust tr if necessary
-      if (Gcflagdma.eq.0) then
-         if (exp(-1.d0*sKdma*cdt) .lt. gasfrac) then
-            ttr=-2.d0*cdt*sKdma/log(gasfrac)
-            if (ttr .gt. tr) then 
-               tr=ttr
-            endif
-         endif
-      endif
-      !
 
       !Never shorten timestep by less than half
 c     changed by LA
@@ -676,25 +631,7 @@ C Call condensation subroutine to do mass transfer
         do k=1, ibins
           moxd(k)=0.0 !oxidated mass
         enddo
-cdbg        print*,'j=',j
-cdbg        print*,'tau=',tau
-cdbg        print*,'Gc=',Gcf
-cdbg        print*,'tk=',tk
-cdbg        print*,'tj=',tj
-cdbg        print*,'sK=',sK
-cdbg        print*,'temp=',temp
-cdbg        print*,'boxvol=',boxvol
-cdbg        print*,'cdt=',cdt
-cdbg        print*,'xk=',xk
-cdbg        print*,'Nk='
-cdbg        do k=1, ibins
-cdbg          print*,Nkf(k)
-cdbg        enddo
-cdbg        print*,'Mk='
-cdbg        do k=1, ibins
-cdbg          print*,Mkf(k,srtso4)
-cdbg        enddo
-cdbg        pause
+
         call tmcond(tau,xk,Mkf,Nkf,Mko,Nko,j,moxd)
 
         !Check for number conservation
@@ -741,127 +678,6 @@ cdbg         dNerr=dNerr+Ntotf-Ntoto
 c        call ezwatereqm(Mkf)
  40   continue
       enddo
-
-C Finally condense also dma
-
-      if(Gcflagdma.eq.0) then ! If there is gas to condense
-         !first check the taumax for dma
-         Mktot(srtso4)=0.0
-         do kk=1,ibins
-            Mktot(srtso4)=Mktot(srtso4)+Mkf(kk,srtso4)
-         enddo
-         Mktot(srtnh4)=0.0
-         do kk=1,ibins
-            Mktot(srtnh4)=Mktot(srtnh4)+Mkf(kk,srtnh4)
-         enddo
-
-         sumataudma=0.0
-         do kk=1,ibins
-            sumataudma=sumataudma+ataudma(kk)
-         enddo
-         do k=1,ibins
-            Gckdma(k)=dmaGc*ataudma(k)/sumataudma
-
-            !we dont need to care about gas phase ammonia anymore for this time step
-            if (0.375*Mktot(srtso4).gt.(Mktot(srtnh4)+dmaGc*17.d0/45.d0)) then
-            !Sulfate rich condition
-
-               Mknh3max=Mkf(k,srtnh3)+Gckdma(k)*17.d0/45.d0
-                                         ! maximally allowable NH4 mass
-            else                !Total ammonia rich condition
-               !unlike nh3 earlier, we can now just let enough dma condense to finish
-               !neutralizing so4
-               Mknh3max=0.375*Mkf(k,srtso4) ! maximally allowable NH4 mass
-            endif
-cdbg        if (Nkf(k) .gt. 0.) then
-            if (Nkf(k) .gt. Neps) then
-               taumax=1.5*((Mknh3max**tdt)-(Mkf(k,srtnh3)**tdt))/(Nkf(k)
-     &              **tdt) 
-            ! See Eq.(9) in Adams and Seinfeld (2002, JGR)
-            else
-               taumax=0.        !For safety
-            endif
-!     taumax here refers to dma
-            if ((ataudma(k)) .gt. taumax) then !changed atauc -> atau
-               if (taumax .ge. 0.) then 
-                  ataudma(k)=taumax
-               else
-                  ataudma(k)=0. !for safety
-               endif
-            endif
-         enddo
-
-        !we use atau for tau variable for dma as well (and we ignore icond_test which should
-        !always be zero
-        do k=1,ibins
-           !make sure we are not condensing to bins where we have enough already to neutralize so4
-           if (ataucdma(k).gt.0.0d0) then
-              tau(k)=ataudma(k)
-           else
-              tau(k)=0
-           endif
-c          tau(k)=corfactor*tau(k) ! A correction factor is applied. (use same as for ammonia/other species)
-        enddo
-
-        call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm)
-            ! adjust average mass in each size bin within boundaries
-
-        !Call condensation routine
-        Ntotf=0.0
-        do k=1,ibins
-           Ntotf=Ntotf+Nkf(k)
-        enddo
-
-        !oxidated mass calculation
-        do k=1, ibins
-           moxd(k)=0.0          !oxidated mass
-        enddo
-
-        !we call tmcond with tau for dma, and species index for nh4
-        !this way we condense gas phase dma into particle phase nh4
-        call tmcond(tau,xk,Mkf,Nkf,Mko,Nko,srtnh4,moxd)
-
-        !Check for number conservation
-        Ntoto=0.0
-        do k=1,ibins
-          Ntoto=Ntoto+Nko(k)
-        enddo
-
-        dNerr=Ntotf-Ntoto
-        if (abs(dNerr/Ntoto) .gt. 1.d-4) then
-          write(*,*)'ERROR in so4cond: Number not conserved'
-          write(*,*) 'Coord.(i,j,k)=',ichm,jchm,kchm
-          write(*,*)'Ntoto, Ntotf, dNerr/Ntoto'
-     &             ,Ntoto, Ntotf, dNerr/Ntoto
-          if (abs(dNerr/Ntoto) .gt. 1.d-2) then
-            write(*,*)'Serious Error in so4cond: Number not conserved 
-     &less than 1 %'
-            write(*,*) 'Coord.(i,j,k)=',ichm,jchm,kchm
-            STOP
-          endif
-        endif
-
-        !Update gas phase concentration for dma
-        !change in particle phase is in nh4 mass
-        midma=0.0
-        mfdma=0.0
-        do k=1,ibins
-          midma=midma+Mkf(k,srtnh4)
-          mfdma=mfdma+Mko(k,srtnh4)
-        enddo
-        dmaGc=dmaGc+(midma-mfdma)*dmaMw/molwt(srtnh4)
-
-        !Swap into Nk, Mk
-        do k=1,ibins
-          Nkf(k)=Nko(k)
-          do jj=1,icomp-1
-            Mkf(k,jj)=Mko(k,jj)
-          enddo
-        enddo
-
-      endif
-
-C End of DMA condensing
 
 C Update time
       time=time+cdt
@@ -919,25 +735,25 @@ cdbg      write(*,*) 'H2SO4(g)= ', Gcf(srtso4)
       endif
 
       !Check dma gas
-      if (Gcflagdma .eq. 0) then
-        if (dmaGc .lt. 0.0) then
-          if (abs(dmaGc) .gt. 1.d-5) then
+      if (Gcflag(srtdma) .eq. 0) then
+        if (Gcf(srtdma) .lt. 0.0) then
+          if (abs(Gcf(srtdma)) .gt. 1.d-5) then
             !Gcf is substantially less than zero - this is a problem
             write(*,*) 'ERROR in so4cond: DMA(g) < 0'
             write(*,*) 'Coord.(i,j,k)=',ichm,jchm,kchm
             write(*,*) 'time=',time
-            write(*,*) 'Gcf()=',dmaGc
-            write(*,*) 'DMA [=] ppt',dmaGc/boxmass/1.0d-12
-     &               /dmaMw*28.9
-            write(*,*) 'Gass consumed in kg',(midma-mfdma)
-     &               *dmaMw/molwt(srtnh4)
+            write(*,*) 'Gcf()=',Gcf(srtdma)
+            write(*,*) 'DMA [=] ppt',Gcf(srtdma)/boxmass/1.0d-12
+     &               /gmw(srtdma)*28.9
+            write(*,*) 'Gass consumed in kg',(mi(srtdma)-mf(srtdma))
+     &               *gmw(srtdma)/molwt(srtdma)
             write(*,*) 'time=',time,'cdt=',cdt
             write(*,*) 'exponential decaying frac=',
-     &               exp(-1.d0*sKdma*cdt)
+     &               exp(-1.d0*sK(srtdma)*cdt)
             STOP
           else
             !Gcf is negligibly less than zero - probably roundoff error
-            dmaGc=0.0
+            Gcf(srtdma)=0.0
           endif
         endif
       endif
@@ -946,25 +762,22 @@ C Repeat process if necessary
       if (time .lt. dt) then
         !Iteration
         itr=itr+1
-c     Commenting this out: iteration should never take this long, but if it fails
-c     the subroutine would return with "halfway" updated values for the various
-c     concentrations (and the try eznh3), which sounds bad / JJ 150228
 c        if (itr.gt.5000) then
-c$$$        if (itr.gt.500) then
-c$$$           write(*,*) 'Coord.(i,j,k)=',ichm,jchm,kchm
-c$$$           write(*,*) 'An iteration in so4cond exceeds 5000'
-c$$$           write(*,*) 'dt=',dt,'time=',time,'cdt=',cdt
-c$$$           write(*,*) 'exponential decaying frac=',
-c$$$     &               exp(-1.d0*sK(srtnh4)*cdt)
+        if (itr.gt.500) then
+           write(*,*) 'Coord.(i,j,k)=',ichm,jchm,kchm
+           write(*,*) 'An iteration in so4cond exceeds 5000'
+           write(*,*) 'dt=',dt,'time=',time,'cdt=',cdt
+           write(*,*) 'exponential decaying frac=',
+     &               exp(-1.d0*sK(srtnh4)*cdt)
 c$$$           iflagez=1
 c$$$           return
-c$$$c           STOP
-c$$$        endif
+           ! JJ change : if there is a problem just stop the program and
+           ! fix this routine. Condensing just with whatever routine does not 
+           ! fail is not a good design.
+           STOP
+        endif
         goto 10
       endif
-
-      ! change dma from kg/grid cell to ppt so that dman gets the updated value
-      dmappt=1.0d21*R*temp*dmaGc/(pres*boxvol*dmaMw)
       
 
 cdbg      write(*,*) 'Number cons. error was ', dNerr
