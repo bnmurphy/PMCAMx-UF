@@ -150,7 +150,7 @@ c      integer ispc,naero
       real frctn, nmbr
       real dsulfdt !sulfuric acid production rate
       double precision fndt(2) !nucleation diagnostic
-      real Jnuc(ncol,nrow,nlay,2) !Common Nucleation Diagnostic
+      real,save Jnuc(ncol,nrow,nlay,2)=0.0 !Common Nucleation Diagnostic
       integer inuc
 c
 c-----Entry point
@@ -211,9 +211,6 @@ c
             endif
          enddo
       enddo
-
-      !Set Nucleation Rate Diagnostic Variable to Zero
-      Jnuc(:,:,:,:) = 0.
 
 c
       igrdchm = igrd
@@ -464,14 +461,15 @@ cdbg                   print*,'coordinate of (31,2,1)' !dbg
 cdbg                   print*,'tempk,pressure,dsulfdt=',tempk,pressure
 cdbg     &                  ,dsulfdt !dbg
 cdbg                 endif !dbg
-                 if ( laero_upd )
-     &           call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
+                 if ( laero_upd ) then
+                    call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
      &                         MXSPEC,MXRADCL,NSPEC,NGAS,
      &                         con,crad,convfac,time,aero_dt(igrd),
      &                         ichm,jchm,kchm,height,dsulfdt,fndt)
-                 do inuc = 1,2
-                   Jnuc(i,j,k,inuc) = real(fndt(inuc))
-                 enddo
+                    do inuc = 1,2
+                       Jnuc(i,j,k,inuc) = real(fndt(inuc))
+                    enddo
+                 endif
 
                endif
 c

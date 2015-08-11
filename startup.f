@@ -169,6 +169,11 @@ c
       imass = 9 
       open(unit=imass,file=filroot(1:ii+5),status='UNKNOWN',ERR=7000)
       iifroot = ii
+c     Open ASCII output for sulfuric acid production
+      filroot(ii+1:ii+6) = '.dsulf'
+      idsulf = 93 
+      open(unit=idsulf,file=filroot(1:ii+6),status='UNKNOWN',ERR=7000)
+      iifroot = ii
 c
 c-----Write model version to output and diagnostic files
 c
