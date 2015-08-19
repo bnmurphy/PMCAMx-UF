@@ -150,8 +150,10 @@ c      integer ispc,naero
       real frctn, nmbr
       real dsulfdt !sulfuric acid production rate
       double precision fndt(2) !nucleation diagnostic
-      real,save Jnuc(ncol,nrow,nlay,2)=0.0 !Common Nucleation Diagnostic
+      real Jnuc(ncol,nrow,nlay,2) !Common Nucleation Diagnostic
+      real,allocatable,save :: Jnucsav(:,:,:,:) !local saved copy of nucleation rates
       integer inuc
+      logical,save :: frstcall=.true. ! flag for first call to the routine 
 c
 c-----Entry point
 c
@@ -161,6 +163,20 @@ cdbg      write(*,*)'after flush(6) in chemdriv'
       call flush(iout)
 c
 cdbg      write(*,*)'In chemdriv, after flushing before time printing.' !dbg
+
+      !need to allocate the size of Jnucsav. The size can not be given in the variable definition
+      !since one can not use dummy arguments (ncol etc.) together with the save attribute
+      !Notice that this will only work as long as ncol, nrow and nlay are the same each call,
+      !so if the grid size is changing within a run something else needs to be done to fix the nucleation
+      !rate printing
+
+      if (.not.allocated(Jnucsav)) allocate(Jnucsav(ncol,nrow,nlay,2))
+
+      !initialize Jnucsav to zeroes if this is the first time chemdriv is called
+      if (frstcall) then
+         Jnucsav=0.0
+         frstcall=.false.
+      end if
 
       dtchem = dt/3600.
       con(nspec+1) = 0.
@@ -467,7 +483,7 @@ cdbg                 endif !dbg
      &                         con,crad,convfac,time,aero_dt(igrd),
      &                         ichm,jchm,kchm,height,dsulfdt,fndt)
                     do inuc = 1,2
-                       Jnuc(i,j,k,inuc) = real(fndt(inuc))
+                       Jnucsav(i,j,k,inuc) = real(fndt(inuc))
                     enddo
                  endif
 
@@ -755,5 +771,10 @@ c     added by LA
 c      write(*,*)'end of chemdriv; conc(2,2,1,:) =',conc(2,2,1,:)
 c     end LA
 c
+
+      ! assign Jnuc the values in Jnucsav, which is either from the call to fullaero on this timestep
+      ! or a saved one from when fullaero was last called
+      Jnuc=Jnucsav
+
       return
       end
