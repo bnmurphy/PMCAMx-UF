@@ -199,9 +199,9 @@ zeros.o \
 zrates.o \
 $(AERO)/hlconst.o \
 $(AERO)/hlindex.o \
-$(AERO)/isocom_v1.6.o \
-$(AERO)/isofwd_v1.6.o \
-$(AERO)/isorev_v1.6.o \
+$(AERO)/isocom.o \
+$(AERO)/isofwd.o \
+$(AERO)/isorev.o \
 $(AERO)/raqchem.o \
 $(BNRY)/areaprep.o \
 $(BNRY)/bndprep.o \
@@ -744,13 +744,13 @@ zadvec.o 		: zadvec.f                                             \
 zrates.o 		: zrates.f                                             \
                         $(INC)/camx.prm $(INC)/bndary.com $(INC)/flags.com
 
-$(AERO)/isocom_v1.6.o 	: $(AERO)/isocom_v1.6.f	                               \
+$(AERO)/isocom.o 	: $(AERO)/isocom.f	                               \
                         $(INC)/isrpia.inc
 
-$(AERO)/isofwd_v1.6.o 	: $(AERO)/isofwd_v1.6.f	                               \
+$(AERO)/isofwd.o 	: $(AERO)/isofwd.f	                               \
                         $(INC)/isrpia.inc
 
-$(AERO)/isorev_v1.6.o 	: $(AERO)/isorev_v1.6.f	                               \
+$(AERO)/isorev.o 	: $(AERO)/isorev.f	                               \
                         $(INC)/isrpia.inc
 
 $(BNRY)/areaprep.o 	: $(BNRY)/areaprep.f                                   \

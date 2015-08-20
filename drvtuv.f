@@ -178,7 +178,7 @@ c                       pcl  na   pnh4 pno3 pso4 pamine ph2o num
       data rhadj /0,   0,   0,   0,  0,   0,    0,   
      &                  1,   1,   1,   1,   1,   1,   0,   0  /
       data ssa  /0.8, 0.8, 0.8, 0.8, 0.8, 0.25, 0.7, 
-     &                0.99,0.99,0.99,0.99,0.99,0.99,0.99,  0/
+     &                0.99,0.99,0.99,0.99,0.99,0.8,0.99,  0/
 
       do ibext=1,naero
         bext(ibext)=bext(ibext)*1e-6

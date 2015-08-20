@@ -101,7 +101,12 @@ C
 c      IPROB = 1                  ! 1=Reverse prob, 0=Foreward prob
 
       metstbl=ims(k) ! bkoo (03/05/02)
-      CALL ISRPIA ( WI, RHI, TEMPI, IPROB )
+      ! commented out the call to ISRPIA because 1) equaer.f is not used in PMCAMx-UF and this call only
+      ! cause problem when compiling because 2) ISRPIA subroutine is not included anymore with
+      ! the updated isocom.f file. ISRPIA was an outdated version of ISORROPIA (0.x) already in the early 2000s,
+      ! so if one would want to use equaer.f it is probably better to update this subroutine rather than to re-introduce
+      ! the ISRPIA subroutine. JJ/ 08/15
+c      CALL ISRPIA ( WI, RHI, TEMPI, IPROB )
       metstbl=0      ! bkoo (03/05/02)
 C
 C *** CONVERT OUTPUT CONCENTRATIONS TO ug/m3 ****************************

@@ -55,15 +55,22 @@ C     FRQ(NSEC,nsp)   FRACTION OF DQ TRANSFERED TO EACH AEROSOL SECTION
 C
       SUBROUTINE EQPART(t,q)
 
+
       include 'dynamic.inc'
       INCLUDE 'equaer.inc'                  ! ISORROPIA declarations
 
 cbk      REAL*8 DQ(NSP),FRQ(nsec,nsp),WI(5),q0(3),q(ntotal)
 cbk      real*8 qsav(ntotal), DQsav(nsp), accom(nsp)
-      REAL*8 DQ(nexti),FRQ(nsec,nexti),WI(5),q0(3),q(ntotal) ! bkoo (03/09/03)
-      real*8 qsav(nexti*nsec), DQsav(nexti), accom(nexti)    ! bkoo (03/09/03)
-      real*8 qq, frq0(nsec,nexti) ! bkoo (10/07/03)
+c$$$      REAL*8 DQ(nexti),FRQ(nsec,nexti),WI(5),q0(3),q(ntotal) ! bkoo (03/09/03)
+c$$$      real*8 qsav(nexti*nsec), DQsav(nexti), accom(nexti)    ! bkoo (03/09/03)
+c$$$      real*8 qq, frq0(nsec,nexti) ! bkoo (10/07/03)
+      REAL*8 DQ(nsp),FRQ(nsec,nsp),WI(NCOMP),q0(4),q(ntotal) ! JJ (05/08/15)
+      real*8 qsav(ntotal), DQsav(nsp), accom(nsp)    ! JJ (05/08/15)
+      real*8 qq, frq0(nsec,nsp) ! JJ (05/08/15)
       logical done
+      real*8 WT(NCOMP),Gas(4),Aerliq(16),Aersld(22)
+      real*8 Other(9),CNTRL(2)
+      character SCASI*15
 
 c__cf      if(aerm.eq.'EQUI') then                                     ! cf
 cc                                                                     !
@@ -118,12 +125,22 @@ C
       ng = nsp*nsecx2                       ! gases
       prod=rgas*temp/(1.01325D5*pres)       ! conversion from ppm to umoles/m3
                                             ! pres (bkoo, 06/09/00)
+
+      ! initialize WI and WT /JJ
+      WI=0.d0
+      WT=0.d0
+      !initialize other isorropia arrays
+      Gas=0.d0
+      Aerliq=0.d0
+      Aersld=0.d0
+
       WI(1) = 0.0D0
       WI(2) = Q(ng+ih2SO4) / PROD*1.0d-6
       WI(3) = q(ng+iNH3)   / PROD*1.0d-6
       WI(4) = q(ng+ihNO3)  / PROD*1.0d-6
 c      WI(5) = q(ng+ihCL)   / PROD*1.0d-6
       WI(5) = 0.0D0                                                   ! cf
+      WI(9) = q(nq+idma) / PROD*1.0d-6  ! amines
       do k=1,nsecx2                         ! aerosols
          nn=(k-1)*nsp
 c         WI(1) = wi(1)+ q(nn+KNa) /emw(KNa) *1.D-6                   ! cf
@@ -131,18 +148,24 @@ c         WI(1) = wi(1)+ q(nn+KNa) /emw(KNa) *1.D-6                   ! cf
          WI(3) = wi(3)+ q(nn+KNH4)/emw(KNH4)*1.D-6
          WI(4) = wi(4)+ q(nn+KNO3)/emw(KNO3)*1.D-6
 c         WI(5) = wi(5)+ q(nn+KCL) /emw(KCL) *1.D-6                   ! cf
+         WI(9) = wi(9)+ q(nn+kpami)/emw(kpami)*1.D-6 ! amines
       enddo
       RHI=rh
       TEMPI=temp
-      IPROB = 0
+      CNTRL(1)=0.d0 !0=forward problem
+      CNTRL(2)=0.d0 !0=aerosol can have both liquid and solid phases
+c      IPROB = 0
 C
 C *** CALL ISORROPIA+ ***************************************************
 C
-      CALL ISRPIA ( WI, RHI, TEMPI, IPROB )
+c      CALL ISRPIA ( WI, RHI, TEMPI, IPROB )
+      CALL ISOROPIA( WI, RHI, TEMPI, CNTRL,
+     &     WT, GAS, AERLIQ, AERSLD, SCASI, OTHER)
 
 c     initialize DQ & ACCOM arrays - bkoo (05/24/01)
 cbk      do i=1,nsp
-      do i=1,nexti ! bkoo (03/09/03)
+c      do i=1,nexti ! bkoo (03/09/03)
+      do i=1,nsp ! JJ (08/15) 
          dq(i)    = 0.0d0
          accom(i) = 1.0d0
       enddo
@@ -152,10 +175,11 @@ C
 c      DQ(KH2O)=0.0D0                        ! WATER DONE LATER
 c      DQ(KNA) =0.0D0                        ! SODIUM IS IN AEROSOL PHASE ONLY
       DQ(KSO4)=Q(ng+ih2so4)/prod            ! all H2SO4 condenses
-      DQ(KNH4)=Q(NG+INH3)  /PROD - dmax1(GNH3 *1.0d6, 0.d0) ! bkoo (10/07/03)
-      DQ(KNO3)=Q(NG+IHNO3) /PROD - dmax1(GHNO3*1.0d6, 0.d0) ! bkoo (10/07/03)
+      DQ(KNH4)=Q(NG+INH3)  /PROD - dmax1(Gas(1)*1.0d6, 0.d0) ! bkoo (10/07/03)
+      DQ(KNO3)=Q(NG+IHNO3) /PROD - dmax1(Gas(2)*1.0d6, 0.d0) ! bkoo (10/07/03)
 c_cf      DQ(KCL) =Q(NG+IHCL)  /PROD - dmax1(GHCL *1.0d6, 0.d0) ! bkoo (10/07/03)     ! cf
       DQ(KCL) =0.0D0                                                              !   cf
+      DQ(kpami)=Q(ng+idma)/prod - max(Gas(4)*1.0d6, 0.d0)  ! JJ (08/15)
 C    DO ORGANICS  **ASSUME PS HAS NO SIZE OR COMPOSITION DEPENDANCE **
 cbk  removed - bkoo (03/09/03)
 cbk      DO IOG = 1,NORG-1
@@ -172,29 +196,33 @@ c
       DQ(KNH4)=DQ(KNH4)-DQ(KNO3)-DQ(KCL)
 c
 c     Save initial aerosol concentrations
+      qsav=q  ! qsav and q are now the same size /JJ (08/15) 
 cbk      do i=1,ntotalx2
 cbk        qsav(i)=q(i)
-      do i=1,nsecx2                          ! bkoo (03/09/03)
-       do ii=1,nexti                         ! bkoo (03/09/03)
-        qsav((i-1)*nexti+ii)=q((i-1)*nsp+ii) ! bkoo (03/09/03)
-       enddo                                 ! bkoo (03/09/03)
-      enddo
+cJJ      do i=1,nsecx2                          ! bkoo (03/09/03)
+cJJ       do ii=1,nexti                         ! bkoo (03/09/03)
+cJJ        qsav((i-1)*nexti+ii)=q((i-1)*nsp+ii) ! bkoo (03/09/03)
+cJJ       enddo                                 ! bkoo (03/09/03)
+cJJ      enddo
 c
 c     Its possible to not be able to reach equilibrium for NH4Cl and NH4NO3
 c     due to diferences between aerosol sectional vs. bulk composition 
-      do i=1,3
+      do i=1,4
         q0(i)=0.0d0
       enddo
       do isec=1,nsecx2
         q0(1)=q0(1)+q((isec-1)*nsp+kno3)    ! initial aerosol NO3
         q0(2)=q0(2)+q((isec-1)*nsp+knh4)    ! initial aerosol NH4
 c        q0(3)=q0(3)+q((isec-1)*nsp+kcl)     ! initial aerosol Cl     !  cf
+        q0(4)=q0(4)+q((isec-1)*nsp+kpami)   !initial aerosol dma
       enddo
 C
 c   STEP 3: DETERMINE THE RELATIVE RATES OF MASS TRANSFER FOR EACH SECTION
 c       if we assume composition changes between size sections are not 
 c       important, then the rate of transfer is proportional to the mass
 c       mass transfer rate dependance on particle size
+
+! We keep the dma accommodation coefficient on purpose as 1.0 /JJ
 
 cbk   removed - bkoo (03/09/03)
 cbk      accom(KH2O)=1.0
@@ -217,46 +245,46 @@ cbk      call wdiameter(q) ! tmg (01/25/02)
 c
 c calculate factors
 c
-cbk      do isp=1,nsp
-      do isp=1,nexti ! bkoo (03/09/03)
-       frqtot = 0.0
-       do isec = 1,nsecx2
-        frq(isec,isp) = qn(isec)*
-     &      dsec(isec)/(1.0+rlambda/(accom(isp)*dsec(isec)))
-        frqtot = frqtot + frq(isec,isp)
-       enddo
+      do isp=1,nsp   ! frq goes to nsp now /JJ
+cJJ      do isp=1,nexti ! bkoo (03/09/03)
+         frqtot = 0.0
+         do isec = 1,nsecx2
+            frq(isec,isp) = qn(isec)*
+     &           dsec(isec)/(1.0+rlambda/(accom(isp)*dsec(isec)))
+            frqtot = frqtot + frq(isec,isp)
+         enddo
 c
 c normalize
 c
-       do isec = 1,nsecx2
-        frq(isec,isp) = frq(isec,isp)/frqtot
-        frq0(isec,isp) = frq(isec,isp) ! save frq - bkoo (10/07/03)
-       enddo
+         do isec = 1,nsecx2
+            frq(isec,isp) = frq(isec,isp)/frqtot
+            frq0(isec,isp) = frq(isec,isp) ! save frq - bkoo (10/07/03)
+         enddo
       enddo
 
       iter=0 ! counter for escaping out of an infinity loop (bkoo: Apr, 2000)
  80   iter=iter+1 ! moved - bkoo (10/07/03)
 c     save dq's
-cbk      do i=1,nsp
-      do i=1,nexti ! bkoo (03/09/03)
-        dqsav(i)=dq(i)
+      do i=1,nsp
+cJJ      do i=1,nexti ! bkoo (03/09/03)
+         dqsav(i)=dq(i)
       enddo
 c
 c   FIRST condense all condensing species
 c
-cbk      do isp = 1,nsp
-      do isp = 1,nexti ! bkoo (03/09/03)
-       if(dq(isp).gt.0.0d0) then
-        do isec=1,nsecx2
-         INDX=(ISEC-1)*NSP
-         q(indx+isp)=q(indx+isp)+frq(isec,isp)*dq(isp)*emw(isp)
+      do isp = 1,nsp
+cJJ      do isp = 1,nexti ! bkoo (03/09/03)
+         if(dq(isp).gt.0.0d0) then
+            do isec=1,nsecx2
+               INDX=(ISEC-1)*NSP
+               q(indx+isp)=q(indx+isp)+frq(isec,isp)*dq(isp)*emw(isp)
 c     special cases for remaping of dq
-         if(isp.eq.kNO3.or.isp.eq.kCl) then
-          q(indx+kNH4)= q(indx+knh4)+frq(isec,isp)*dq(isp)*emw(knh4)
+               if(isp.eq.kNO3.or.isp.eq.kCl) then
+                  q(indx+kNH4)= q(indx+knh4)+frq(isec,isp)*dq(isp)*emw(knh4)
+               endif
+            enddo
+            dq(isp)=0.0d0
          endif
-        enddo
-        dq(isp)=0.0d0
-       endif
       enddo
 c
 c   SECOND evaporate all evaporating species
@@ -378,20 +406,21 @@ c reset aerosol concentrations and dq's for NO3, NH4 and Cl
 cbk         q(indx+kno3)=qsav(indx+kno3) ! initial aerosol no3
 cbk         q(indx+knh4)=qsav(indx+knh4) ! initial aerosol nh4
 cbk         q(indx+kcl)=qsav(indx+kcl)   ! initial aerosol Cl
-         indx2=(isec-1)*nexti          ! bkoo (03/09/03)
+         indx2=(isec-1)*nsp          ! bkoo (03/09/03) /JJ (08/15)
          q(indx+kno3)=qsav(indx2+kno3) ! bkoo (03/09/03)
          q(indx+knh4)=qsav(indx2+knh4) ! bkoo (03/09/03)
          q(indx+kcl)=qsav(indx2+kcl)   ! bkoo (03/09/03)
       enddo
 c restore frq - bkoo (10/07/03)
-      do isp=1,nexti
-        do isec=1,nsecx2
-          frq(isec,isp) = frq0(isec,isp)
-        enddo
+c      do isp=1,nexti
+      do isp=1,nsp
+         do isec=1,nsecx2
+            frq(isec,isp) = frq0(isec,isp)
+         enddo
       enddo
 c adjust DQ
-cbk      do i=1,nsp
-      do i=1,nexti ! bkoo (03/09/03)
+      do i=1,nsp
+cJJ      do i=1,nexti ! bkoo (03/09/03)
          if(i.eq.ispsav) then
             dq(i)=dqsav(i)-dq(i)
          elseif(i.eq.isp2) then
@@ -414,10 +443,12 @@ C
       Q(NG+IHNO3)= Q(NG+IHNO3)+q0(1)*PROD/GMW(IHNO3)
       Q(NG+INH3) = Q(NG+INH3) +q0(2)*PROD/GMW(INH3)
       Q(NG+IHCL) = Q(NG+IHCL) +q0(3)*PROD/GMW(IHCL)
+      Q(ng+idma) = q(ng+idma) +q0(4)*prod/gmw(idma) ! dma /JJ (08/15)
       do isec=1,nsecx2
        Q(NG+IHNO3)= Q(NG+IHNO3)-Q((ISEC-1)*NSP+KNO3)*PROD/GMW(IHNO3)
        Q(NG+INH3) = Q(NG+INH3) -Q((ISEC-1)*NSP+KNH4)*PROD/GMW(INH3)
        Q(NG+IHCL) = Q(NG+IHCL) -Q((ISEC-1)*NSP+KCL) *PROD/GMW(IHCL)
+       q(ng+idma) = q(ng+idma) -q((isec-1)*nsp+kpami)*prod/gmw(idma) ! dma /JJ (08/15)
       enddo
 c     correct negative NH3 - bkoo (10/07/03)
       dq(KNH4) = q(ng+inh3) / prod ! umol/m3
