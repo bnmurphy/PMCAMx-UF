@@ -107,7 +107,7 @@ c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
 
             if (fn.gt.0.d0) then
                !update mass and number
-               !nuclei are assumed as ammonium bisulfte
+               !nuclei are assumed as ammonium bisulfate
                mfrac = (/0.8144, 0.0, 0.1856, 0.0/)
                call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
                fn_all(1) = fn
