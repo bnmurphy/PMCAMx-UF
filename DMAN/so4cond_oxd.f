@@ -200,8 +200,10 @@ C-----Calculate tau values for all species/bins
       !Update atau considering the amount added by aqueous chemistry
       do k=iact,ibins
          do j=1,icomp-1
-            Mko(k,j)=Mkf(k,j)+(moxid(k,j)*(1./Nkf(k)))
-            atau(k,j)=1.5*((Mko(k,j)**tdt)-(Mkf(k,j)**tdt)) 
+            ! JJ bugfix: both the initial and final masses need to be 
+            ! average mass of single particle (Adams & Seinfeld 2002, Eq. 9&10)
+            Mko(k,j)=Mkf(k,j)+moxid(k,j)!*(1./Nkf(k)))
+            atau(k,j)=1.5*((Mko(k,j)**tdt)-(Mkf(k,j)**tdt))/(Nkf(k)**tdt) 
          enddo
       enddo
       do k=1,ibins

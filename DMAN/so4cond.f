@@ -31,8 +31,6 @@ C     subroutine's original code. 12/03/2007 by JaeGun Jung
 C     A correction factor, corfactor is added after tested with analytic 
 C     solution. 12/11/2007 by JaeGun Jung
 
-C     Changed the correction factor to 1.0 (was 1.4) JJ 15/04/14
-
 C-----INPUTS------------------------------------------------------------
 
 C     Initial values of
