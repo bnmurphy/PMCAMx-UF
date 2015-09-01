@@ -345,75 +345,54 @@ C-----Calculate tau values for all species/bins
           atau(k,srtso4)=0.0  !nothing to condense onto
         endif
 
-        ! JJ bugfix: since atau is the one that is being used for the 
-        ! driving force we need to set that to zero when there is already
-        ! enough nh4 to neutralize the so4. This check was done above with
-        ! dp, but that is used to calculate atauc, not atau!
-
         !Calculate a driving force for ammonia condensation
-        if (sK(srtnh3) .gt. 0.0 .and. atauc(k,srtnh3).gt.0.D0) then
+        if (sK(srtnh3) .gt. 0.0) then
           atau(k,srtnh3)=tj(srtnh3)*R*temp/(molwt(srtnh3)*1.d-3)
      &      /(boxvol*1.d-6)*tk(k,srtnh3)*Gcf(srtnh3)/sK(srtnh3)
      &      *(1.d0-exp(-1.d0*sK(srtnh3)*cdt))
         else
-          atau(k,srtnh3)=0.0  !nothing to condense onto or already enough ammonia
+          atau(k,srtnh3)=0.0  !nothing to condense onto
         endif
 
-        ! JJ bugfix: if we do not end the do loop over the bins here, the following 
-        ! calculation with atau for sumtaunh3 is not using correct ataus for k>current step
+        Mktot(srtso4)=0.0
+        do kk=1,ibins
+          Mktot(srtso4)=Mktot(srtso4)+Mkf(kk,srtso4)
+        enddo
+        Mktot(srtnh4)=0.0
+        do kk=1,ibins
+          Mktot(srtnh4)=Mktot(srtnh4)+Mkf(kk,srtnh4)
+        enddo
 
-      end do ! added by JJ
-
-      ! it is needless to recalculate these Mktot:s within an outer loop so start next
-      ! loop over k after these / JJ
-      Mktot(srtso4)=0.0
-      do kk=1,ibins
-         Mktot(srtso4)=Mktot(srtso4)+Mkf(kk,srtso4)
-      enddo
-      Mktot(srtnh4)=0.0
-      do kk=1,ibins
-         Mktot(srtnh4)=Mktot(srtnh4)+Mkf(kk,srtnh4)
-      enddo
-
-      do k=1,ibins ! added by JJ: now we can loop over the bins and do the next part
-         ! JJ change: instead of comparing total so4 to total ammonia in order to get
-         ! taumax for the current bin, check the so4 and ammonia in the current bin.
-         ! For this purpose calculate Gcknh3 already outside of the if statement
-         sumataunh3=0.0
-         do kk=1,ibins
-            sumataunh3=sumataunh3+atau(kk,srtnh4)
-         enddo
-         Gcknh3(k)=Gcf(srtnh4)*atau(k,srtnh4)/sumataunh3
-         
         !Separate the cases of total ammonia is greater than existing sulfate
         ! or not.
-c        if (0.375*Mktot(srtso4).gt.(Mktot(srtnh4)+Gcf(srtnh4))) then
-         if (0.375*Mkf(k,srtso4).gt.Mkf(k,srtnh4)+Gcknh3(k)) then !JJ change
+        if (0.375*Mktot(srtso4).gt.(Mktot(srtnh4)+Gcf(srtnh4))) then
         !Sulfate rich condition
-           
-            Mknh3max=Mkf(k,srtnh3)+Gcknh3(k)
+           sumataunh3=0.0
+           do kk=1,ibins
+              sumataunh3=sumataunh3+atau(kk,srtnh4)
+           enddo
+           Gcknh3(k)=Gcf(srtnh4)*atau(k,srtnh4)/sumataunh3
+           Mknh3max=Mkf(k,srtnh3)+Gcknh3(k)
+c           Mknh3max=0.375*Mkf(k,srtso4)+Gcknh3(k)
                                          ! maximally allowable NH4 mass
-         else                   !Total ammonia rich condition
-            Mknh3max=0.375*Mkf(k,srtso4) ! maximally allowable NH4 mass
-         endif
+        else !Total ammonia rich condition
+           Mknh3max=0.375*Mkf(k,srtso4) ! maximally allowable NH4 mass
+        endif
 cdbg        if (Nkf(k) .gt. 0.) then
-         if (Nkf(k) .gt. Neps) then
-            taumax=1.5*((Mknh3max**tdt)-(Mkf(k,srtnh3)**tdt))/(Nkf(k)
-     &           **tdt) 
+        if (Nkf(k) .gt. Neps) then
+          taumax=1.5*((Mknh3max**tdt)-(Mkf(k,srtnh3)**tdt))/(Nkf(k)
+     &     **tdt) 
             ! See Eq.(9) in Adams and Seinfeld (2002, JGR)
-         else
-            taumax=0.           !For safety
-         endif
-         ! JJ change: since atau is the one that is used for tmcond, there seems
-         ! to be no reason to compare taumax to atauc here
-c         if (atauc(k,srtnh3) .gt. taumax) then
-         if (atau(k,srtnh3) .gt. taumax) then
-            if (taumax .ge. 0.) then
-               atau(k,srtnh3)=taumax
-            else
-               atau(k,srtnh3)=0. !For safety 
-            endif
-         endif
+        else
+          taumax=0. !For safety
+        endif
+        if (atauc(k,srtnh3) .gt. taumax) then
+          if (taumax .ge. 0.) then
+            atau(k,srtnh3)=taumax
+          else
+            atau(k,srtnh3)=0. !For safety 
+          endif
+        endif
       enddo
 
 C-----Adjust a time step 
@@ -490,8 +469,6 @@ cdbg        endif
  30   continue
       enddo
 
-! JJ comment: this is not actually working now, 2 has to be double because tr is double
-! but left it for now because there might be good reason for this?
       !Never shorten timestep by less than half
 c     changed by LA
       if (tr .gt. 1.0) tr=max(tr,2.0)
@@ -528,10 +505,6 @@ C Call condensation subroutine to do mass transfer
           else
             tau(k)=atau(k,j)
           endif
-          ! JJ comment: if atau and consequently tau got the taumax value earlier,
-          ! a corfactor > 1 will try to condense more than should be allowed.
-          ! Leave it for now 
-          ! Addendum: changed corfactor to 1.0 at 15/04/14 /JJ
           tau(k)=corfactor*tau(k) ! A correction factor is applied.
         enddo
 
@@ -676,12 +649,12 @@ C Repeat process if necessary
 c        if (itr.gt.5000) then
         if (itr.gt.500) then
            write(*,*) 'Coord.(i,j,k)=',ichm,jchm,kchm
-           write(*,*) 'An iteration in so4cond exceeds 500'
+           write(*,*) 'An iteration in so4cond exceeds 5000'
            write(*,*) 'dt=',dt,'time=',time,'cdt=',cdt
            write(*,*) 'exponential decaying frac=',
      &               exp(-1.d0*sK(srtnh4)*cdt)
-c$$$           iflagez=1
-c$$$           return
+c           iflagez=1
+c           return
            ! JJ change : if there is a problem just stop the program and
            ! fix this routine. Condensing just with whatever routine does not 
            ! fail is not a good design.
