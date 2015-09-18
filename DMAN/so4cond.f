@@ -257,13 +257,12 @@ cdbg     &           0.0,Mkf(k,srtnh3))
           endif
 c          mp=(Mkf(k,srtso4)+Mkf(k,srtnh3))/Nkf(k)
           ! JJ bugfix: Nkf refers to total particle number so must
-          ! include mass of all particulate species or we end up with mp below
+          ! include mass of all particulate species (except water) or we end up with mp below
           ! the mass bin lower bound. Although why not take the geometric mean
           ! here as well?
-cd          mp=(Mkf(k,srtso4)+Mkf(k,srtnh3)+Mkf(k,srtna)+Mkf(k,srth2o))/Nkf(k)
           mp=(Mkf(k,srtso4)+Mkf(k,srtsoa1)+Mkf(k,srtsoa2)+
      &     +Mkf(k,srtsoa3)+Mkf(k,srtsoa4)
-     &     +Mkf(k,srtnh3))/Nkf(k)
+     &     +Mkf(k,srtnh3)+Mkf(k,srtinrt))/Nkf(k)
         else
           !nothing in this bin - set to "typical value"
           if (icond_test .eq. 1) then !cond test 6/24/04 jgj
@@ -276,7 +275,7 @@ cdbg            density = 1000.
           endif
           mp=1.414*xk(k)
         endif
-        Dpk(k)=((mp/density)*(6./pi))**(0.333)
+        Dpk(k)=((mp/density)*(6./pi))**(1./3.)
         Dpk(k)=h2ogrowth*Dpk(k)
         if (icond_test .eq. 1) then
           beta(srtso4)=1.

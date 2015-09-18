@@ -467,6 +467,35 @@ cdbg      if ((ichm.eq.65).and.(jchm.eq.51).and.(kchm.eq.1)) then
 cdbg         write(*,*)'dsulfdt in Pittsburgh=',dsulfdt
 cdbg         write(*,*)'h2so4_i, conc(ksulf)=',h2so4_i,conc(ksulf)
 cdbg      endif
+      if ((ichm.eq.58).and.(jchm.eq.116).and.(kchm.eq.1)) then !Aspvreten
+!         write(idsulf,*) 'Asp'
+         write(idsulf,'(E22.14)',ADVANCE='NO') dsulfdt
+      endif
+      if ((ichm.eq.57).and.(jchm.eq.85).and.(kchm.eq.1)) then !Cabauw
+!         write(idsulf,*) 'Cab'
+         write(idsulf,'(E22.14)',ADVANCE='NO') dsulfdt
+      endif
+      if ((ichm.eq.57).and.(jchm.eq.130).and.(kchm.eq.1)) then !Hyytiala
+!         write(idsulf,*) 'Hyy'
+         write(idsulf,'(E22.14)') dsulfdt   ! Hyytiala is the last to be printed
+      endif
+      if ((ichm.eq.76).and.(jchm.eq.74).and.(kchm.eq.1)) then !Ispra
+!         write(idsulf,*) 'Isp'
+         write(idsulf,'(E22.14)',ADVANCE='NO') dsulfdt
+      endif
+      if ((ichm.eq.30).and.(jchm.eq.75).and.(kchm.eq.1)) then !Mace Head
+!         write(idsulf,*) 'Mac'
+         write(idsulf,'(E22.14)',ADVANCE='NO') dsulfdt
+      endif
+      if ((ichm.eq.70).and.(jchm.eq.95).and.(kchm.eq.1)) then !Melpitz
+!         write(idsulf,*) 'Mel'
+         write(idsulf,'(E22.14)',ADVANCE='NO') dsulfdt
+      endif
+      if ((ichm.eq.60).and.(jchm.eq.105).and.(kchm.eq.1)) then !Vavihill
+!         write(idsulf,*) 'Vav'
+         write(idsulf,'(E22.14)',ADVANCE='NO') dsulfdt
+      endif
+c end of debug
 
       conc(ksulf)=h2so4_i ! restore an original value
 

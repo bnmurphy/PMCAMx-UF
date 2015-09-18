@@ -5,29 +5,23 @@
 #set INPUT  = "/home/christos/Research/ICEHT/eucaari"
 #set INPUT2 = "/home/christos/Research/ICEHT/ufeu/inputs"
 
-#set INPUT  = "/home/x_elhba/PMCAMxUF/Research/eucaari"
-#set INPUT2 = "/home/x_elhba/PMCAMxUF/Research/ufeu/inputs"
+#set INPUT  = "/proj/snic2014-1-155/users/x_elhba/Inputs_May_Europe"
+#set INPUT2 = $INPUT
+set INPUT  = "/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe"
+set INPUT2 = "/proj/snic2014-1-155/users/x_elhba/Inputs_May_Europe"
 
-set INPUT  = "/proj/snic2014-1-155/users/x_elhba/Inputs_May_Europe"
-set INPUT2 = $INPUT
-
-#set INPUT  = "/home/x_larah/PMCAMxUF/Research/eucaari"
-#set INPUT2 = "/home/x_larah/PMCAMxUF/Research/ufeu/inputs"
 set DATE    = $1
 set DATE2   = $2
-
-@ DATE3   = ${DATE2} + 121
-@ DATE4   = ${DATE2} + 120
-
-if ($DATE < 10) then
-  set DATE = 0$DATE
-endif
+@ DATE3   = $DATE2 + 121
+@ DATE4   = $DATE2 + 120
+#
+#if ($DATE < 10) then
+#  set DATE = 0$DATE
+#endif
 
 #
-set RUN     = "PMCAMX-UF_ORG_AG_2"
-#set OUTPUT  = "/home/x_elhba/PMCAMxUF/Research/ufeu/default/outputs/$RUN"
-
-set OUTPUT  = "/proj/snic2014-1-155/users/x_elhba/outputs/$RUN"
+set RUN     = "PMCAMxUF_Organics_ElhamPaper"
+set OUTPUT  = $PMCAMxUF_USER_OUTPUT/$RUN
 #
 if ($DATE == "01") then
   mkdir -p $OUTPUT
@@ -35,9 +29,11 @@ if ($DATE == "01") then
   set RSTF = ""
 else
   set RST  = "true"
-  set RSTF = $OUTPUT/Eucaari.ORG_AG_2.$DATE4.$RUN.inst.2
-endif 
-echo $OUTPUT/Eucaari.ORG_AG_2.$DATE4.$RUN.inst.2
+  set RSTF = $OUTPUT/Eucaari.May.$DATE4.$RUN.inst.2
+#  set RSTF = $OUTPUT/Eucaari.ORG_AG_2.$DATE4.$RUN.inst.2
+endif
+echo $OUTPUT/Eucaari.May.$DATE4.$RUN.inst.2 
+#echo $OUTPUT/Eucaari.ORG_AG_2.$DATE4.$RUN.inst.2
 #
 date 
 #
@@ -45,11 +41,11 @@ date
 #
 #
 #
-rm -f CAMx.in
+rm -f ../CAMx.in
 cat << ieof > CAMx.in
 CAMx Version       |VERSION4.0 
 Run Message        |PMCAMx v4.0 Europe PM Test Run May 01-29 2008
-Root output name   |$OUTPUT/Eucaari.ORG_AG_2.$DATE3.$RUN
+Root output name   |$OUTPUT/Eucaari.May.$DATE3.$RUN
 Start yr/mo/dy/hr  |08 05 $DATE 0000.
 End   yr/mo/dy/hr  |08 05 $DATE 2400.
 DT:max,met,ems,out |5. 60. 60. 60.
@@ -175,7 +171,7 @@ Treat point emiss  |false
 1-day emiss inputs |true
 3-D average file   |true
 Source Apportion   |false
-Chemparam          |/home/x_elhba/PMCAMx-UF_ORG/CAMx4.chemparam.5.VBS.aging.Base
+Chemparam          |CAMx4.chemparam.5.VBS.aging.Base
 Photolysis rates   |$INPUT/photolysis_rates/tuv_euro_ps2str_S99.0805$DATE.txt
 Landuse            |$INPUT/Metfields/lu_d02.bin
 Height/pressure    |$INPUT/Metfields/zp_d02.200805$DATE.bin
@@ -195,7 +191,13 @@ ieof
 #
 #  --- Execute the model ---
 #
-/usr/bin/time /home/x_elhba/PMCAMx-UF_ORG/PMCAMx-UF_new_2/PMCAMx.exe
+cd ../
+/usr/bin/time ./PMCAMx.exe
+ 
+#setenv OMP_NUM_THREADS 16
+#setenv OMP_STACKSIZE 1024M
+#amplxe-cl -c hotspots -result-dir ${OUTPUT}/Vtune/Hotspots_$DATE -- ./PMCAMx.exe
+
 date 
 #
 

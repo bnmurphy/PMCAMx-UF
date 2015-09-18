@@ -217,9 +217,10 @@ cccccccccccccccccccccccccccccccccccccccccccccccc
       !Update atau considering the amount added by aqueous chemistry
       do k=iact,ibins
          do j=1,icomp-1
-c            Mko(k,j)=Mkf(k,j)+(moxid(k,j)*(1./Nkf(k)))  !david bug 7
-             Mko(k,j)=Mkf(k,j)+(tot_dm(j)*(1./Nkf(k)))
-            atau(k,j)=1.5*((Mko(k,j)**tdt)-(Mkf(k,j)**tdt)) 
+            ! JJ bugfix: both the initial and final masses need to be 
+            ! average mass of single particle (Adams & Seinfeld 2002, Eq. 9&10)
+            Mko(k,j)=Mkf(k,j)+moxid(k,j)!*(1./Nkf(k)))
+            atau(k,j)=1.5*((Mko(k,j)**tdt)-(Mkf(k,j)**tdt))/(Nkf(k)**tdt) 
          enddo
       enddo
       do k=1,ibins

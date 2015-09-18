@@ -227,10 +227,28 @@ c     CALCULATE CRUSTAL SPECIES CONCENTRATION INSIDE DROPLETS
 c     (IT IS USED IN THE AQUEOUS-PHASE CHEMISTRY CALCULATION TO
 c      ESTIMATE Fe and Mn CONCENTRATIONS
 c
-      crustal(1) = aerosol(5,kcru)+aerosol(6,kcru)+aerosol(7,kcru)
-      crustal(2) = aerosol(8,kcru)+aerosol(9,kcru)+aerosol(10,kcru)
-      salt(1) = aerosol(5,ksod)+aerosol(6,ksod)+aerosol(7,ksod)
-      salt(2) = aerosol(8,ksod)+aerosol(9,ksod)+aerosol(10,ksod)
+c    Changed this into a loop to actually add up the correct bins JJ 15/05/15
+
+c$$$      crustal(1) = aerosol(5,kcru)+aerosol(6,kcru)+aerosol(7,kcru)
+c$$$      crustal(2) = aerosol(8,kcru)+aerosol(9,kcru)+aerosol(10,kcru)
+c$$$      salt(1) = aerosol(5,ksod)+aerosol(6,ksod)+aerosol(7,ksod)
+c$$$      salt(2) = aerosol(8,ksod)+aerosol(9,ksod)+aerosol(10,ksod)
+      crustal=0.0
+      salt=0.0
+      do isect=1, nsect
+         if (daer(isect) .ge. dactiv .AND. daer(isect) .lt. dsep) then
+            crustal(1)=crustal(1)+aerosol(isect,kcru)
+            salt(1)=salt(1)+aerosol(isect,ksod)
+         end if
+      end do
+
+      do isect=1, nsect
+         if (daer(isect) .ge. dsep) then
+            crustal(2)=crustal(2)+aerosol(isect,kcru)
+            salt(2)=salt(2)+aerosol(isect,ksod)
+         end if
+      end do
+      
 c
 c     INTEGRATE
 c 
@@ -268,7 +286,8 @@ cd      do isect=27, 35  ! for sections 0.0008 to 40 um  !bug 4
 c
 c      do isect=8, 10 ! for sections 0.1 to 10 um
 c      do isect=7, 8  ! for sections 0.04 to 40 um
-      do isect=36, 41  ! for sections 0.04 to 40 um
+c      do isect=36, 41  ! for sections 0.04 to 40 um
+      do isect=36,43  !for sections from 2.6 to 40 um
       aerosol(isect,nan)=aerosol(isect,nan)+dnit2*fdist2(isect)    ! NITRATE (aq) in ug/m3
       aerosol(isect,nac)=aerosol(isect,nac)+dchlor2*fdist2(isect)  ! CHLORIDE (aq) in ug/m3
       aerosol(isect,naa)=aerosol(isect,naa)+dammon2*fdist2(isect)  ! AMMONIUM (aq) in ug/m3   
