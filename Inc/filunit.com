@@ -44,7 +44,6 @@ c     ikv    -- vertical diffusivity input file
 c     irstc  -- coarse grid restart input file
 c     irstf  -- fine grid restart input file
 c     irstp  -- PiG restart file
-c     idsulf -- sulfuric acid production output file
 c-----------------------------------------------------------------------
 
       common /funit/ iout,idiag,imass,iconc(2),ifconc(2),iavg,ifavg,
@@ -52,7 +51,7 @@ c-----------------------------------------------------------------------
      &               icld(MXGRID),iic,ibc,
      &               itopc,iaho,iptem,ihtp(MXGRID),iarem(3,MXGRID),
      &               isurf(MXGRID),iwind(MXGRID),itemp(MXGRID),
-     &               ikv(MXGRID),irstc,irstf,irstp,incf,iJnuc,idsulf
+     &               ikv(MXGRID),irstc,irstf,irstp,incf,iJnuc
 c
 c========================= Process Analysis Begin ==============================
 c

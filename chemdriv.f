@@ -454,14 +454,15 @@ c
      &             sddm,nddmsp,ngas,ddmjac5,lddm,nirrrxn,titrt,rrxn_irr,
      &             lirr,dsulfdt) ! to get sulfuric acid production rate
 
-                 if ( laero_upd )
-     &           call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
+                 if ( laero_upd ) then
+                    call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
      &                         MXSPEC,MXRADCL,NSPEC,NGAS,
      &                         con,crad,convfac,time,aero_dt(igrd),
      &                         ichm,jchm,kchm,height,dsulfdt,fndt)
-                 do inuc = 1,2
-                   Jnuc(i,j,k,inuc) = real(fndt(inuc))
-                 enddo
+                    do inuc = 1,2
+                       Jnucsav(i,j,k,inuc) = real(fndt(inuc))
+                    enddo
+                 endif
 
                elseif (idmech.eq.6) then
                  if (ldark(i,j)) then
