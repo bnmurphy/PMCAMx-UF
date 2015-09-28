@@ -8,7 +8,7 @@
 #set INPUT  = "/proj/snic2014-1-155/users/x_elhba/Inputs_May_Europe"
 #set INPUT2 = $INPUT
 set INPUT  = "/proj/snic2014-1-155/users/x_benmu/PMCAMx_Input/May_Europe"
-set INPUT2 = "/proj/snic2014-1-155/users/x_elhba/Inputs_May_Europe"
+set INPUT2 = "/proj/snic2014-1-155/users/x_janju/PMCAMx_Input"
 
 set DATE    = $1
 set DATE2   = $2
@@ -42,7 +42,7 @@ date
 #
 #
 rm -f ../CAMx.in
-cat << ieof > CAMx.in
+cat << ieof > ../CAMx.in
 CAMx Version       |VERSION4.0 
 Run Message        |PMCAMx v4.0 Europe PM Test Run May 01-29 2008
 Root output name   |$OUTPUT/Eucaari.May.$DATE3.$RUN
@@ -167,7 +167,7 @@ Wet dep            |true
 PiG submodel       |false
 Staggered winds    |false
 Treat area emiss   |true
-Treat point emiss  |false
+Treat point emiss  |true
 1-day emiss inputs |true
 3-D average file   |true
 Source Apportion   |false
@@ -180,12 +180,12 @@ Temperature        |$INPUT/Metfields/tp_d02.200805$DATE.bin
 Water vapor        |$INPUT/Metfields/qa_d02.200805$DATE.bin
 Cloud/rain         |$INPUT/cr_files/cr_patched/cr_d02.200805$DATE.patched.bin
 Vertical diffsvty  |$INPUT/Metfields/kv_d02.200805$DATE.patched.bin
-Initial conditions |$INPUT2/IC_BC_TCs/ICs43_Eucaari_2.bin
-Boundary conditions|$INPUT2/IC_BC_TCs/BCs43_Eucaari_2_edges.bin
-Top concentration  |$INPUT2/IC_BC_TCs/TCs43_Eucaari_2.txt
+Initial conditions |$INPUT/IC_BC_TCs/ICs43_Eucaari_2.bin
+Boundary conditions|$INPUT/IC_BC_TCs/BCs43_Eucaari_2_edges.bin
+Top concentration  |$INPUT/IC_BC_TCs/TCs43_Eucaari_2.txt
 Albedo/haze/ozone  |$INPUT/ahomap/ahomap.monthEU.0805$DATE
-Point emiss        |
-Area emiss         |$INPUT2/ufeu_emiss/emnnum.0805$DATE.bin
+Point emiss        |$INPUT2/May2008_point/pointem.0805$DATE.bin
+Area emiss         |$INPUT2/UF_May_2008_Area_TXTs/emnum.0805$DATE.bin
 Restart file name  |$RSTF
 ieof
 #

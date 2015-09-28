@@ -177,7 +177,7 @@ c
       integer iH2SO4, iNH3, iCS, iTEMP, iRH
       character*99 fname
       
-      fname='ACDC_H2SO4_NH3_RH_2014-12-04.txt'
+      fname='DMAN/cond_nuc_PSSA/ACDC_H2SO4_NH3_RH_2014-12-04.txt'
       open(unit=98,file=fname)
 
       !First read header and toss it
