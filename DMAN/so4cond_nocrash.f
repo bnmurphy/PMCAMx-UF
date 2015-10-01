@@ -386,74 +386,51 @@ C-----Calculate tau values for all species/bins
           atau(k,srtso4)=0.0  !nothing to condense onto
         endif
 
-        ! JJ bugfix: since atau is the one that is being used for the 
-        ! driving force we need to set that to zero when there is already
-        ! enough nh4 to neutralize the so4. This check was done above with
-        ! dp, but that is used to calculate atauc, not atau!
-
         !Calculate a driving force for ammonia condensation
-c        if (sK(srtnh3) .gt. 0.0  .and. atauc(k,srtnh3).gt.0.D0) then
         if (sK(srtnh3) .gt. 0.0) then
           atau(k,srtnh3)=tj(srtnh3)*R*temp/(molwt(srtnh3)*1.d-3)
      &      /(boxvol*1.d-6)*tk(k,srtnh3)*Gcf(srtnh3)/sK(srtnh3)
      &      *(1.d0-exp(-1.d0*sK(srtnh3)*cdt))
         else
-          atau(k,srtnh3)=0.0  !nothing to condense onto or already enough ammonia
+          atau(k,srtnh3)=0.0  !nothing to condense onto
         endif
 
         !Calculate a driving force for amine condensation
-c        if (sK(srtdma) .gt. 0.0 .and. atauc(k,srtdma).gt.0.0) then
         if (sK(srtdma) .gt. 0.0) then
           atau(k,srtdma)=tj(srtdma)*R*temp/(molwt(srtdma)*1.d-3)
      &      /(boxvol*1.d-6)*tk(k,srtdma)*Gcf(srtdma)/sK(srtdma)
      &      *(1.d0-exp(-1.d0*sK(srtdma)*cdt))
         else
-          atau(k,srtdma)=0.0  !nothing to condense onto or too much nh3 already
+          atau(k,srtdma)=0.0  !nothing to condense onto
         endif
 
-        ! JJ bugfix: if we do not end the do loop over the bins here, the following 
-        ! calculation with atau for sumtaunh3 is not using correct ataus for k>current step
-
-      end do ! added by JJ
-
-      ! it is needless to recalculate these Mktot:s within an outer loop so start next
-      ! loop over k after these / JJ
-      Mktot(srtso4)=0.0
-      do kk=1,ibins
-c     Mktot(srtso4)=Mktot(srtso4)+Mkf(kk,srtso4)
-         Mktot(srtso4)=Mktot(srtso4)+Mkfreeso4(kk)
-      enddo
-      Mktot(srtnh4)=0.0
-      do kk=1,ibins
-         Mktot(srtnh4)=Mktot(srtnh4)+Mkf(kk,srtnh4)
-      enddo
-      Mktot(srtdma)=0.0
-      do kk=1,ibins
-         Mktot(srtdma)=Mktot(srtdma)+Mkf(kk,srtdma)
-      enddo
+        Mktot(srtso4)=0.0
+        do kk=1,ibins
+c           Mktot(srtso4)=Mktot(srtso4)+Mkf(kk,srtso4)
+           Mktot(srtso4)=Mktot(srtso4)+Mkfreeso4(kk)
+        enddo
+        Mktot(srtnh4)=0.0
+        do kk=1,ibins
+           Mktot(srtnh4)=Mktot(srtnh4)+Mkf(kk,srtnh4)
+        enddo
+        Mktot(srtdma)=0.0
+        do kk=1,ibins
+           Mktot(srtdma)=Mktot(srtdma)+Mkf(kk,srtdma)
+        enddo
         
-      sumataunh3=0.0
-      do kk=1,ibins
-         sumataunh3=sumataunh3+atau(kk,srtnh4)
-      enddo
+        
+        sumataunh3=0.0
+        do kk=1,ibins
+           sumataunh3=sumataunh3+atau(kk,srtnh4)
+        enddo
+        Gcknh3(k)=Gcf(srtnh4)*atau(k,srtnh4)/sumataunh3
+
         !DMA
-      sumataudma=0.0
-      do kk=1,ibins
-         sumataudma=sumataudma+atau(kk,srtdma)
-      enddo
-        
-      do k=1,ibins ! added by JJ: now we can loop over the bins and do the next part
-         ! JJ change: instead of comparing total so4 to total ammonia in order to get
-         ! taumax for the current bin, check the so4 and ammonia in the current bin.
-         ! For this purpose calculate Gcknh3 already outside of the if statement  
-        Gcknh3(k)=0.d0
-        if (sumataunh3.gt.0.0) then
-           Gcknh3(k)=Gcf(srtnh4)*atau(k,srtnh4)/sumataunh3
-        endif
-        Gckdma(k)=0.d0
-        if (sumataudma.gt.0.0) then
-           Gckdma(k)=Gcf(srtdma)*atau(k,srtdma)/sumataudma
-        endif
+        sumataudma=0.0
+        do kk=1,ibins
+           sumataudma=sumataudma+atau(kk,srtdma)
+        enddo
+        Gckdma(k)=Gcf(srtdma)*atau(k,srtdma)/sumataudma
         !
         !Separate the cases of total ammonia and amine (!) is greater than existing sulfate
         ! or not.
@@ -461,32 +438,28 @@ c     Mktot(srtso4)=Mktot(srtso4)+Mkf(kk,srtso4)
         !remaining so4 then no ammonia condenses to that bin
 
         if (atau(k,srtdma).gt.0.d0) then ! check if there is need to condense to this bin (could also use nh3 atau)
+           Mkdmamax=dmaso4_nratio*Mkfreeso4(k)
            !first check the space for dma to condense
            !if (dmaso4_nratio*Mkfreeso4(k).gt.Gckdma(k)) then
            if (dmaso4_nratio*Mktot(srtso4).gt.Gcf(srtdma)) then
               !Sulfate rich condition              
-              Mkdmamax=Mkf(k,srtdma)+Gckdma(k) !maximally allowable dma mass
+c              Mkdmamax=Mkf(k,srtdma)+Gckdma(k) !maximally allowable dma mass
               !calculate what is there left to neutralize by nh3
-              !Mso4fornh3=Mkfreeso4(k)-Gckdma(k)/dmaso4_nratio
-              !testing using total Mkfreeso4 instead of what is in this bin
-              Mso4fornh3=Mktot(srtso4)-Gckdma(k)/dmaso4_nratio
-
-              !if (0.375*Mso4fornh3.gt.Gcknh3(k)) then
-              if (0.375*Mso4fornh3.gt.Gcf(srtnh3)) then
-               !Sulfate rich condition           
-                 Mknh3max=Mkf(k,srtnh3)+Gcknh3(k)
-                                         ! maximally allowable NH4 mass
-
-              else    !Total ammonia rich condition
-                 !Mknh3max=Mkf(k,srtnh3)+0.375*Mso4fornh3
-                 Mknh3max=Mkf(k,srtnh3)+
-     &                0.375*(Mkfreeso4(k)-Gckdma(k)/dmaso4_nratio)
-                               ! maximally allowable NH4 mass
-              endif
+              Mso4fornh3=Mkfreeso4(k)-Gckdma(k)/dmaso4_nratio
+              Mknh3max=0.375*Mso4fornh3
+c$$$              if (0.375*Mso4fornh3.gt.Gcknh3(k)) then
+c$$$               !Sulfate rich condition           
+c$$$                 Mknh3max=Mkf(k,srtnh3)+Gcknh3(k)
+c$$$                                         ! maximally allowable NH4 mass
+c$$$
+c$$$              else    !Total ammonia rich condition
+c$$$                 Mknh3max=0.375*Mso4fornh3 
+c$$$                               ! maximally allowable NH4 mass
+c$$$              endif
 
            else ! more gas phase dma than what is needed to neutralize so4
-              Mkdmamax=Mkf(k,srtdma)+dmaso4_nratio*Mkfreeso4(k)
-              Mknh3max=Mkf(k,srtnh3)
+c              Mkdmamax=dmaso4_nratio*Mkfreeso4(k)
+              Mknh3max=0.0
            endif
 cdbg        if (Nkf(k) .gt. 0.) then
            if (Nkf(k) .gt. Neps) then
@@ -502,7 +475,7 @@ cdbg        if (Nkf(k) .gt. 0.) then
         ! to be no reason to compare taumax to atauc here
 c        if (atauc(k,srtnh3) .gt. taumax) then
 !     taumax here refers to nh3
-           if ((atau(k,srtnh3)) .gt. taumax) then
+           if ((atauc(k,srtnh3)) .gt. taumax) then
               if (taumax .ge. 0.) then 
                  atau(k,srtnh3)=taumax
               else
@@ -510,7 +483,7 @@ c        if (atauc(k,srtnh3) .gt. taumax) then
               endif
            endif
            !DMA
-           if ((atau(k,srtdma)) .gt. taumaxdma) then
+           if ((atauc(k,srtdma)) .gt. taumaxdma) then
               if (taumaxdma .ge. 0.) then 
                  atau(k,srtdma)=taumaxdma
               else
@@ -684,16 +657,6 @@ cdbg         dNerr=dNerr+Ntotf-Ntoto
         enddo
         Gcf(j)=Gcf(j)+(mi(j)-mf(j))*gmw(j)/molwt(j)
 
-        !check if gas concentration has become practically zero/ JJ 09/2015
-        if (Gcf(j) .lt. cthresh*boxmass) then
-           if (Gcf(j) .gt. 0.0) then
-              Gcflag(j)=1 !do not condense this species further
-           else if (abs(Gcf(srtso4)) .le. 1.d-5) then ! if more negative than this the program will stop shortly
-              Gcf(j)=0.0
-              Gcflag(j)=1
-           end if
-        end if              
-
         !Swap into Nk, Mk
         do k=1,ibins
           Nkf(k)=Nko(k)
@@ -790,9 +753,8 @@ C Repeat process if necessary
       if (time .lt. dt) then
         !Iteration
         itr=itr+1
-        if (itr.gt.5000) then
-c        if (itr.gt.500) then
-c        if (itr.gt.1000) then
+c        if (itr.gt.5000) then
+        if (itr.gt.500) then
            write(*,*) 'Coord.(i,j,k)=',ichm,jchm,kchm
            write(*,*) 'An iteration in so4cond exceeds 5000'
            write(*,*) 'dt=',dt,'time=',time,'cdt=',cdt
