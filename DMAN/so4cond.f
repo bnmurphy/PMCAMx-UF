@@ -646,8 +646,8 @@ C Repeat process if necessary
       if (time .lt. dt) then
         !Iteration
         itr=itr+1
-c        if (itr.gt.5000) then
-        if (itr.gt.500) then
+        if (itr.gt.5000) then
+c        if (itr.gt.500) then
            write(*,*) 'Coord.(i,j,k)=',ichm,jchm,kchm
            write(*,*) 'An iteration in so4cond exceeds 5000'
            write(*,*) 'dt=',dt,'time=',time,'cdt=',cdt
