@@ -97,8 +97,8 @@ c
       real rh         !relative humidity (0-1)
       real fsurf(11)  !Land-Use Category (size of the vector should match 
                       !value of NLU, found in camx.prm
-      integer locean
-      data locean / 7 / !Water Category
+      integer lu_water
+      data lu_water / 7 / !Water Category
 
 C Physical properties of aerosol components
 
@@ -131,7 +131,7 @@ C Make variables common
 
       common /sizecode/ Nk, Mk, Gc, Nkd, Mkd, Gcd, xk, 
      &                  boxvol, boxmass, temp, pres, rh, fsurf,
-     &                  locean
+     &                  lu_water
 cdbg     &                  h2so4_print
 cdbg     &                  nh3ppt_o, h2so4_print
 
