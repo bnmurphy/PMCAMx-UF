@@ -30,7 +30,7 @@ C-----OUTPUTS-----------------------------------------------------------
 C     Nkf, Mkf, Gcf - same as above, but final values
 
       SUBROUTINE cond_nuc(Nki,Mki,Gci,Nkf,Mkf,Gcf,H2SO4rate,dt,ichm,jchm
-     & ,kchm, fndt)             
+     & ,kchm, fndt) 
       IMPLICIT NONE
 
 C-----INCLUDE FILES-----------------------------------------------------

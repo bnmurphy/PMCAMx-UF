@@ -122,18 +122,18 @@ C exceeds the max value
 c$$$      max_H2SO4conc=1.0D11*boxvol/1000.d0*98.d0/6.022d23 !in kg/grid cell
 
 C Checks for when condensation sink is very small
-	if (CS.gt.CSeps) then
-		gasConc = H2SO4rate/CS
+        if (CS.gt.CSeps) then
+                gasConc = H2SO4rate/CS
 	else
-		if ((bin_nuc.eq.1).or.(tern_nuc.eq.1)) then
-			gasConc = max_H2SO4conc
+                if ((bin_nuc.eq.1).or.(tern_nuc.eq.1)) then
+                  gasConc = max_H2SO4conc
 		else
 			print*,'condesation sink too small in getH2SO4conc.f'
 			STOP
 		endif
 	endif
 
-	gasConc = min(gasConc,max_H2SO4conc)
+        gasConc = min(gasConc,max_H2SO4conc)
       Gci(srtso4) = gasConc
 c      call getNucRate(Gci,fn,rnuc,nflg,CS,dmappt)
       call getNucMass(Gci,massnuc,nflg,CS)

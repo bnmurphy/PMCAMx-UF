@@ -20,7 +20,7 @@ c     |6| mass conc.              | q(+k...)  | Mk(ibins,icomp)|
 c     +-+-------------------------+-----------+----------------+
 c     
 
-      subroutine CAMx2dman(q,t0,t1,tempK,pressure,dsulfdt,ich,jch,kch,fndt)
+      subroutine CAMx2dman(q,t0,t1,tempK,pressure,fsurf,dsulfdt,ich,jch,kch,fndt)
 c
 c-----Include files
 c
@@ -33,6 +33,7 @@ c
       real*8 t0, t1
       real tempK      ! temperature [=] K
       real pressure   ! atm
+      real fsurf(11)  ! Land-Use Category
       real dsulfdt    !sulfuric acid production rate
       integer ich, jch, kch ! coordiate, x, y, z
 c
@@ -248,8 +249,8 @@ cdbg          enddo
 cdbg        endif
 cdbg      endif
 
-      call dman(tstart,tend,Nk,Mk,h2so4,nh3ppt,relh,tempK,pres,dsulfdt
-     & ,ich,jch,kch,fndt)
+      call dman(tstart,tend,Nk,Mk,h2so4,nh3ppt,relh,tempK,pres,fsurf,
+     &          dsulfdt,ich,jch,kch,fndt)
       !For a debuging purpose
 cdbg      if ((tstart.gt.0.0).and.(tstart.lt.0.5)) then
 cdbg        if ((ich.eq.36).and.(jch.eq.29).and.(kch.eq.1)) then

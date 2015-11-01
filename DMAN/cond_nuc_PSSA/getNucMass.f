@@ -40,7 +40,7 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
       integer j,i,k
       double precision Gci(icomp-1)
       double precision massnuc ! mass being removed by nucleation [kg s-1 box-1]
-      logical nflg
+      logical nflg, lsurf
 
 C-----VARIABLE DECLARATIONS---------------------------------------------
 
@@ -73,9 +73,18 @@ c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4)) ![ppt]
 
       nflg=.false.
 
+      !Test the land-use category and set the NPF flag to false if necessary
+      lsurf = .true.
+      if (fsurf(locean)gt.0.5) then 
+        lsurf = .false. 
+      endif
+
 C     if requirements for nucleation are met, call nucleation subroutines
 C     and calculate nucleated mass
 C     Total mass is sum from all the nucleation pathways
+      if (lsurf) then  !This test was added to isolate NPF over ocean 
+                       !grid cells. Fsurf is passed through to this routine
+		       !and NPF can be turned off with this flag.
       if (h2so4.gt.1.d4) then
 
 	 if ((nh3_molec.gt.1.d6).and.(tern_nuc.eq.1)) then
@@ -99,6 +108,7 @@ c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
                massnuc = massnuc + massnuc2
             endif
          endif
+      endif
       endif
 
       return

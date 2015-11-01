@@ -55,7 +55,7 @@ cdbg        call flush(iout) ! 12/24/07 jgj
      &                fcloud(iptr3d(igrd)),cldtrns(iptr3d(igrd)),
      &                water(iptr3d(igrd)),tempk(iptr3d(igrd)),
      &                press(iptr3d(igrd)),height(iptr3d(igrd)),
-     &                cwc(iptr3d(igrd)),
+     &                cwc(iptr3d(igrd)),fsurf(iptrlu(igrd)), 
      &                conc(iptr4d(igrd)),cncrad(iptrad(igrd)),
      &                cellat(iptr2d(igrd)),cellon(iptr2d(igrd)),
      &                ldark(iptr2d(igrd)),l3davg,

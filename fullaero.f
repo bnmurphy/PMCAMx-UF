@@ -1,4 +1,4 @@
-      subroutine fullaero(water,tempk,press,lwc_c,
+      subroutine fullaero(water,tempk,press,lwc_c,fsurf,
      &                    mxspec_c,mxrad_c,nspec_c,ngas_c,
      &                    con,cncrad,convfac,t00,dtaer,ich,
      &                    jch,kch,height,dsulfdt,fndt)
@@ -64,6 +64,7 @@ c
       real*8 qins(ntotal)                                         !     cf
       real dsulfdt ! sulfuric acid production rate
       real*4 moxid0(nsect,naers) !mass produced by aqueous chemistry [=] ug/m3
+      real fsurf(NLU)
       logical prevsp
 c
       integer modeaero
@@ -586,10 +587,9 @@ c          call step(nsec,q) ! calculate water in each section
 cjgj
         else                        ! call SOAP + AER
 cjgj          call aerchem(chaero,q,t0,t1,lfrst,ierr)
-          pressure=pres
-c
+          pressure = pres
 cjgj
-          call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch,fndt) 
+          call CAMx2dman(q,t0,t1,tempk,pressure,fsurf,dsulfdt,ich,jch,kch,fndt) 
         endif
 c
 c     map q back to con 

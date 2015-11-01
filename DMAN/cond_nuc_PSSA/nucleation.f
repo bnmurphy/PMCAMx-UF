@@ -26,7 +26,8 @@ C-----OUTPUTS-----------------------------------------------------------
 
 C     Nkf, Mkf, Gcf - same as above, but final values
 
-      SUBROUTINE nucleation(Nki,Mki,Gci,Nkf,Mkf,Gcf,nuc_bin,dt,fn_all,cs)
+      SUBROUTINE nucleation(Nki,Mki,Gci,Nkf,Mkf,Gcf,nuc_bin,dt,fn_all,
+     &                      cs)
 
       IMPLICIT NONE
 
@@ -41,6 +42,7 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
       double precision Nkf(ibins), Mkf(ibins, icomp), Gcf(icomp-1)
       integer nuc_bin
       double precision dt
+      logical lsurf
 
 C-----VARIABLE DECLARATIONS---------------------------------------------
 
@@ -95,9 +97,18 @@ c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
       Gcf=Gci
 
 cdbg      print*,'h2so4',h2so4,'nh3ppt',nh3ppt
+      !Test the land-use category and set the NPF flag to false if necessary
+      lsurf = .true.
+      if (fsurf(locean).gt.0.5) then 
+        lsurf = .false. 
+      endif
+
 
 C     if requirements for nucleation are met, call nucleation subroutines
 C     and get the nucleation rate and critical cluster size
+      if (lsurf) then  !This test was added to isolate NPF over ocean 
+                       !grid cells. Fsurf is passed through to this routine
+		       !and NPF can be turned off with this flag.
       if (h2so4.gt.1.d4) then         
 
          if (nh3_molec.gt.1.d6.and.tern_nuc.eq.1) then
@@ -125,6 +136,7 @@ c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
                fn_all(2) = fn
             endif
          endif    
+      endif
       endif
 
 C     if nucleation occured, see how many particles grow to join the first size

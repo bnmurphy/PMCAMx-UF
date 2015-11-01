@@ -1,6 +1,6 @@
       subroutine chemdriv(igrd,ncol,nrow,nlay,dt,itzon,idfin,fcloud,
-     &                    cldtrns,water,tempk,press,height,cwc,conc,
-     &                    cncrad,cellat,cellon,ldark,l3davg,
+     &                    cldtrns,water,tempk,press,height,cwc,fsurf,
+     &                    conc,cncrad,cellat,cellon,ldark,l3davg,
      &                    iptr2d,iptrsa,ipa_cel,Jnuc)
 c
 c-----CAMx v4.02 030709
@@ -136,10 +136,11 @@ c
      &     press(ncol,nrow,nlay),height(ncol,nrow,nlay),
      &     cwc(ncol,nrow,nlay),conc(ncol,nrow,nlay,nspec),
      &     cellat(ncol,nrow),cellon(ncol,nrow),
-     &     cncrad(ncol,nrow,nlay,MXRADCL)
+     &     cncrad(ncol,nrow,nlay,MXRADCL), fsurf(ncol,nrow,NLU),
+     &     fsurf_loc(NLU)
       integer idfin(ncol,nrow)
 c
-      integer ii,jj,kk
+      integer ii,jj,kk, ilu
       integer nsect,isp
 c      integer ispc,naero
       integer order(nspec)
@@ -478,8 +479,12 @@ cdbg                   print*,'tempk,pressure,dsulfdt=',tempk,pressure
 cdbg     &                  ,dsulfdt !dbg
 cdbg                 endif !dbg
                  if ( laero_upd ) then
+		    do ilu = 1,NLU
+                      fsurf_loc(ilu) = fsurf(i,j,ilu)
+		    enddo
+
                     call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
-     &                         MXSPEC,MXRADCL,NSPEC,NGAS,
+     &                         fsurf_loc,MXSPEC,MXRADCL,NSPEC,NGAS,
      &                         con,crad,convfac,time,aero_dt(igrd),
      &                         ichm,jchm,kchm,height,dsulfdt,fndt)
                     do inuc = 1,2

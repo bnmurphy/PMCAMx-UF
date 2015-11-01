@@ -95,6 +95,10 @@ c
       real temp       !temperature (K) of grid cell
       real pres       !air pressure (Pa) of grid cell
       real rh         !relative humidity (0-1)
+      real fsurf(11)  !Land-Use Category (size of the vector should match 
+                      !value of NLU, found in camx.prm
+      integer locean
+      data locean / 7 / !Water Category
 
 C Physical properties of aerosol components
 
@@ -126,7 +130,8 @@ C Nucleation Diagnostic Variables
 C Make variables common
 
       common /sizecode/ Nk, Mk, Gc, Nkd, Mkd, Gcd, xk, 
-     &                  boxvol, boxmass, temp, pres, rh
+     &                  boxvol, boxmass, temp, pres, rh, fsurf,
+     &                  locean
 cdbg     &                  h2so4_print
 cdbg     &                  nh3ppt_o, h2so4_print
 

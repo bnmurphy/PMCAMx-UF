@@ -18,8 +18,8 @@ C     110, D07S12.
 C     For the details of development history, see history.help file.
 
 cPMCAMx      PROGRAM DMAN
-      SUBROUTINE dman(tstart,tend,Nki,Mki,h2so4,nh3ppt,rhi,tempi,presi
-     &               ,dsulfdt,ichm, jchm, kchm, fndt)
+      SUBROUTINE dman(tstart,tend,Nki,Mki,h2so4,nh3ppt,rhi,tempi,presi,
+     &                fsurfi,dsulfdt,ichm, jchm, kchm, fndt)
 
       IMPLICIT NONE
 
@@ -40,6 +40,7 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
       real rhi     ! relative humidity from PMCAMx
       real tempi   ! temperature from PMCAMx
       real presi   ! pressure from PMCAMx
+      real fsurfi(11)  ! LandUse Category from PMCAMx
       real dsulfdt ! sulfuric acid production rate
       integer ichm ! i coordinate in PMCAMx
       integer jchm ! j coordinate in PMCAMx
@@ -179,6 +180,7 @@ cdbg       endif
       rh=rhi
       temp=tempi
       pres=presi
+      fsurf=fsurfi
 
       !Set environmental variables
       deltat=tend-tstart
