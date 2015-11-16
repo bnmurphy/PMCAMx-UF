@@ -130,7 +130,8 @@ cdbg      call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,spname,12)
      &           aremis(iptrem(igrd)),
      &           ptemis,
      &           armass(1,igrd),ptmass(1,igrd),
-     &           conc(iptr4d(igrd)),ipacl_3d(iptr3d(igrd)) )
+     &           conc(iptr4d(igrd)),ipacl_3d(iptr3d(igrd)),
+     &           fsurf(iptrlu(igrd)) )
 c
 c     assign_dist will assign number distributions, use in case you do not 
 c     have size resolved emissions (like in the US). Use numconv if you want
@@ -156,7 +157,8 @@ c
      &              tempk(iptr3d(igrd)),press(iptr3d(igrd)),
      &              saemis(ipsa2d(igrd)),
      &              sapnts,ardum,ptdum,
-     &              ptconc(ipsa3d(igrd)),ipacl_3d(iptr3d(igrd)) )
+     &              ptconc(ipsa3d(igrd)),ipacl_3d(iptr3d(igrd)), 
+     &              fsurf(iptrlu(igrd)) )
       endif
 c
 c========================= Source Apportion End ========================

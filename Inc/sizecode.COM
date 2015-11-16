@@ -98,7 +98,7 @@ c
       real fsurf(11)  !Land-Use Category (size of the vector should match 
                       !value of NLU, found in camx.prm
       integer lu_water
-      data lu_water / 7 / !Water Category
+      parameter (lu_water=7) !Water Category
 
 C Physical properties of aerosol components
 
@@ -130,8 +130,7 @@ C Nucleation Diagnostic Variables
 C Make variables common
 
       common /sizecode/ Nk, Mk, Gc, Nkd, Mkd, Gcd, xk, 
-     &                  boxvol, boxmass, temp, pres, rh, fsurf,
-     &                  lu_water
+     &                  boxvol, boxmass, temp, pres, rh, fsurf
 cdbg     &                  h2so4_print
 cdbg     &                  nh3ppt_o, h2so4_print
 

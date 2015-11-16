@@ -158,7 +158,7 @@ Staggered winds    |false
 Treat area emiss   |true
 Treat point emiss  |true
 1-day emiss inputs |true
-3-D average file   |true
+3-D average file   |false
 Source Apportion   |false
 Chemparam          |CAMx4.chemparam.6
 Photolysis rates   |$INPUT/photolysis_rates/tuv_euro_ps2str_S99.0805$DATE.txt

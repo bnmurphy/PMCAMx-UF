@@ -2,7 +2,7 @@
      &                 larmap,lptmap,nsrc,idsrc,isrc,jsrc,ncol,
      &                 nrow,nlay,deltat,dx,dy,mapscl,
      &                 height,depth,windu,windv,tempk,press,aremis,
-     &                 pttrace,armass,ptmass,conc,ipa_cel)
+     &                 pttrace,armass,ptmass,conc,ipa_cel,fsurf)
 c
 c-----CAMx v4.02 030709
 c
@@ -47,6 +47,7 @@ c        ptmass              mass from point source emission (umol)
 c        conc                species concentrations (umol/m3)
 c        ipa_cel             gridded array to identify if cell is
 c                            in a IPRM sub-domain
+c        fsurf               Landuse information
 c
 c     Output arguments:
 c        conc                species concentrations (umol/m3)
@@ -82,7 +83,8 @@ c
       real      mapscl(ncol,nrow)
       dimension height(ncol,nrow,nlay),depth(ncol,nrow,nlay),
      &          windu(ncol,nrow,nlay),windv(ncol,nrow,nlay),
-     &          tempk(ncol,nrow,nlay),press(ncol,nrow,nlay)
+     &          tempk(ncol,nrow,nlay),press(ncol,nrow,nlay),
+     &          fsurf(ncol,nrow,NLU)
       dimension hght1d(MXLAYA),wind1d(MXLAYA),tempk1d(MXLAYA),
      1          dtdz1d(MXLAYA)
 c
@@ -108,6 +110,10 @@ c
               j2 = jend(i) 
             endif 
             do j = j1,j2
+               ! This check is for if the cell is classified as water (=7)
+               ! Emissions in these cells are turned off (1.0 means never turned off)
+              if (fsurf(i,j,7).gt.1.01) cycle
+              !
               vol = dx(j)*dy*depth(i,j,1)/(mapscl(i,j)**2)
               dmass = aremis(i,j,lar)*deltat*1e6
               dconc = REAL(dmass)/vol
@@ -143,6 +149,11 @@ c
           n = idsrc(lsrc)
           i = isrc(lsrc)
           j = jsrc(lsrc)
+
+          ! This check is for if the cell is classified as water (=7)
+          ! Emissions in these cells are turned off (1.0 means never turned off)
+          if (fsurf(i,j,7).gt.1.01) cycle
+          !
 c
 c-----If effph is negative, override PLUMERIS
 c

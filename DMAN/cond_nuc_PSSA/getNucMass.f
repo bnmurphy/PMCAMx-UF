@@ -75,7 +75,7 @@ c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4)) ![ppt]
 
       !Test the land-use category and set the NPF flag to false if necessary
       lsurf = .true.
-      if (fsurf(lu_water)gt.0.5) then 
+      if (fsurf(lu_water).gt.0.5) then 
         lsurf = .false. 
       endif
 

@@ -59,7 +59,7 @@ cdbg        call flush(iout) ! 12/24/07 jgj
      &                conc(iptr4d(igrd)),cncrad(iptrad(igrd)),
      &                cellat(iptr2d(igrd)),cellon(iptr2d(igrd)),
      &                ldark(iptr2d(igrd)),l3davg,
-     $                iptr2d(igrd),
+     &                iptr2d(igrd),
      &                ipsa3d(igrd),ipacl_3d(iptr3d(igrd)), Jnuc(iptr3d(igrd)*2) )
         tcpu = dtime(tarray2)
         write(*,'(a,f10.3)') '   CPU = ', tarray2(1)
