@@ -97,35 +97,34 @@ c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
 cdbg      print*,'h2so4',h2so4,'nh3ppt',nh3ppt
 
 C     if requirements for nucleation are met, call nucleation subroutines
-C     and get the nucleation rate and critical cluster size
-      if (h2so4.gt.1.d4) then         
+C     and get the nucleation rate and critical cluster size        
 
-         if (nh3_molec.gt.1.d6.and.tern_nuc.eq.1) then
-c$$$         if (nh3ppt.gt.0.1.and.tern_nuc.eq.1) then
+      if (h2so4.gt.minval(tern_nuc_tbl_H2SO4).and.
+     &     nh3_molec.gt.minval(tern_nuc_tbl_NH3).and.tern_nuc.eq.1) then
+c$$$         if (h2so4.gt.1.d4.and.nh3ppt.gt.0.1.and.tern_nuc.eq.1) then
 c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
-            call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc)
+         call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc)
 
-            if (fn.gt.0.d0) then
-               !update mass and number
-               !nuclei are assumed as ammonium bisulfate
-               mfrac = (/0.8144, 0.0, 0.1856, 0.0/)
-               call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
-               fn_all(1) = fn
-            endif
+         if (fn.gt.0.d0) then
+              !update mass and number
+              !nuclei are assumed as ammonium bisulfate
+            mfrac = (/0.8144, 0.0, 0.1856, 0.0/)
+            call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+            fn_all(1) = fn
          endif
-
-         if (bin_nuc.eq.1) then
-            call vehk_nucl(temp,rh,h2so4,fn,rnuc) !binary nuc
-
-            if (fn.gt.0.d0) then
-               !update mass and number
-               !nuclei are assumed to be sulfuric acid
-               mfrac = (/1.0, 0.0, 0.0, 0.0/)
-               call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
-               fn_all(2) = fn
-            endif
-         endif    
       endif
+
+      if (h2so4.gt.1.d4.and.bin_nuc.eq.1) then
+         call vehk_nucl(temp,rh,h2so4,fn,rnuc) !binary nuc
+
+         if (fn.gt.0.d0) then
+              !update mass and number
+              !nuclei are assumed to be sulfuric acid
+            mfrac = (/1.0, 0.0, 0.0, 0.0/)
+            call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+            fn_all(2) = fn
+         endif
+      endif    
 
 C     if nucleation occured, see how many particles grow to join the first size
 C     section

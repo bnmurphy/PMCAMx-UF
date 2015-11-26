@@ -25,7 +25,7 @@ C                    gas phase except water
 C-----OUTPUTS-----------------------------------------------------------
 
 C     massnuc - nucleated mass [kg s-1 box-1]
-C     nflg - says if nucleation happend
+C     nflg - says if nucleation happened
 
       SUBROUTINE getNucMass(Gci,massnuc,nflg,cs)
 
@@ -76,28 +76,27 @@ c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4)) ![ppt]
 C     if requirements for nucleation are met, call nucleation subroutines
 C     and calculate nucleated mass
 C     Total mass is sum from all the nucleation pathways
-      if (h2so4.gt.1.d4) then
 
-	 if ((nh3_molec.gt.1.d6).and.(tern_nuc.eq.1)) then
-c$$$         if ((nh3ppt.gt.0.1).and.(tern_nuc.eq.1)) then
+      if (h2so4.gt.minval(tern_nuc_tbl_H2SO4).and.
+     &     nh3_molec.gt.minval(tern_nuc_tbl_NH3).and.tern_nuc.eq.1) then
+c$$$         if ((h2so4.gt.1.d4).and.(nh3ppt.gt.0.1).and.(tern_nuc.eq.1)) then
 c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
-            call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc) !ternary nuc
-            nflg=.true.
-            massnuc2 = 4.d0/3.d0*pi*(rnuc*1.d-9)**3*1350.*fn*boxvol*
+         call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc) !ternary nuc
+         nflg=.true.
+         massnuc2 = 4.d0/3.d0*pi*(rnuc*1.d-9)**3*1350.*fn*boxvol*
      &        98.d0/96.d0
-            massnuc = massnuc + massnuc2
-         endif
+         massnuc = massnuc + massnuc2
+      endif
 
-         if (bin_nuc.eq.1) then
-            call vehk_nucl(temp,rh,h2so4,fn,rnuc) !binary nuc
-            if (fn.gt.1.0d-7)then ! JJ changed this from 1d-6 to the actual lower limit
+      if (h2so4.gt.1.d4.and.bin_nuc.eq.1) then
+         call vehk_nucl(temp,rh,h2so4,fn,rnuc) !binary nuc
+         if (fn.gt.1.0d-7)then  ! JJ changed this from 1d-6 to the actual lower limit
                                     ! of the Vehkamäki param. This should actually be also
                                     ! checked in the vehk_nucl routine?
-               nflg=.true.
-               massnuc2 = 4.d0/3.d0*pi*(rnuc*1.d-9)**3*1350.*fn*boxvol*
+            nflg=.true.
+            massnuc2 = 4.d0/3.d0*pi*(rnuc*1.d-9)**3*1350.*fn*boxvol*
      &           98.d0/96.d0
-               massnuc = massnuc + massnuc2
-            endif
+            massnuc = massnuc + massnuc2
          endif
       endif
 
