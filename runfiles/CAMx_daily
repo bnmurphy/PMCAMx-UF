@@ -20,7 +20,7 @@ set DATE2   = $2
 #endif
 
 #
-set RUN     = "PMCAMxUF_Organics_ElhamPaper"
+set RUN     = "PMCAMxUF_testing"
 set OUTPUT  = $PMCAMxUF_USER_OUTPUT/$RUN
 #
 if ($DATE == "01") then

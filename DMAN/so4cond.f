@@ -193,6 +193,10 @@ cdbg      endif
 
       !If PSSA is on, turn on Gcflag(srtso4) for ezcond does H2SO4 condensatoin.
       Gcflag(srtso4)=1 !PSSA
+      !organics are not condensing in this routine, inert species not at all
+      do j=srtinrt,srtsoa4
+         Gcflag(j)=1
+      enddo
 
 C Repeat from this point if multiple internal time steps are needed
  10   continue
@@ -406,7 +410,7 @@ C-----Adjust a time step
       do j=1,icomp-1
         if(Gcflag(j).eq.1) goto 30 ! If gas concentration is tiny, then skip 
                                    ! condensation. 12/06/07 jgj
-        if(j.eq.srtorg) goto 30 ! OM does not have condensation process.
+        if(j.eq.srtinrt) goto 30 ! OM does not have condensation process.
         do k=1,ibins
           if (Nkf(k) .gt. Neps) then
             mc=0.0
@@ -452,7 +456,8 @@ cdbg             gasfrac=0.998 ! not allow less than 0.2% of reduction exponenti
              gasfrac=0.50 ! not allow less than 10% of reduction exponentially
            else
 cdbg             gasfrac=0.999 ! not allow less than 0.1% of reduction theoretically
-             gasfrac=0.55 ! not allow less than 5% of reduction theoretically
+cJJ             gasfrac=0.55 ! not allow less than 5% of reduction theoretically
+             gasfrac=0.75 
            endif
         endif
 cdbg        if (j .eq. srtso4) then ! Deal only sulfuric acid by jgj
@@ -499,7 +504,7 @@ C Call condensation subroutine to do mass transfer
       do j=1,icomp-1  !Loop over all aerosol components
         if(Gcflag(j).eq.1) goto 40 ! If gas concentration is tiny, then skip 
                                    ! condensation. 12/06/07 jgj
-        if(j.eq.srtorg) goto 40 ! OM does not have condensation process.
+        if(j.eq.srtinrt) goto 40 ! OM does not have condensation process.
 
         !Swap tau values for this species into array for cond
         do k=1,ibins
@@ -652,8 +657,8 @@ C Repeat process if necessary
       if (time .lt. dt) then
         !Iteration
         itr=itr+1
-c        if (itr.gt.5000) then
-        if (itr.gt.500) then
+        if (itr.gt.5000) then
+c        if (itr.gt.500) then
            write(*,*) 'Coord.(i,j,k)=',ichm,jchm,kchm
            write(*,*) 'An iteration in so4cond exceeds 500'
            write(*,*) 'dt=',dt,'time=',time,'cdt=',cdt

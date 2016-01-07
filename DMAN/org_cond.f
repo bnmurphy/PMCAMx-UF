@@ -169,7 +169,7 @@ C-----ADJUSTABLE PARAMETERS---------------------------------------------
 
 C-----CODE--------------------------------------------------------------
       ssss= 0.025d0    !surface tension  
-      cond_step= 0.01d0      
+      cond_step= 0.1d0      
 
       cond_step2=cond_step/2.d0
 
@@ -188,6 +188,7 @@ cd      A_kelvin=0.
        psat(srtsoa2) = 1.238786d-4  !Pa =>10 ug/m3
        psat(srtsoa3) = 1.238786d-3  !Pa =>100 ug/m3
        psat(srtsoa4) = 1.238786d-2  !Pa =>1000 ug/m3
+
 
 
 
@@ -237,7 +238,7 @@ cdbg      limit='null'
       if (Gci(srtsoa4) .lt. cthresh*boxmass) Gcflag(srtsoa4)=1 ! =1, Skip      
 
       !If PSSA is on, turn on Gcflag(srtso4) for ezcond does H2SO4 condensatoin.
-       Gcflag(srtso4)=0 !PSSA  
+       Gcflag(srtso4)=1 !PSSA  
        
 
        
@@ -496,7 +497,7 @@ cdbg        endif
  30   continue
       enddo
       !Never shorten timestep by less than half
-      if (tr .gt. 1.0d0) tr=max(tr,2.0d0)
+c      if (tr .gt. 1.0d0) tr=max(tr,2.0d0)
 
       !Repeat for shorter time step if necessary
       if (tr .gt. 1.0) then

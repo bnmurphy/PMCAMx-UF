@@ -160,6 +160,10 @@ C-----CODE--------------------------------------------------------------
       do j=1,icomp
         Gcflag(j)=0    !=0, Do insignificant gas concentration command
       enddo
+      !since SOA not condensing here at all, we can flag them to save time /JJ
+      do j=srtsoa1,srtsoa4
+         Gcflag(j)=1
+      enddo
 
       !xk is provided
       do k=1,ibins+1
@@ -239,6 +243,7 @@ C-----Adjust a time step
 C Call condensation subroutine to do mass transfer
 
       do j=1,icomp-1  !Loop over all aerosol components
+        if (Gcflag(j).eq.1) goto 40
 
         !Swap tau values for this species into array for cond
         do k=1,ibins
