@@ -157,11 +157,8 @@ c-----Entry point
 c
 cdbg      write(*,*)'At the beginning of chemdriv'
       call flush(6)
-cdbg      write(*,*)'after flush(6) in chemdriv'
       call flush(iout)
 c
-cdbg      write(*,*)'In chemdriv, after flushing before time printing.' !dbg
-
       dtchem = dt/3600.
       con(nspec+1) = 0.
 c
@@ -170,10 +167,13 @@ c     grd_time : time to call aerosol routine (HHMM)
 c     date_aer : simulation date (YYJJJ)
 c     dtaero   : adjusted time interval between aerosol routines (min)
 c     aero_dt  : actual time interval for each grid (hr) (accumulated dtchem)
+
       aero_tchk = time
       aero_dt(igrd) = aero_dt(igrd) + dtchem
       laero_upd = .false.
-      if (idmech.eq.6) then ! bkoo_dbg
+
+      if (idmech.eq.5) then ! bkoo_dbg
+
       write(*,*) 'aerotchk,grdtime: ',aero_tchk,grd_time(igrd)
       if ( (aero_tchk-grd_time(igrd)) .ge. -0.01 .and.
      &     (date .eq. date_aer(igrd)) ) then
@@ -183,7 +183,6 @@ c     aero_dt  : actual time interval for each grid (hr) (accumulated dtchem)
       endif
       endif                 ! bkoo_dbg
 
-cdbg      write(*,*)'In chemdriv, after time printing before ordering.'
 c
 c     For setting the order of conversion from con to conc by jgj 12/6/06
 c     The order(kk) has a number of gas concentration first.
@@ -193,7 +192,7 @@ c     The order(kk) saves the order of species as the same way
 c     as increasing the order of size bins.
 c
       nsect = 43
-      naero = 14
+      naero = 15    !david
 c
       do kk=1,ngas
          order(kk) = kk
@@ -244,12 +243,6 @@ c
             tcell = tempk(i,j,k)
             pcell = press(i,j,k)
             convfac = densfac*(273./tcell)*(pcell/1013.)
-cbk            if (kcg1.ne.nspec+1) then
-cbk              conc(i,j,k,kcg1) = conc(i,j,k,kcg1)*convfac
-cbk              conc(i,j,k,kcg2) = conc(i,j,k,kcg2)*convfac
-cbk              conc(i,j,k,kcg3) = conc(i,j,k,kcg3)*convfac
-cbk              conc(i,j,k,kcg4) = conc(i,j,k,kcg4)*convfac
-cbk            endif
             do is = 1,ngas
               con(is) = conc(i,j,k,is)/convfac
               if (con(is).lt.0.) then
@@ -278,7 +271,6 @@ c
                   enddo
                   call camxerr()
                 endif
-cjgj                con(is) = amax1(bdnl(is),con(is)) ! for conserving M/N ratios
               enddo
             endif
 c
@@ -403,7 +395,6 @@ c
             endif
 c
 c======================== Process Analysis End =========================
-c
             if ( idsolv .EQ. IDCMC ) then
                if (idmech.eq.1) then
                  call trap(rxnrate1,radslvr1,ratejac1,rateslo1,dtchem,
@@ -432,38 +423,42 @@ c
                  call aerochem(water(i,j,k),tcell,pcell,cwc(i,j,k),con,
      &                                  convfac,dtchem,ldoipr,ipa_idx)
                elseif (idmech.eq.5) then
+
+                 if (ldark(i,j)) then
+                   nflag=1.0d0
+                 else
+                   nflag=1.0d0
+                 endif
+
                  call trap(rxnrate5,radslvr5,ratejac5,rateslo5,dtchem,
      &             ldark(i,j),water(i,j,k),atm,O2,CH4,H2,con,crad,
      &             avgrad,tcell,
      &             sddm,nddmsp,ngas,ddmjac5,lddm,nirrrxn,titrt,rrxn_irr,
-     &             lirr)
+     &             lirr,dsulfdt) ! to get sulfuric acid production rate
+
+
+                   if ( laero_upd )
+     &             call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
+     &                         MXSPEC,MXRADCL,NSPEC,NGAS,
+     &                         con,crad,convfac,time,aero_dt(igrd),
+     &                         ichm,jchm,kchm,height,dsulfdt,fndt)
+                 do inuc = 1,2
+                   Jnuc(i,j,k,inuc) = real(fndt(inuc))
+                 enddo
+
                elseif (idmech.eq.6) then
                  if (ldark(i,j)) then
                    nflag=0.0d0
                  else
                    nflag=1.0d0
                  endif
-cdbg                 if ((ichm.eq.31).and.(jchm.eq.2).and.(kchm.eq.1)) then!dbg
-cdbg                   print*,'before trap'
-cdbg                   print*,'coordinate of (31,2,1)' !dbg
-cdbg                   print*,'tempk,pressure,dsulfdt=',tempk(i,j,k)
-cdbg     &                  ,pressure,dsulfdt !dbg
-cdbg                 endif !dbg
+c
                  call trap(rxnrate6,radslvr6,ratejac6,rateslo6,dtchem,
      &             ldark(i,j),water(i,j,k),atm,O2,CH4,H2,con,crad,
      &             avgrad,tcell,
      &             sddm,nddmsp,ngas,ddmjac6,lddm,nirrrxn,titrt,rrxn_irr,
      &             lirr,dsulfdt) ! to get sulfuric acid production rate
-cjgj     &             lirr)
-cdbg                 if ((i.eq.65).and.(j.eq.51).and.(k.eq.1)) then
-cdbg                 if (k.eq.1) then
-cdbg               call mnratios(conc,ncol,nrow,nlay,nspec,31) 
-cdbg                 if ((ichm.eq.31).and.(jchm.eq.2).and.(kchm.eq.1)) then!dbg
-cdbg                   print*,'after trap and before fullaero'
-cdbg                   print*,'coordinate of (31,2,1)' !dbg
-cdbg                   print*,'tempk,pressure,dsulfdt=',tempk,pressure
-cdbg     &                  ,dsulfdt !dbg
-cdbg                 endif !dbg
+
                  if ( laero_upd )
      &           call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
      &                         MXSPEC,MXRADCL,NSPEC,NGAS,
@@ -496,9 +491,15 @@ c
      &                           con,convfac,dtchem,ldoipr,
      &                           ipa_idx)
                elseif (idmech.eq.5) then
+c------------------------------------------------------------------------
                    call iehsolv(ierxn5,ierate5,iejac5,ieslow5,
      &                  dtchem,water(i,j,k),atm,O2,CH4,H2,con,crad,
      &                  ldark(i,j),tcell,nirrrxn,rrxn_irr,lirr)
+                   if ( laero_upd )
+     &             call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
+     &                           MXSPEC,MXRADCL,NSPEC,NGAS,
+     &                           con,crad,convfac,time,aero_dt(igrd),fndt)
+c------------------------------------------------------------------------
                elseif (idmech.eq.6) then
                    call iehsolv(ierxn6,ierate6,iejac6,ieslow6,
      &                  dtchem,water(i,j,k),atm,O2,CH4,H2,con,crad,
@@ -634,12 +635,6 @@ c
 c-----Pass CON back to concentration, convert gases from ppm to umol/m3
 cbk   Now SOA condensible gasses (CG) are in umol/m3 like other gases
 c
-cbk            if (kcg1.ne.nspec+1) then
-cbk              con(kcg1) = con(kcg1)/convfac
-cbk              con(kcg2) = con(kcg2)/convfac
-cbk              con(kcg3) = con(kcg3)/convfac
-cbk              con(kcg4) = con(kcg4)/convfac
-cbk            endif
             do is=1,ngas
               con(is) = amax1(bdnl(is),con(is)) ! bkoo (03/12/03)
               conc(i,j,k,is) = con(is)*convfac
@@ -653,13 +648,14 @@ c       very tiny values to con so that we do not have M/N ratio
 c       problem in TOMAS.
 c                                                  12/6/06 jgj
 c
-c     added by LA
+c    added by LA
             do is=1,nspec
                if(con(is).lt.1.0e-37) then
                   con(is)=1.0e-37
                endif
             enddo
 c     end LA
+
             if (ngas.lt.nspec) then
               ispc=ngas
               do ii=1,nsect
@@ -674,13 +670,6 @@ c     end LA
                       isund=INDEX(spname(is),'_')
                       if (spname(is)(1:isund-1).ne.'PH2O') then ! To avoid H2O
                          massum = massum + con(is)
-cdbg                         if ((time.gt.0.).and.(time.lt.30.))then
-cdbg                         if ((i.eq.36).and.(j.eq.29).and.(k.eq.1))then
-cdbg                            write(*,*)'Coord=',i,j,k
-cdbg                            write(*,*)'species=',spname(is)
-cdbg                            write(*,*)'con',con(is)
-cdbg                         endif
-cdbg                         endif
                       endif
                     endif
                  enddo
@@ -692,17 +681,6 @@ cdbg                         endif
                     ispc = ispc + 1
                     is = order(ispc)
                     if (con(is).lt.bdnl(is)) then
-cdbg                      if ((time.gt.0.).and.(time.lt.30.))then
-cdbg                        if ((i.eq.36).and.(j.eq.29).and.(k.eq.1))then
-cdbg                          write(*,*)'Coord=',i,j,k
-cdbg                          write(*,*)'species=',spname(is)
-cdbg                          write(*,*)'con is less than bdnl.'
-cdbg                          write(*,*)'con',con(is)
-cdbg                          write(*,*)'bdnl=',bdnl(is)
-cdbg                          write(*,*)'con(inum)=',con(inum)
-cdbg                          iflag=1
-cdbg                        endif
-cdbg                      endif
                       con(is)=bdnl(is)
                     endif
                     if (jj.le.naero-1) then
@@ -715,17 +693,9 @@ cdbg                      endif
                  enddo
                  frctn=massum2/massum
                  con(inum)=nmbr*frctn
-cdbg                 if (iflag.eq.1) then
-cdbg                   write(*,*)'con(inum)=',con(inum)
-cdbg                   write(*,*)'massum=',massum
-cdbg                   write(*,*)'massum2=',massum2
-cdbg                   write(*,*)'frctn=',frctn
-cdbg                   iflag = 0
-cdbg                 endif
               enddo
               
               do is=ngas+1,nspec
-cjgj                conc(i,j,k,is) = amax1(con(is),bdnl(is))
                 conc(i,j,k,is) = con(is)
               enddo
             endif
@@ -753,9 +723,6 @@ c     - increase grd_time (& date_aer) by dtaero (or multiple of dtaero)
         goto 92
       endif
   93  continue
-c     added by LA
-c      write(*,*)'end of chemdriv; conc(2,2,1,:) =',conc(2,2,1,:)
-c     end LA
 c
       return
       end

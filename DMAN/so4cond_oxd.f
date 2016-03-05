@@ -110,6 +110,11 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision Mknh3max !Maximum allowable NH3
       double precision taumax   !Maxmum tau for ammonia condensation
       double precision moxd(ibins) !moxid/Nact, NOT USING IT!
+      double precision tot_dm(icomp) !the total amount of new sulfate
+                      !produced in the particular (adams and Seinfeld
+                      !2002 (eq 10)
+      double precision sum_tot_dm
+
 
       character*12 limit        !description of what limits time step
 
@@ -197,11 +202,14 @@ C-----Calculate tau values for all species/bins
 
       enddo
 
+
       !Update atau considering the amount added by aqueous chemistry
       do k=iact,ibins
          do j=1,icomp-1
-            Mko(k,j)=Mkf(k,j)+(moxid(k,j)*(1./Nkf(k)))
-            atau(k,j)=1.5*((Mko(k,j)**tdt)-(Mkf(k,j)**tdt)) 
+          ! JJ bugfix: both the initial and final masses need to be 
+          ! average mass of single particle (Adams & Seinfeld 2002, Eq. 9&10)
+          Mko(k,j)=Mkf(k,j)+moxid(k,j)!*(1./Nkf(k)))
+          atau(k,j)=1.5*((Mko(k,j)**tdt)-(Mkf(k,j)**tdt))/(Nkf(k)**tdt)
          enddo
       enddo
       do k=1,ibins
@@ -231,7 +239,7 @@ C Call condensation subroutine to do mass transfer
           tau(k)=corfactor*tau(k) ! A correction factor is applied.
         enddo
 
-        call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm)
+        call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm,8)
             ! adjust average mass in each size bin within boundaries
 
         !oxidated mass calculation, dummy, not using it, jgj
@@ -258,7 +266,7 @@ C Update time
  100  continue   !skip to here if there is no gas phase to condense
 
       ! Adjust finally before return
-      call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm)
+      call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm,9)
 
       RETURN
       END

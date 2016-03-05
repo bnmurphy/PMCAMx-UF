@@ -46,7 +46,7 @@ c***********************************************************************
 c
       USE io_ezcdf
 
-      include 'netcdf.inc'
+      include 'netcdf.inc'  
       include 'camx.prm'
       include 'camx.com'
       include 'camxfld.com'
@@ -528,17 +528,19 @@ c
          write(*,'(a20,$)') 'readbnd ......'
          call readbnd(bndtim,bnddate)
 
-c     assign_dist will assign number distributions, use in case you do not 
-c     have size resolved boundary conditions (like in the US). Use numconv 
-c     if you want to calculate the number emissions from the mass emissions 
+c     assign_dist will assign number distributions, use in case you do not
+c     have size resolved boundary conditions (like in the US). Use numconv
+c     if you want to calculate the number emissions from the mass emissions
 c     and their size
 
 c         call assign_ndist(conc(1),ncol(1),nrow(1),nlay(1),sconc,nspec)
          call numconv(conc(1),ncol(1),nrow(1),nlay(1),conc(1),nspec)
                            ! by jgj 2/17/06
 
+
          tcpu = dtime(tarray2)
          write(*,'(a,f10.3)') '   CPU = ', tarray2(1)
+
 c
 c======================== Source Apportion Begin =======================
 c
@@ -975,7 +977,7 @@ c
 c------------------  End main time-integration loop  -------------------
 c
       call closefl(iavg)
-      call disp_err(NF_CLOSE(incf), "CAMx_Main", "AVERAGE", "Final Close")
+      call disp_err(NF_CLOSE(incf), "CAMx_Main", "AVERAGE","Final Close")
       call closefl(ncpig)
       call closefl(iJnuc)
       write(iout,'(/,a,i8.5,f8.2,/)') 'time/Date: ',date,time

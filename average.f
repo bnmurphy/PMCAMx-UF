@@ -109,7 +109,7 @@ c
                 !NOTHING to do with the number of species even though
                 !we made it look like it does. (unsigned commenter)
                 if (l.le.2) then
-                  avJnuc(i,j,k,l) = Jnuc(i,j,k,l)*dtfact + avJnuc(i,j,k,l) 
+                  avJnuc(i,j,k,l) = Jnuc(i,j,k,l)*dtfact + avJnuc(i,j,k,l)
                 endif
 c
 c========================= Process Analysis Begin ==============================

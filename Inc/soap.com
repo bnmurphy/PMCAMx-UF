@@ -15,7 +15,7 @@ c-----------------------------------------------------------------------
 c
       integer      NSOAP
 c
-      parameter  ( NSOAP = 4 )
+      parameter  ( NSOAP = 5 )
 c
       integer      pflag       ! bkoo (03/09/03)
       parameter  ( pflag = 0 ) ! 1 if there is pre-existing organic aerosol; 0 if not

@@ -34,11 +34,13 @@ c
       parameter (KSOA2 = 8)!pointer for external Secondary Organic Aerosol #2
       parameter (KSOA3 = 9)!pointer for external Secondary Organic Aerosol #3
       parameter (KSOA4 =10)!pointer for external Secondary Organic Aerosol #4
-      parameter (KPOM  =11)!pointer for external Primary Organic Aerosol
-      parameter (KEC  = 12)!pointer for external Elemental Carbon Aerosol
-      parameter (KCRUS =13)!pointer for external Crustal Aerosol 
+      parameter (KSOA5 =11)!pointer for external Secondary Organic Aerosol #5
+
+      parameter (KPOM  =12)!pointer for external Primary Organic Aerosol
+      parameter (KEC  = 13)!pointer for external Elemental Carbon Aerosol
+      parameter (KCRUS =14)!pointer for external Crustal Aerosol 
 c
-      parameter (KNUM = 14)!pointer for number concentration
+      parameter (KNUM = 15)!pointer for number concentration
 c
 c
 c      parameter(ninti=18)       ! Number of internal inorganic aerosol species
@@ -65,11 +67,11 @@ c     18 = (NH4)3H(SO4)2
 c     19 = OH-                  ! bkoo (02/14/02)
 c
        parameter(ninert=2)            ! Number inert aerosol species (EC & Crustal)
-       parameter(norg=5)              ! Number of organic aerosol species (Both primary and secondary)
+       parameter(norg=6)              ! Number of organic aerosol species (Both primary and secondary)
        parameter(nnum=1)              ! Add number conc. 2/28/06
 cbk       parameter(nsoap=4)             ! Number or secondary organic aerosol species
 cbk       parameter(ngas=4+nsoap)        ! Number of gases of interest, 4 inorganic + nsoap
-       parameter(ngas=4+4) ! bkoo (03/09/03)
+       parameter(ngas=4+4+1) ! bkoo (03/09/03)
        parameter(INH3  =1)            ! Pointer of NH3 in the gas phase
        parameter(IHNO3 =2)            ! Pointer of HNO3 in the gas phase
        parameter(IH2SO4=3)            ! Pointer of H2SO4 in the gas phase
@@ -78,7 +80,8 @@ cbk       parameter(ngas=4+nsoap)        ! Number of gases of interest, 4 inorga
        parameter(ICG2  =6)            ! Pointer of CG2 condensable gas #2 in the gas phase arrary
        parameter(ICG3  =7)            ! Pointer of CG3 condensable gas #3 in the gas phase arrary
        parameter(ICG4  =8)            ! Pointer of CG4 condensable gas #4 in the gas phase arrary
-c
+       parameter(ICG5  =9)            ! Pointer of CG4 condensable gas #5 in the gas phase arrary
+       
 cjgj       parameter(nsp=nexti+norg+ninert)
        parameter(nsp=nexti+norg+ninert+nnum)
        parameter(ntotal=nsec*nsp+ngas)
@@ -114,7 +117,7 @@ c                                        species at the particle surface (Pa)
 c
        dimension qsource(naer)              ! Aerosol module master array for primary aer. emissions of
                                    ! aerosol species in ugr/m3/sec.
-        dimension gsource(ngas)         ! Gas phase source in ug/m3/sec.
+       dimension gsource(ngas)         ! Gas phase source in ug/m3/sec.
 c
        dimension c(nsec, ninti)       ! Concentrations of internal inorganic aerosol species (ugr/m3) 
        dimension emw(nsp)             ! Molecular weights of external inorganics + organics

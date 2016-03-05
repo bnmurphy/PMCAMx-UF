@@ -30,11 +30,10 @@ c
       include 'camx_aero.inc'
       include 'droppar.inc'
       include 'dropcom.inc'
-cdbg      include 'aervaria.inc'
 
       integer ibins, icomp
       integer naqbin
-      parameter (ibins=41, icomp=4)
+      parameter (ibins=41, icomp=9)
       parameter (naqbin=2)
 c
 c-----Argument declarations
@@ -43,15 +42,20 @@ c
       real*8 t0, t1
       real tempK      ! temperature [=] K
       real pressure   ! atm
-cdbg      real dsulfdt    !sulfuric acid production rate
       real*4 moxid0(ibins+naqbin,naers)    
                       !sulfate produced by aqueous chemistry [=]ug/m3
       integer ich, jch, kch ! coordiate, x, y, z
 c
 c-----Variable declarations
 c
-      integer srtso4, srtorg, srtnh3, srth2o !species indicators
-      parameter (srtso4=1, srtorg=2, srtnh3=3, srth2o=4)
+      integer srtso4, srtinrt,  srtnh3, srth2o
+      integer srtsoa1, srtsoa2, srtsoa3, srtsoa4
+      integer srtsoa5  !david
+
+      parameter (srtso4=1, srtinrt=2)
+      parameter (srtsoa1=3, srtsoa2= 4, srtsoa3=5, srtsoa4=6)
+      parameter (srtsoa5=7)  !david
+      parameter (srtnh3=8, srth2o=9)
 
       integer i, j ! counter variables
       integer ii, jj ! counter variables
@@ -68,10 +72,7 @@ c
       double precision eps
       double precision Nkout(ibins)       ! Number concentrations output
       double precision Mkout(ibins,icomp) ! Mass concentrations output
-cnogas      double precision Gc(icomp-1), Gcout(icomp-1) !Gas species
 c
-cnogas      real h2so4      ! sulfuric acid gas [=] ppt
-cnogas      real nh3ppt     ! ammonia gas [=] ppt
       real relh       ! relative humidity
       real tstart     ! starting time and ending time of simulation
       real tend       ! starting time and ending time of simulation
@@ -79,22 +80,19 @@ cnogas      real nh3ppt     ! ammonia gas [=] ppt
       real pres       ! Pa 
 
       real rt_pom(ibins), rt_ec(ibins), rt_crst(ibins), rt_cl(ibins),
-     &    rt_na(ibins)
-     & , rt_no3(ibins) ! Ratios of each inert component                 ! cf
+     &     rt_na(ibins),rt_no3(ibins) ! Ratios of each inert component             ! cf
 
       real add_rt_pom(ibins), add_rt_ec(ibins), add_rt_crst(ibins),
      &    add_rt_cl(ibins), add_rt_na(ibins), add_rt_soa1(ibins),
-     &    add_rt_soa2(ibins), add_rt_soa3(ibins), add_rt_soa4(ibins)
-     &    ,add_rt_no3(ibins) ! Ratios of each inert component added    ! cf
+     &    add_rt_soa2(ibins), add_rt_soa3(ibins), add_rt_soa4(ibins),
+     &    add_rt_soa5(ibins), !david      
+     &    add_rt_no3(ibins) ! Ratios of each inert component added    ! cf
       real tot_inert(ibins) ! total inert mass
       real tot_inert2(ibins) ! total inert mass after calling dman
-cdbg      real eps
+c
       real cvt, cvt2
       real*4 moxid(ibins,icomp-1)
-cnogas      real R ! gas constant
-cnogas      real boxmass ! mass of grid cell (kg)
-cnogas      real gmw(icomp) !gas molecular weight
-cnogas      data gmw/98.,50.,17.,18./
+c
       real deltat
       real dt ! [=] sec
       real add_tot_inert(ibins) ! added tot_inert by an aqueous chemistry
@@ -107,7 +105,6 @@ c
       parameter (boxvol = 3.0d20) ! cm3, arbitrary value
       parameter (cvt = 1.0d-15)   ! a convert factor from ug/m3 to kg/cm3
       parameter (cvt2 = 1.0d+15)  ! a covert factor from kg/cm3 to ug/m3
-cnogas      parameter (R = 8.314) ! gas constant, J/mol-K
 c
 c-----Code--------------------------------------------------------------
 c
@@ -124,40 +121,9 @@ c
       tend = t1/3600.   ![=]hr
 
       ! Converting PMCAMx variables to DMAN variables
-      pres = pressure * 1.01325d5 ! Pa
-      relh = rh ! Change a relative humidity variable for DMAN
+       pres = pressure * 1.01325d5 ! Pa
+       relh = rh ! Change a relative humidity variable for DMAN
 c
-cnogas      if (q(naer+ih2so4).ge.0.0) then 
-cnogas        h2so4 = q(naer+ih2so4) * 1.0d6   ! h2so4 [=] ppt, q [=] ppm 
-cnogas      else
-cnogas        if (q(naer+ih2so4).gt.(-eps*1.0d-6)) then
-cnogas          h2so4 = eps
-cnogas          q(naer+ih2so4) = eps * 1.0d-6
-cnogas        else
-cnogas          write(*,*)'H2SO4 is less than zero'
-cnogas          write(*,*)'q(naer+ih2so4) [ppm]',q(naer+ih2so4)
-cnogas          write(*,*)'Coordinate =', ich, jch, kch
-cnogas          write(*,*)'dsulfdt=',dsulfdt
-cnogas          STOP
-cnogas        endif
-cnogas      endif
-
-cnogas      if (q(naer+inh3).ge.0.d0) then
-cnogas        nh3ppt = q(naer+inh3) * 1.0d6 
-cnogas      else
-cnogas        if (q(naer+inh3).gt.(-eps*1.0d-6)) then
-cnogas          nh3ppt = eps
-cnogas          q(naer+inh3) = eps * 1.0d-6
-cnogas        else
-cnogas          write(*,*)'NH3 is less than zero'
-cnogas          write(*,*)'q(naer+inh3) [ppm]=',q(naer+inh3)
-cnogas          write(*,*)'Coordinate =', ich, jch, kch
-cnogas          write(*,*)'dsulfdt=',dsulfdt
-cnogas          STOP
-cnogas        endif
-cnogas      endif
-
-
       do i=1, ibins !Transfer moxid0
       ! Check negative moxid0
       if (moxid0(i,kpnh4_c).lt.0.0) moxid0(i,kpnh4_c)=0.0            !jjung
@@ -188,18 +154,8 @@ c         add_tot_inert(i) = moxid0(i,kna_c)+                          ! cf
          add_rt_pom(i) = moxid0(i,kpoc_c) * (1.0/add_tot_inert(i))
          add_rt_ec(i) = moxid0(i,kpec_c) * (1.0/add_tot_inert(i))
          add_rt_crst(i) = moxid0(i,kcrst_c) * (1.0/add_tot_inert(i))
-         moxid(i,srtorg) = add_tot_inert(i)*cvt*boxvol
-cdbg         if (moxid(i).ge.0.0) then
-cdbg            moxid(i)=moxid0(i)*cvt*boxvol
-cdbg         else
-cdbg            write(*,*)'Coordinate =', ich, jch, kch
-cdbg            write(*,*)'Negative moxid0 in DMAN before dman'
-cdbg            write(*,*)'sizesection=', i
-cdbg            write(*,*)'moxid0='
-cdbg            do ii=1,ibins
-cdbg               write(*,*)moxid0(ii)
-cdbg            enddo
-cdbg         endif
+ 
+         moxid(i,srtinrt) = add_tot_inert(i)*cvt*boxvol
       enddo
      
       do i=1, ibins
@@ -207,8 +163,8 @@ cdbg         endif
          if (q((i-1)*nsp+knum).lt.0.0) then
             if (q((i-1)*nsp+knum).gt.(-Neps*(1./boxvol)))then
                q((i-1)*nsp+knum) = Neps*(1./boxvol)
-               do j=2, 13 ! from KNa to KEC, all mass species wo H2O 
-                  q((i-1)*nsp+j) = Neps*(1./boxvol)*1.4*xk(i)*(1./12.)
+               do j=2, nsp-1 ! from KNa to KEC, all mass species wo H2O 
+                  q((i-1)*nsp+j) = Neps*(1./boxvol)*1.4*xk(i)*(1./real(nsp-2))
                enddo
             else
                write(*,*)'CAMx2so4cond'
@@ -220,7 +176,7 @@ cdbg         endif
                   write(*,*)q((ii-1)*nsp+knum)
                enddo
                write(*,*)'q(+k...)='
-               do jj=2, 13 ! from KNa to KEC, all mass species wo H2O 
+               do jj=2, nsp-1 ! from KNa to KEC, all mass species wo H2O 
                   write(*,*)'species=',jj
                   do ii=1,ibins
                      write(*,*)q((ii-1)*nsp+jj)
@@ -230,7 +186,7 @@ cdbg         endif
             endif
          endif
          totmass=0.0
-         do j=2, 13 ! from KNa to KEC, all mass species wo H2O 
+         do j=2, nsp-1 ! from KNa to KEC, all mass species wo H2O 
             totmass=totmass+q((i-1)*nsp+j)
             if (q((i-1)*nsp+j).lt.0.0) then
                if (q((i-1)*nsp+j).gt.(-Meps*(1./(cvt*boxvol)))) then
@@ -245,7 +201,7 @@ cdbg         endif
                      write(*,*)q((ii-1)*nsp+knum)
                   enddo
                   write(*,*)'q(+k...)='
-                  do jj=2, 13 ! from KNa to KEC, all mass species wo H2O 
+                  do jj=2, nsp-1 ! from KNa to KEC, all mass species wo H2O 
                      write(*,*)'species=',jj
                      do ii=1,ibins
                         write(*,*)q((ii-1)*nsp+jj)
@@ -257,7 +213,7 @@ cdbg         endif
          enddo
          if (iflag.eq.1) then
             newmass=0.0
-            do jj=2, 13 ! from KNa to KEC, all mass species wo H2O 
+            do jj=2, nsp-1 ! from KNa to KEC, all mass species wo H2O 
                newmass=newmass+q((i-1)*nsp+jj)
             enddo
             q((i-1)*nsp+knum)=q((i-1)*nsp+knum)*newmass/totmass
@@ -286,7 +242,7 @@ c
          ! No SOA
          rt_no3(i) = q((i-1)*nsp+kno3) * (1.0/tot_inert(i))          !  cf
 c
-         Mk(i,srtorg) = tot_inert(i) * cvt * boxvol
+         Mk(i,srtinrt) = tot_inert(i) * cvt * boxvol
          Mk(i,srtnh3)=q((i-1)*nsp+knh4) * cvt * boxvol
          Mk(i,srth2o)=q((i-1)*nsp+kh2o) * cvt * boxvol
       enddo      
@@ -295,12 +251,11 @@ c     Find a starting activation bin
 c
       i = 1
       ifind = 0
-c      do while (ifind.eq.1)
-      do while (ifind.eq.0) ! changed by LA
+cd      do while (ifind.eq.1)
+      do while (ifind.eq.0)  !david
         if (daer(i).gt.dactiv) then
           iact = i
           ifind = 1
-c          ifind = 0  ! changed by LA
         else
           i=i+1
         endif
@@ -320,12 +275,6 @@ c
         enddo
         Nk(i)=Nkout(i)
       enddo
-cnogas      if (icond_test .ne. 1) then !Notice that not equal, "ne"
-cnogas        Gc(srtso4)=Gcout(srtso4)
-cnogas        Gc(srtnh3)=Gcout(srtnh3)
-cnogas        h2so4=Gc(srtso4)*1.0d+12/boxmass*28.9/gmw(srtso4)
-cnogas        nh3ppt=Gc(srtnh3)*1.0d+12/boxmass*28.9/gmw(srtnh3)
-cnogas      endif
 c
 c-----Return DMAN values to the PMCAMx variable, check I can call initbounds
 c
@@ -399,7 +348,7 @@ c
 c     Only POA has the sum of POA, EC, CRST, Cl, and Na. The rest of
 c     species are set to zero.
 c
-        tot_inert2(i) = Mk(i,srtorg) * cvt2 * (1.0/boxvol)
+        tot_inert2(i) = Mk(i,srtinrt) * cvt2 * (1.0/boxvol)
         if (tot_inert(i).le.tot_inert2(i)) then
            dtot_inert(i)=tot_inert2(i)-tot_inert(i) !Increased mass
            q((i-1)*nsp+kpom) = q((i-1)*nsp+kpom) 
@@ -423,11 +372,6 @@ c
            q((i-1)*nsp+kna) = tot_inert2(i) * rt_na(i)
            ! SOA is not added by aqueous chemistry
            q((i-1)*nsp+kno3) = tot_inert2(i) * rt_no3(i)               ! cf
-cdbg           write(*,*)'Inert mass by aqueous chemistry is not increased'
-cdbg           write(*,*)'Inert mass before aqueous',tot_inert(i)
-cdbg           write(*,*)'Inert mass after aqueous',tot_inert2(i)
-cdbg           write(*,*)'Coordinate =', ich, jch, kch
-cdbg           STOP
          endif   
 c
          q((i-1)*nsp+knh4) = Mk(i,srtnh3) * cvt2 * (1.0/boxvol)

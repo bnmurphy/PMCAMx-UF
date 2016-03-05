@@ -6,7 +6,7 @@ C     **************************************************
 C     WRITTEN BY Jeff Pierce, May 2007
 
 C     This subroutine calculates the change in the aerosol size distribution
-C     due to so4 condensation and binary/ternary nucleation duringl the
+C     due to so4 condensation and binary/ternary nucleation during the
 C     overal microphysics timestep.
 
 C     ADD MORE HERE!
@@ -44,7 +44,7 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
       double precision H2SO4rate
 
       real dt
-c      double precision dt
+cjgj      double precision dt
 
 C-----VARIABLE DECLARATIONS---------------------------------------------
 
@@ -129,7 +129,7 @@ c      addt = 3600.d0
       totmass = H2SO4rate*addt*96.d0/98.d0
 
       !Get change size distribution due to nucleation with initial guess
-      call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all, CS1)          
+      call nucleation(Nk1,Mk1,Gc1,Nk2,Mk2,Gc2,nuc_bin,addt,fn_all, CS1) 
 
       mass_change = 0.d0
       do k=1,ibins
@@ -208,7 +208,7 @@ C     Get the steady state H2SO4 concentration
             !Add up the nucleation from each process to temp variable 
             do k=1,2
                fndt(k) = fndt(k) + fn_all(k) * addt
-            end do
+            end do 
             mass_change = 0.d0
             do k=1,ibins
                mass_change = mass_change + (Mk2(k,srtso4)-Mk1(k,srtso4))
@@ -265,13 +265,13 @@ Cjrp                  print*,''
 Cjrp
 Cjrp                  addt = min(addt,time_rem)
 Cjrp               else
-c               addt = min(addt*CSch_tol/CSch,addt*1.5d0) ! allow adaptive timestep to change  commented out by LA
+c               addt = min(addt*CSch_tol/CSch,addt*1.5d0) ! allow adaptive timestep to change
                if(CSch.le.eps) then   ! added by LA
                   addt=addt*1.5d0
                else
                   addt=min(addt*CSch_tol/CSch,addt*1.5d0)
                end if
-                     
+
                addt = min(addt,time_rem) ! allow adaptive timestep to change
                addt = max(addt,min_tstep)
 Cjrp               endif

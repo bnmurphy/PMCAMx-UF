@@ -20,7 +20,7 @@ C     Nkx and Mkx are the number and mass distributions
 
 C-----OUTPUTS-----------------------------------------------------------
 
-      SUBROUTINE mnfix_PSSA(Nkx,Mkx,ichm,jchm,kchm)
+      SUBROUTINE mnfix_PSSA(Nkx,Mkx,ichm,jchm,kchm,pq)
 
       IMPLICIT NONE
 
@@ -34,6 +34,7 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
       integer ichm ! i coordinate in PMCAMx
       integer jchm ! j coordinate in PMCAMx
       integer kchm ! k coordinate in PMCAMx
+      integer pq !flaqs error 
 
 C-----VARIABLE DECLARATIONS---------------------------------------------
 
@@ -51,7 +52,7 @@ C     VARIABLE COMMENTS...
 
 C-----ADJUSTABLE PARAMETERS---------------------------------------------
 
-      parameter(Neps=1.0d-10,Meps=1.0d-32)
+      parameter(Neps=1.0d+10,Meps=1.0d-32)
 
 C-----CODE--------------------------------------------------------------
 
@@ -85,13 +86,27 @@ cdbg      write(*,*)'mnfix - chkpt 1'
                Nkx(k)=Neps
                do j=1,icomp
                   if (j.eq.srtso4)then
-                     Mkx(k,j)=Neps*1.4*xk(k)
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5*0.727273
+                  elseif (j.eq.srtinrt)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.   
+                  elseif (j.eq.srtsoa1)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtsoa2)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtsoa3)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtsoa4)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtsoa5)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.   
+                  elseif (j.eq.srtnh4)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5*(1.0-0.727273)
                   else
-                     Mkx(k,j)=0.d0
+                     Mkx(k,j)=0.d0      
                   endif
                enddo
             else
-               print*,'Negative tracer in mnfix'
+               print*,'Negative tracer in mnfix',pq
                print*,'Coord=',ichm,jchm,kchm
                print*,'Nkx='
                do is=1, ibins
@@ -114,11 +129,25 @@ cdbg      write(*,*)'mnfix - chkpt 1'
          if (tot_mass.lt.Meps) then
             Nkx(k)=Neps
             do jj=1,icomp
-               if (jj.eq.srtso4)then
-                  Mkx(k,jj)=Neps*1.4*xk(k)
-               else
-                  Mkx(k,jj)=0.d0
-               endif
+                  if (jj.eq.srtso4)then
+                     Mkx(k,jj)=Neps*1.4*xk(k)*0.5*0.727273
+                  elseif (jj.eq.srtinrt)then
+                     Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.   
+                  elseif (jj.eq.srtsoa1)then
+                     Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (jj.eq.srtsoa2)then
+                     Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (jj.eq.srtsoa3)then
+                     Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (jj.eq.srtsoa4)then
+                     Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (jj.eq.srtsoa5)then
+                     Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.   
+                  elseif (jj.eq.srtnh4)then
+                     Mkx(k,jj)=Neps*1.4*xk(k)*0.5*(1.0-0.727273)
+                  else
+                      Mkx(k,jj)=0.d0      
+                  endif
             enddo
          endif            
 cdbg         write(*,*)'mnfix - chkpt 2'
@@ -127,14 +156,28 @@ cdbg         write(*,*)'mnfix - chkpt 2'
                if (Mkx(k,j).gt.-1.0d0)then
                   Nkx(k)=Neps
                   do jj=1,icomp
-                     if (jj.eq.srtso4)then
-                        Mkx(k,jj)=Neps*1.4*xk(k)
-                     else
-                        Mkx(k,jj)=0.d0
-                     endif
+                   if (jj.eq.srtso4)then
+                      Mkx(k,jj)=Neps*1.4*xk(k)*0.5*0.727273
+                   elseif (jj.eq.srtinrt)then
+                      Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.   
+                   elseif (jj.eq.srtsoa1)then
+                      Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.
+                   elseif (jj.eq.srtsoa2)then
+                      Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.
+                   elseif (jj.eq.srtsoa3)then
+                      Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.
+                   elseif (jj.eq.srtsoa4)then
+                      Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.
+                   elseif (jj.eq.srtsoa5)then
+                      Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.   
+                   elseif (jj.eq.srtnh4)then
+                      Mkx(k,jj)=Neps*1.4*xk(k)*0.5*(1.0-0.727273)
+                   else
+                      Mkx(k,jj)=0.d0      
+                   endif
                   enddo
                else
-                  write(*,*)'Negative tracer in mnfix'
+                  write(*,*)'Negative tracer in mnfix',pq
                   write(*,*)'Coord=',ichm,jchm,kchm
                   write(*,*)'Nkx='
                   do is=1, ibins
@@ -160,11 +203,25 @@ c
                   if (abs((Mkx(k,j)/Mktot)).lt.1.0d-2) then
                      Nkx(k)=Neps
                      do jj=1,icomp
-                        if (jj.eq.srtso4)then
-                           Mkx(k,jj)=Neps*1.4*xk(k)
-                        else
-                           Mkx(k,jj)=0.d0
-                        endif
+                     if (jj.eq.srtso4)then
+                      Mkx(k,jj)=Neps*1.4*xk(k)*0.5*0.727273
+                     elseif (jj.eq.srtinrt)then
+                      Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.   
+                     elseif (jj.eq.srtsoa1)then
+                      Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.
+                     elseif (jj.eq.srtsoa2)then
+                      Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.
+                     elseif (jj.eq.srtsoa3)then
+                      Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.
+                     elseif (jj.eq.srtsoa4)then
+                      Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6.
+                     elseif (jj.eq.srtsoa5)then
+                      Mkx(k,jj)=Neps*1.4*xk(k)*0.5/6. 
+                     elseif (jj.eq.srtnh4)then
+                      Mkx(k,jj)=Neps*1.4*xk(k)*0.5*(1.0-0.727273)
+                     else
+                      Mkx(k,jj)=0.d0        
+                     endif
                      enddo
                   else
                      write(*,*)'bin=',k,'species=',j
@@ -196,10 +253,25 @@ c            print*,k,'AVG',tot_mass/Nkx(k),'lo',xk(k),'hi',xk(k+1)
                do j=1,icomp
                   tmpvar=Mkx(k,j)
                   if (j.eq.srtso4)then
-                     Mkx(k,j) = Neps*1.4*xk(k)
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5*0.727273
+                  elseif (j.eq.srtinrt)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.   
+                  elseif (j.eq.srtsoa1)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtsoa2)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtsoa3)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtsoa4)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtsoa5)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.   
+                  elseif (j.eq.srtnh4)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5*(1.0-0.727273)
                   else
-                     Mkx(k,j)=0.d0
+                     Mkx(k,j)=0.d0      
                   endif
+
                   Mkx(1,j)=Mkx(1,j)+tmpvar
                enddo
             elseif (xk_hi2.lt.tot_mass/Nkx(k)) then
@@ -210,11 +282,27 @@ c            print*,k,'AVG',tot_mass/Nkx(k),'lo',xk(k),'hi',xk(k+1)
      &                    xk(ibins))
                do j=1,icomp
                   tmpvar=Mkx(k,j)
+
                   if (j.eq.srtso4)then
-                     Mkx(k,j) = Neps*1.4*xk(k)
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5*0.727273
+                  elseif (j.eq.srtinrt)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.   
+                  elseif (j.eq.srtsoa1)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtsoa2)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtsoa3)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtsoa4)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtsoa5)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6. 
+                  elseif (j.eq.srtnh4)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5*(1.0-0.727273)
                   else
-                     Mkx(k,j)=0.d0
+                     Mkx(k,j)=0.d0      
                   endif
+
                   Mkx(ibins,j)=Mkx(ibins,j)+tmpvar
                enddo               
             else ! mass of particle is somewhere within the bins
@@ -225,7 +313,7 @@ c            print*,k,'AVG',tot_mass/Nkx(k),'lo',xk(k),'hi',xk(k+1)
                   xk_hi = sqrt(xk(L+1)*xk(L))
                enddo
                xk_lo = sqrt(xk(L)*xk(L-1))
-                                ! figure out how much of the number to distribute to the lower bin
+                         ! figure out how much of the number to distribute to the lower bin
                frac_lo_n = (tot_mass - Nkx(k)*xk_hi)/
      &              (Nkx(k)*(xk_lo-xk_hi))
                frac_lo_m = frac_lo_n*Nkx(k)*xk_lo/tot_mass
@@ -237,11 +325,27 @@ c               print*,'frac_lo_m',frac_lo_m
                Nkx(L) = Nkx(L) + (1-frac_lo_n)*tmpvar
                do j=1,icomp
                   tmpvar = Mkx(k,j)
+
                   if (j.eq.srtso4)then
-                     Mkx(k,j) = Neps*1.4*xk(k)
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5*0.727273
+                  elseif (j.eq.srtinrt)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.   
+                  elseif (j.eq.srtsoa1)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtsoa2)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtsoa3)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtsoa4)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtsoa5)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5/6.
+                  elseif (j.eq.srtnh4)then
+                     Mkx(k,j)=Neps*1.4*xk(k)*0.5*(1.0-0.727273)
                   else
-                     Mkx(k,j) = 0.d0
+                     Mkx(k,j)=0.d0      
                   endif
+
                   Mkx(L-1,j) = Mkx(L-1,j) + frac_lo_m*tmpvar
                   Mkx(L,j) = Mkx(L,j) + (1-frac_lo_m)*tmpvar
                enddo

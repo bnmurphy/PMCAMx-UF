@@ -95,7 +95,7 @@ c     transfer concentrations to equilibrium array
          qe(nge+isp)=q(ng+isp) ! bkoo (01/27/01)
        enddo
 c     call equilibrium partitioning code
-       call eqpart(tstart,qe)
+       call eqpart(tstart,qe,neqsec)
 c
 c     transfer concentrations to dynamics array
        do isec=neqsec+1,nsec

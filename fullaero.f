@@ -40,8 +40,7 @@ c
       include 'droppar.inc'
       include 'camx_aero.inc'
       include 'dbg.inc'
-cbk      include 'other.inc'    ! tmg (11/25/02)
-ckf
+c
       include 'camx.prm'
       include 'camx.com'
       include 'grid.com'
@@ -49,7 +48,6 @@ ckf
       include 'filunit.com'
       include "ptemiss.com"
       include "bndary.com"
-ckf
 c
       real*4 con(mxspec_c+1)
       real*4 cncrad(mxrad_c)
@@ -59,9 +57,10 @@ c
       real*4 prs,qwatr,rhumid
       real*4 gas(ngas_aq), aerosol(nsect,naers)   
       real*4 arsl(nsect,naers)   
-      real*8 t0,t1
-      real*8 q(ntotal)
-      real*8 qins(ntotal)                                         !     cf
+c
+      double precision t0,t1
+      double precision q(ntotal)
+      double precision qins(ntotal)
       real dsulfdt ! sulfuric acid production rate
       real*4 moxid0(nsect,naers) !mass produced by aqueous chemistry [=] ug/m3
       logical prevsp
@@ -81,13 +80,13 @@ c
       integer     r_idx(4)
       integer ich,jch,kch
       double precision fndt(2)
+
 c
-ckf
       real*4 hgt, klay
       real*4 n2o5nit, nitbef, nitaf, nitbal     
       integer chtype
+      real*8 sum_num_test
       common/hgt/klay,hgt
-CKF
 c
 c     Background values for RADM (see aerochem.f)
 c
@@ -109,11 +108,11 @@ c-----Entry point
 c
 c     pass some variables to aerosol module common blocks
 c
-cbk        countcell=countcell+1    ! tmg (12/05/02)
+      
       naero_c=nspec_c-ngas_c
       if (naero_c .eq. 0 ) then
-	 write(*,*) 'No Aerosol Species !!'
-	 return
+          write(*,*) 'No Aerosol Species !!'
+          return
       endif
 c
       modeaero = 0
@@ -150,14 +149,14 @@ c
 c
       if (lfrst) then
         do i=1,nsecp1
-  	  dsec(i)=dsec_c(i)
-	  dsecf(i)=dsecf_c(i)
+          dsec(i)=dsec_c(i)
+          dsecf(i)=dsecf_c(i)
         enddo
+
 c       Need to initialize fdist for first time n2o5 is converted to nitrate
 c       in aqueous module.  The fdist distribution is calculated the first
 c       time the aqueous phase module is called.  An alternative would be 
 c       to move this conversion inside aqueous module.  tmg (04/12/04)
-cjgj        data fdist /0.0, 0.0, 0.0, 0.0, 0.0, 0.41, 0.38, 0.17, 0.04, 0.0/
 c                   1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17
 c              18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33    34
 c              35    36    37    38    39    40    41    42   43
@@ -171,6 +170,8 @@ c
           moxid0(knsec,naers) = 0.0
         enddo
       enddo
+
+
       if ( lwc_c.ge.aqcwmin .and. tempk.ge.aqtamin .and. laq ) then
        if ( chaq.eq.'RADM' ) then
         pres_pa = 100. * press
@@ -237,20 +238,18 @@ c     calculate the differences
         dnit  = amax1(r_aer(3)*1.e6*convfac*62.,0.0) - r_sum(3)
 cbk RADM doesn't change NaCl concentrations/CAMx doesn't have KCl
 cbk so set dchlo to zero
-cbk currently "no NaCl" case not allowed in the full-science aerosol module 
-cbk        if (kna_c.eq.nspec+1) then
-cbk          dchlo = amax1(r_aer(6)*1.e6*convfac*35.,0.0) - r_sum(5) ! ???
-cbk        else
-cbk          dchlo = 0.0
-cbk        endif
+
         dchlo = 0.0
+
 c        write(*,*)'RADM-change: ',dsulf,dnit,dammo
+
 c     calculate fdist
         do ksec = 1, nsect+1
           cut(ksec) = SNGL(dsecf(ksec))
         enddo
-cjgj        call aqdist(nsect,cut,fdist,fdist2)
-        call aqdist(fdist,fdist2)
+
+       call aqdist(fdist,fdist2)
+
 c     add the differences to the corresponding section
         do ksec = 1, nsect
           con(kpso4_c+(ksec-1))=con(kpso4_c+(ksec-1))+dsulf*fdist(ksec)
@@ -283,10 +282,6 @@ c     adjust mass to avoid negative concentration sections
 
 c     END of RADM
        else
-        !For debugging
-cdbg        write(*,*)'Aqueous chemistry called'
-cdbg        write(*,*)'In fullaero, before calling CAMx2dman'            
-cdbg        write(*,*)'Coord.=',ich,jch,kch
 
         do k=1,ngas_aq
           gas(k)=0.0
@@ -312,7 +307,7 @@ cdbg        write(*,*)'Coord.=',ich,jch,kch
         endif
 c
 c     map con to gas and aerosol gas in ppm; aerosol in ugr/m3
-c
+c   
         gas(nga)       = con(knh3_c)         ! NH3(g) in ppm
         gas(ngn)       = con(khno3_c)        ! HNO3(g) in ppm 
         gas(ngc)       = con(khcl_c)         ! HCl (g) in ppm
@@ -347,25 +342,23 @@ c
           aerosol(knsec,nahmsa) = 0.0
         enddo
 c
-ckf
 c        Nitrogen mass balance (convert n2o5 to nitrate)
 c
-ckf
          n2o5nit = cncrad(3)*prs*101325*62./8.314/tempk
-	 cncrad(3) = 0.0
-ckf        
- 	 do knsec=1,nsect
-	   aerosol(knsec,nan)    = aerosol(knsec,nan)+fdist(knsec)*n2o5nit
-	 enddo
-ckf
+         cncrad(3) = 0.0
+c        
+       do knsec=1,nsect
+        aerosol(knsec,nan)    = aerosol(knsec,nan)+fdist(knsec)*n2o5nit
+       enddo
+c
          nitbef = 0.0
-	 do i =1, nsect
-	 nitbef = nitbef+aerosol(i,nan)*14./62.
-	 enddo
-	 nitbef = nitbef+(14*prs/(8.314e-5*tempk))*(gas(ngn)+gas(nghno2)
-     & +gas(ngno3)+gas(ngno)+gas(ngno2)+gas(ngpan))    
-	 nitbef = nitbef+(2*(cncrad(3)*prs*101325*108.011/8.314/tempk)
-     & *14./108.01) 
+       do i =1, nsect
+          nitbef = nitbef+aerosol(i,nan)*14./62.
+       enddo
+        nitbef = nitbef+(14*prs/(8.314e-5*tempk))*(gas(ngn)+gas(nghno2)
+     &    +gas(ngno3)+gas(ngno)+gas(ngno2)+gas(ngpan))    
+        nitbef = nitbef+(2*(cncrad(3)*prs*101325*108.011/8.314/tempk)
+     &    *14./108.01) 
 c
 
         do knsec=1,nsect
@@ -380,64 +373,43 @@ c
           arsl(knsec,nar) = aerosol(knsec,nar) ! crustal
         enddo
 c
-        qins(naer+ih2so4) = con(kh2so4_c)                                 ! cf
-        qins(naer+inh3)   = gas(nga)                                      !
-        qins(naer+ihno3)  = gas(ngn)                                      !
-        qins(naer+ihcl)   = 0.d0                                          !
-c                                                                         !
-        do knsec=1,nsec                                                   !
-c          qins((knsec-1)*nsp+kcl+1)=con(ksoa1_c+(knsec-1))               !
-c          qins((knsec-1)*nsp+kcl+2)=con(ksoa2_c+(knsec-1))               !
-c          qins((knsec-1)*nsp+kcl+3)=con(ksoa3_c+(knsec-1))               !
-c          qins((knsec-1)*nsp+kcl+4)=con(ksoa4_c+(knsec-1))               !
-          qins((knsec-1)*nsp+kso4)=aerosol(knsec,na4) / 96.  * 98.        !
-          qins((knsec-1)*nsp+kcl)=0.d0                                    !
-          qins((knsec-1)*nsp+kno3)=aerosol(knsec,nan) / 62.  * 63.        !
-          qins((knsec-1)*nsp+kna)=0.d0                                    !
-          qins((knsec-1)*nsp+knh4)=aerosol(knsec,naa) / 18.  * 17.        !
-          qins((knsec-1)*nsp+kh2o)=aerosol(knsec,naw)                     !
-c          qins((knsec-1)*nsp+kec)=aerosol(knsec,nae)                      !
-c          qins((knsec-1)*nsp+kpom)=aerosol(knsec,nao)                     !
-c          qins((knsec-1)*nsp+kcrus)=aerosol(knsec,nar)                    !
-c          qins((knsec-1)*nsp+knum)=con(knum_c+(knsec-1))                 !
-                     ! Number concentration jgj 2/28/06                   !
-        enddo                                                             !
-c                                                                         !
-c----------------------call isorropia here------------------------------  !
-c                                                                         !
-        call eqpart(t1,qins)                                              !
-c-----------------------------------------------------------------------  !
-                                                                          !
-        do knsec=1,nsect                                                  !
-c          aerosol(knsec,naw) =  qins((knsec-1)*nsp+kh2o) ! water          !
-          aerosol(knsec,naa) =  qins((knsec-1)*nsp+knh4) ! ammonium       !
-          aerosol(knsec,nan) =  qins((knsec-1)*nsp+kno3) ! nitrate        !
-        enddo
-      gas(nga)   = max(qins(ng+inh3), 0.0)         ! NH3(g) in ppm                  !
-      gas(ngn)   = max(qins(ng+ihno3), 0.0)        ! HNO3(g) in ppm                 ! cf
+        qins(naer+ih2so4) = con(kh2so4_c)                            ! cf
+        qins(naer+inh3)   = gas(nga)                                 !
+        qins(naer+ihno3)  = gas(ngn)                                 !
+        qins(naer+ihcl)   = 0.d0                                     !
+c                                                                    !
+        do knsec=1,nsec                                              !
+          qins((knsec-1)*nsp+kso4)=aerosol(knsec,na4) / 96.  * 98.   !
+          qins((knsec-1)*nsp+kcl)=0.d0                               !
+          qins((knsec-1)*nsp+kno3)=aerosol(knsec,nan) / 62.  * 63.   !
+          qins((knsec-1)*nsp+kna)=0.d0                               !
+          qins((knsec-1)*nsp+knh4)=aerosol(knsec,naa) / 18.  * 17.   !
+          qins((knsec-1)*nsp+kh2o)=aerosol(knsec,naw)                !
+        enddo                                                        !
+c                                                                    !
+c----------------------call isorropia here---------------------------!
+c
+c        call eqpart(t1,qins)      comment out                       !
+c--------------------------------------------------------------------!
+                                                                     !
+        do knsec=1,nsect                                             !
+          aerosol(knsec,naa) =  qins((knsec-1)*nsp+knh4) ! ammonium  !
+          aerosol(knsec,nan) =  qins((knsec-1)*nsp+kno3) ! nitrate   !
+        enddo                                                        !
+                                                                     !
+      gas(nga)   = max(qins(ng+inh3), 0.0)         ! NH3(g) in ppm   !
+      gas(ngn)   = max(qins(ng+ihno3), 0.0)        ! HNO3(g) in ppm  ! cf
 c
          call aqchem(gas,aerosol,rhumid,prs,tempk,lwc_c,t0_min,t1_min,
      &            dt_min,ierr,kchm,height,chtype)
-CKF     &            dt_min,ierr,kchm,height)
-ckf     &   
-ckf
+c
          nitaf = 0.0
-	 do i =1, nsect
-	 nitaf = nitaf+aerosol(i,nan)*14./62.
-	 enddo
-	 nitaf = nitaf+(14*prs/(8.314e-5*tempk))*(gas(ngn)+gas(nghno2)
-     & +gas(ngno3)+gas(ngno)+gas(ngno2)+gas(ngpan))    
-	 nitbal = nitaf/nitbef
-	 
-c	 write(*,*) nitbal
-	 
-ctmg	 if (nitbal.lt.0.99 .or. nitbal.gt.1.01) then
-ctmg         write(iout,*) 'ERROR IN NITROGEN BALANCE'
-ctmg	 write(6,*) 'ERROR IN NITROGEN BALANCE'
-ctmg         write(iout,*) nitbal, nitbef, nitaf
-ctmg	 write(6,*) n2o5nit, nitbal, nitbef, nitaf
-ctmg	 endif
-ckf
+        do i =1, nsect
+          nitaf = nitaf+aerosol(i,nan)*14./62.
+        enddo
+       nitaf = nitaf+(14*prs/(8.314e-5*tempk))*(gas(ngn)+gas(nghno2)
+     &                 +gas(ngno3)+gas(ngno)+gas(ngno2)+gas(ngpan))    
+       nitbal = nitaf/nitbef
 c
 c     CAMx doesn't carry HMSA or HSO5 so we put their mass into sulfate (NA4)
 c
@@ -461,25 +433,8 @@ c
         con(kno2_c)    = gas(ngno2) 
         con(kpan_c)    = gas(ngpan) 
 c
-cdbg        if ((ich.eq.51).and.(jch.eq.19).and.(kch.eq.1)) then
-cdbg           write(*,*)'In fullaero, before calling CAMx2dman'            
-cdbg           write(*,*)'Coord.=',ich,jch,kch
-cdbg           write(*,*)'aerosol='
-cdbg           do knsec=1,nsect
-cdbg              write(*,*)aerosol(knsec,na4)
-cdbg           enddo
-cdbg        endif
 
         do knsec=1,nsect
-cjgj          con(kph2o_c+(knsec-1)) = aerosol(knsec,naw)
-cjgj          con(kpnh4_c+(knsec-1)) = aerosol(knsec,naa)
-cjgj          con(kpso4_c+(knsec-1)) = aerosol(knsec,na4)
-cjgj          con(kpno3_c+(knsec-1)) = aerosol(knsec,nan)
-cjgj          con(kna_c+(knsec-1))   = aerosol(knsec,nas)
-cjgj          con(kpcl_c+(knsec-1))  = aerosol(knsec,nac)
-cjgj          con(kpoc_c+(knsec-1))  = aerosol(knsec,nao)
-cjgj          con(kpec_c+(knsec-1))  = aerosol(knsec,nae)
-cjgj          con(kcrst_c+(knsec-1)) = aerosol(knsec,nar)
           moxid0(knsec,kph2o_c) = aerosol(knsec,naw) - arsl(knsec,naw)
           moxid0(knsec,kpnh4_c) = aerosol(knsec,naa) - arsl(knsec,naa)
           moxid0(knsec,kpso4_c) = aerosol(knsec,na4) - arsl(knsec,na4)
@@ -494,6 +449,7 @@ cjgj          con(kcrst_c+(knsec-1)) = aerosol(knsec,nar)
        endif
        modeaero = 1
       endif
+
 c     RADM or VSRM -> call AER even if the aqueous module is called
 c     OVSR         -> call SOAP alone if the aqueous module is called
 c
@@ -516,21 +472,18 @@ c
 c     map con to q [ugr/m3]  gas in ppm
 c     For number conc., q [#/cm3]
 c
-        do knsec=1,nsec
+         do knsec=1,nsec
           q((knsec-1)*nsp+kcl+1)=con(ksoa1_c+(knsec-1))
           q((knsec-1)*nsp+kcl+2)=con(ksoa2_c+(knsec-1))
           q((knsec-1)*nsp+kcl+3)=con(ksoa3_c+(knsec-1))
           q((knsec-1)*nsp+kcl+4)=con(ksoa4_c+(knsec-1))
+          q((knsec-1)*nsp+kcl+5)=con(ksoa5_c+(knsec-1))   !EXLVOCS
+
           q((knsec-1)*nsp+kso4)=con(kpso4_c+(knsec-1)) / 96.  * 98.
           q((knsec-1)*nsp+kcl)=con(kpcl_c+(knsec-1))   / 35.5 * 36.5
-c
-          q((knsec-1)*nsp+kno3)=con(kpno3_c+(knsec-1)) / 62.  * 63.     !  cf
-c          q((knsec-1)*nsp+kno3)=arsl(knsec,nan) / 62.  * 63.             !  cf
-c
+          q((knsec-1)*nsp+kno3)=con(kpno3_c+(knsec-1)) / 62.  * 63.   !  cf
           q((knsec-1)*nsp+kna)=con(kna_c+(knsec-1))
-          q((knsec-1)*nsp+knh4)=con(kpnh4_c+(knsec-1)) / 18.  * 17.     !  cf
-c          q((knsec-1)*nsp+knh4)=arsl(knsec,naa) / 18.  * 17.             !  cf
-c
+          q((knsec-1)*nsp+knh4)=con(kpnh4_c+(knsec-1)) / 18.  * 17.   !  cf
           q((knsec-1)*nsp+kh2o)=con(kph2o_c+(knsec-1))
           q((knsec-1)*nsp+kec)=con(kpec_c+(knsec-1))
           q((knsec-1)*nsp+kpom)=con(kpoc_c+(knsec-1))
@@ -538,16 +491,13 @@ c
           q((knsec-1)*nsp+knum)=con(knum_c+(knsec-1))
                      ! Number concentration jgj 2/28/06
         enddo
+
+c--------------------------------------------------------------
+
         if (iaqflag.eq.1) then
           call CAMx2so4cond(q,t0,t1,tempk,pressure,moxid0,ich,jch,kch)
         endif
-cbk   SOAP has been merged with inorganic aerosol module - bkoo (03/09/03)
-cbk        if (lsoap) then
-cbk   	  q(naer+icg1)    =0.d0
-cbk   	  q(naer+icg2)    =0.d0
-cbk   	  q(naer+icg3)    =0.d0
-cbk   	  q(naer+icg4)    =0.d0
-cbk        else
+
 c     use MW instead of 100 and actual pressure and temperature for
 c     conversion to ppm for organic gases (tmg, 04/15/02)
 c     now organic gases are given in ppm - bkoo (08/25/03)
@@ -555,40 +505,21 @@ c     now organic gases are given in ppm - bkoo (08/25/03)
         q(naer+icg2)   = con(kcg2_c)
         q(naer+icg3)   = con(kcg3_c)
         q(naer+icg4)   = con(kcg4_c)
-cbk        endif
+        q(naer+icg5)   = con(kcg5_c)    !EXLVOCS
 c
         q(naer+ih2so4) = con(kh2so4_c)
         q(naer+inh3)   = con(knh3_c)
         q(naer+ihno3)  = con(khno3_c)
         q(naer+ihcl)   = con(khcl_c)
 c
+
+
         if (modeaero.eq.1) then     ! call SOAP only
-cjgj
-c     Currently, soap is turned off.
-c
-c          do i=1,nsec
-c            qt(i)=0.d0
-c            do ki=2,nsp ! use dry basis
-c              qt(i)=qt(i)+q((i-1)*nsp+ki) ! total mass per section(ug/m3)
-c            enddo  
-c            qn(i)=qt(i)/dsec(i)**3 ! calculate 0th moment(number of particles)
-c          enddo ! if density = 1g/cm3 units are particles/cm3
-c          call wdiameter(q) ! wet diameter
-c          ntotalx  = 0 ! not used
-c          nsecx    = 0 ! not used
-c          ntotalx2 = ntotal
-c          nsecx2   = nsec
-c          call eqparto(t1,q) ! equilibrium organic aerosol partitioning
-c          call ddiameter(q) ! dry diameter
-c          call newdist(t1,q) ! size distribution mapping
-c          call step(nsec,q) ! calculate water in each section
-cjgj
+c        Currently, soap is turned off.
         else                        ! call SOAP + AER
-cjgj          call aerchem(chaero,q,t0,t1,lfrst,ierr)
-          pressure=pres
+        pressure=pres
 c
-cjgj
-          call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch,fndt) 
+        call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch,,fndt)
         endif
 c
 c     map q back to con 
@@ -598,6 +529,7 @@ c
           con(ksoa2_c+(knsec-1))=q((knsec-1)*nsp+kcl+2)
           con(ksoa3_c+(knsec-1))=q((knsec-1)*nsp+kcl+3)
           con(ksoa4_c+(knsec-1))=q((knsec-1)*nsp+kcl+4)
+          con(ksoa5_c+(knsec-1))=q((knsec-1)*nsp+kcl+5)  !!EXLVOCS
           con(kpso4_c+(knsec-1))=q((knsec-1)*nsp+kso4) * 96.d0  / 98.d0
           con(kpcl_c +(knsec-1))=q((knsec-1)*nsp+kcl)  * 35.5d0 / 36.5d0
           con(kpno3_c+(knsec-1))=q((knsec-1)*nsp+kno3) * 62.d0  / 63.d0
@@ -611,35 +543,12 @@ c
                      ! Number concentration jgj 2/28/06
         enddo
 c
-cdbg      if ((t0.gt.4500).and.(t0.lt.6300))then !between 1:15 and 1:45
-cdbg      if ((t0.gt.0.0).and.(t0.lt.30.))then !between 0:00 and 0:30
-cdbg        if ((ich.eq.36).and.(jch.eq.29).and.(kch.eq.1))then
-cdbg          write(*,*)'Coord=',ich,jch,kch
-cdbg          knsec = 4
-cdbg          write(*,*)'con(knum_c)=',con(knum_c+(knsec-1))
-cdbg          write(*,*)'con(ksoa1_c)=',con(ksoa1_c+(knsec-1)) !1
-cdbg          write(*,*)'con(ksoa2_c)=',con(ksoa2_c+(knsec-1)) !2
-cdbg          write(*,*)'con(ksoa3_c)=',con(ksoa3_c+(knsec-1)) !3
-cdbg          write(*,*)'con(ksoa4_c)=',con(ksoa4_c+(knsec-1)) !4
-cdbg          write(*,*)'con(kpso4_c)=',con(kpso4_c+(knsec-1)) !5
-cdbg          write(*,*)'con(kpcl_c)=',con(kpcl_c+(knsec-1))   !6
-cdbg          write(*,*)'con(kpno3_c)=',con(kpno3_c+(knsec-1)) !7
-cdbg          write(*,*)'con(kna_c)=',con(kna_c+(knsec-1))     !8
-cdbg          write(*,*)'con(kpnh4_c)=',con(kpnh4_c+(knsec-1)) !9
-cdbg          write(*,*)'con(kph2o_c)=',con(kph2o_c+(knsec-1)) !10
-cdbg          write(*,*)'con(kcrst_c)=',con(kcrst_c+(knsec-1)) !11
-cdbg          write(*,*)'con(kpec_c)=',con(kpec_c+(knsec-1))   !12
-cdbg          write(*,*)'con(kpoc_c)=',con(kpoc_c+(knsec-1))   !13
-cdbg        endif
-cdbg      endif
-c
-cbk   SOAP has been merged with inorganic aerosol module - bkoo (03/09/03)
-cbk      if (.not.lsoap) then
         con(kcg1_c) = q(naer+icg1)
         con(kcg2_c) = q(naer+icg2)
         con(kcg3_c) = q(naer+icg3)
         con(kcg4_c) = q(naer+icg4)
-cbk      endif
+        con(kcg5_c) = q(naer+icg5)   !EXLVOCS
+c
         con(kh2so4_c)=q(naer+ih2so4)
         con(knh3_c)  =q(naer+inh3)
         con(khno3_c) =q(naer+ihno3)
@@ -647,10 +556,7 @@ cbk      endif
 c
       endif
 c
-c      if ( .not. lsoap .or. .not.lcond ) then
-cbk   SOAP has been merged with inorganic aerosol module - bkoo (03/09/03)
-cbk      if ( .not. lsoap ) then
       lfrst = .false.
       return
-cbk      endif
+
       end

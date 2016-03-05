@@ -68,7 +68,15 @@ C---------------------------------------------------------------------
       
       !update mass based on nucleation rate and mfrac
       Mkif(nuc_bin,srtso4) = Mkif(nuc_bin,srtso4)+mfrac(srtso4)*fn*mnuc*boxvol*dt
-      Mkif(nuc_bin,srtna) = Mkif(nuc_bin,srtna)+mfrac(srtna)*fn*mnuc*boxvol*dt
+c      Mkif(nuc_bin,srtna) = Mkif(nuc_bin,srtna)+mfrac(srtna)*fn*mnuc*boxvol*dt
+      Mkif(nuc_bin,srtinrt) = Mkif(nuc_bin,srtinrt)+mfrac(srtinrt)*fn*mnuc*boxvol*dt    
+      
+      Mkif(nuc_bin,srtsoa1) = Mkif(nuc_bin,srtsoa1)+mfrac(srtsoa1)*fn*mnuc*boxvol*dt
+      Mkif(nuc_bin,srtsoa2) = Mkif(nuc_bin,srtsoa2)+mfrac(srtsoa2)*fn*mnuc*boxvol*dt
+      Mkif(nuc_bin,srtsoa3) = Mkif(nuc_bin,srtsoa3)+mfrac(srtsoa3)*fn*mnuc*boxvol*dt
+      Mkif(nuc_bin,srtsoa4) = Mkif(nuc_bin,srtsoa4)+mfrac(srtsoa4)*fn*mnuc*boxvol*dt
+      Mkif(nuc_bin,srtsoa5) = Mkif(nuc_bin,srtsoa5)+mfrac(srtsoa5)*fn*mnuc*boxvol*dt 
+
       Mkif(nuc_bin,srtnh4) = Mkif(nuc_bin,srtnh4)+mfrac(srtnh4)*fn*mnuc*boxvol*dt
       Mkif(nuc_bin,srth2o) = Mkif(nuc_bin,srth2o)+mfrac(srth2o)*fn*mnuc*boxvol*dt
 

@@ -107,12 +107,7 @@ c
       write(*,'(a20,$)') 'emiss ......'
       write(iout,'(a20,$)') 'emiss ......'
       tcpu = dtime(tarray2)
-cdbg      do k=1,14
-cdbg         n3d = 2+97*(2-1)+97*90*(k-1)
-cdbg         n4d = n3d+97*90*14*(230-1)
-cdbg         write(*,*)conc(n4d)
-cdbg      enddo
-cdbg      pause
+
 c
 
       call saveconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,sconc)
@@ -132,13 +127,14 @@ cdbg      call checkconc(conc(iptr4d(igrd)),ncol,nrow,nlay,nspec,spname,12)
      &           armass(1,igrd),ptmass(1,igrd),
      &           conc(iptr4d(igrd)),ipacl_3d(iptr3d(igrd)) )
 c
-c     assign_dist will assign number distributions, use in case you do not 
-c     have size resolved emissions (like in the US). Use numconv if you want
-c     to calculate the number emissions from the mass emissions and their sizes
-c      call assign_ndist(conc(1),ncol(1),nrow(1),nlay(1),sconc,nspec)
-      call numconv(conc(1),ncol(1),nrow(1),nlay(1),sconc,nspec)
 
-                           ! by jgj 2/17/06
+c         assign_dist will assign number distributions, use in case you do not      
+c         have size resolved emissions (like in the US). Use numconv if you want
+c         to calculate the number emissions from the mass emissions and their sizes
+c         call assign_ndist(conc(1),ncol(1),nrow(1),nlay(1),sconc,nspec)
+          call numconv(conc(1),ncol(1),nrow(1),nlay(1),sconc,nspec)
+
+
 c======================== Source Apportion Begin =======================
 c
 c  --- call routine with tracer species arrays, send dummy

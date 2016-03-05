@@ -140,6 +140,7 @@ c
       kcg2_c   = kcg2
       kcg3_c   = kcg3
       kcg4_c   = kcg4
+      kcg5_c   = kcg5     !EXLVOCs gas
       khno3_c  = khno3
       knh3_c   = knh3
       kh2so4_c = ksulf
@@ -148,6 +149,7 @@ c
       ksoa2_c  = ksoa2_1
       ksoa3_c  = ksoa3_1
       ksoa4_c  = ksoa4_1
+      ksoa5_c  = ksoa5_1    !EXLVOCs aerosol 
       kcrst_c  = kcrust_1
       kpoc_c   = kpoc_1
       kpec_c   = kpec_1

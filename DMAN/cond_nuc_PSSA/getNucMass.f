@@ -78,7 +78,8 @@ C     and calculate nucleated mass
 C     Total mass is sum from all the nucleation pathways
       if (h2so4.gt.1.d4) then
 
-	 if ((nh3_molec.gt.1.d6).and.(tern_nuc.eq.1)) then
+
+      if ((nh3_molec.gt.1.d6).and.(tern_nuc.eq.1)) then
 c$$$         if ((nh3ppt.gt.0.1).and.(tern_nuc.eq.1)) then
 c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
             call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc) !ternary nuc

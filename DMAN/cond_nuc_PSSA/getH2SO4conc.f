@@ -152,7 +152,7 @@ c$$$     &           98.d0/96.d0
 
             res = H2SO4rate - CS*gasConc_lo - massnuc1
             if (res.lt.0.d0) then ! any nucleation too high
-               print*,'nucleation cuttoff'
+c               print*,'nucleation cuttoff'
                gasConc = gasConc_lo*0.999999 ! make gasConc too low for nucleation to occur
                return
             endif

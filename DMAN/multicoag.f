@@ -143,7 +143,12 @@ C If any Nk are zero, then set them to a small value to avoid division by zero
             !sulfate and the other half consists organic matter same
             !in initconv.f file.
             Mkf(k,srtso4)=0.5*1.414*xk(k)*Neps*0.727273 !sulfate
-            Mkf(k,srtorg)=0.5*1.414*xk(k)*Neps !organic matter
+            Mkf(k,srtinrt)=0.5*1.414*xk(k)*Neps*0.5
+            Mkf(k,srtsoa1)=0.5*1.414*xk(k)*Neps*0.5/4.0
+            Mkf(k,srtsoa2)=0.5*1.414*xk(k)*Neps*0.5/4.0
+            Mkf(k,srtsoa3)=0.5*1.414*xk(k)*Neps*0.5/4.0
+            Mkf(k,srtsoa4)=0.5*1.414*xk(k)*Neps*0.5/4.0
+
             Mkf(k,srtnh3)=0.5*1.414*xk(k)*Neps*0.272727 !ammonium
             Mkf(k,srth2o)=0.0 ! water
          endif
@@ -162,7 +167,12 @@ cdbg     &           0.1875*Mki(k,srtso4),  !assume bisulfate
 cdbg     &           Mki(k,srth2o))
           density=1400 !kg/m3
 cjgj         mp=(1.2*Mki(k,srtso4)+Mk(k,srth2o))/(Nk(k))  
-	 mp=(Mkf(k,srtso4)+Mkf(k,srtorg)+Mkf(k,srtnh3))/(Nkf(k))
+
+cdavid	 mp=(Mkf(k,srtso4)+Mkf(k,srtorg)+Mkf(k,srtnh3))/(Nkf(k))  !david
+         mp=(Mkf(k,srtso4) + Mkf(k,srtinrt) + Mkf(k,srtsoa1)+
+     &       Mkf(k,srtsoa2)+ Mkf(k,srtsoa3) + Mkf(k,srtsoa4)+
+     &                     + Mkf(k,srtnh3)) /(Nkf(k))
+
          Dpk(k)=((mp/density)*(6./pi))**(0.333)
          Dpk(k)=h2ogrowth*Dpk(k) !taken into account water uptake
          Kn=2.0*mfp/Dpk(k)                            !S&P Table 12.1
@@ -358,7 +368,13 @@ cdbg                  write(*,*) Mkf(k,j), dMdt(k,j)
             !sulfate and the other half consists organic matter same
             !in initconv.f file.
             Mkf(k,srtso4)=0.5*1.414*xk(k)*Neps*0.727273 !sulfate
-            Mkf(k,srtorg)=0.5*1.414*xk(k)*Neps !organic matter
+cdavid      Mkf(k,srtorg)=0.5*1.414*xk(k)*Neps !organic matter  !david
+            Mkf(k,srtinrt)=0.5*1.414*xk(k)*Neps*0.5 !organic matter
+            Mkf(k,srtsoa1)=0.5*1.414*xk(k)*Neps*0.5/4.0 !organic matter
+            Mkf(k,srtsoa2)=0.5*1.414*xk(k)*Neps*0.5/4.0 !organic matter
+            Mkf(k,srtsoa3)=0.5*1.414*xk(k)*Neps*0.5/4.0 !organic matter
+            Mkf(k,srtsoa4)=0.5*1.414*xk(k)*Neps*0.5/4.0 !organic matter
+              
             Mkf(k,srtnh3)=0.5*1.414*xk(k)*Neps*0.272727 !ammonium
             Mkf(k,srth2o)=0.0 ! water
             !make sure mass/number don't go negative

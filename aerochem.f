@@ -60,8 +60,8 @@ c
 c
 c-----Arrays for SOAP
 c
-      real soa(4),cg(4)
-      real csatT(4),cpre,mwpre,mwpre0 ! bkoo (08/29/03)
+      real soa(5),cg(5)    ! 4 soa + 1 exlvoc
+      real csatT(5),cpre,mwpre,mwpre0 ! bkoo (08/29/03)
 c
 c-----Arrays for RADM aqueous chemistry
 c
@@ -120,7 +120,8 @@ c
       soa(1) = con(ksoa1)
       soa(2) = con(ksoa2)
       soa(3) = con(ksoa3)
-      soa(4) = con(ksoa4)
+      soa(4) = con(ksoa4)   
+      soa(5) = con(ksoa5)  ! ELXVOCs
       cpre   = con(kpoa)
       mwpre  = mwpre0
 
@@ -135,6 +136,7 @@ cjgj     &          ichm,jchm,kchm,.true.,cpre,mwpre,csatT) ! bkoo (08/29/03)
       con(ksoa2) = amax1(soa(2),bdnl(ksoa2))
       con(ksoa3) = amax1(soa(3),bdnl(ksoa3))
       con(ksoa4) = amax1(soa(4),bdnl(ksoa4))
+      con(ksoa5) = amax1(soa(5),bdnl(ksoa5))  !! ELXVOCs
 c
 c-----Do RADM aqueous chemistry if CWC is above threshold
 c     all conc units must be mol/mol (mixing ratio)

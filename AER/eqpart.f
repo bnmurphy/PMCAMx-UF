@@ -53,7 +53,8 @@ C          THE FOLLOWING TWO DIMENSIONAL ARRAYS ARE NECESARY FOR THE
 C          LINKING OF THE WEIGHTING FACTORS FOR NH4, NO3 AND CL.
 C     FRQ(NSEC,nsp)   FRACTION OF DQ TRANSFERED TO EACH AEROSOL SECTION
 C
-      SUBROUTINE EQPART(t,q)
+cdavid      SUBROUTINE EQPART(t,q)
+      SUBROUTINE EQPART(t,q,nsec_dav)
 
       include 'dynamic.inc'
       INCLUDE 'equaer.inc'                  ! ISORROPIA declarations
@@ -63,6 +64,7 @@ cbk      real*8 qsav(ntotal), DQsav(nsp), accom(nsp)
       REAL*8 DQ(nexti),FRQ(nsec,nexti),WI(5),q0(3),q(ntotal) ! bkoo (03/09/03)
       real*8 qsav(nexti*nsec), DQsav(nexti), accom(nexti)    ! bkoo (03/09/03)
       real*8 qq, frq0(nsec,nexti) ! bkoo (10/07/03)
+      integer nsec_dav,ki !new variables david
       logical done
 
 c__cf      if(aerm.eq.'EQUI') then                                     ! cf
@@ -105,9 +107,22 @@ C     Ambient temperature expressed in Kelvins.
 C
 C *** CONVERT INPUT CONCENTRATIONS TO moles/m3 **************************
 C
+cdav------------------------------------------------------------------
+      nsecx2 = nsec                         ! PMCAMx-UF does not define nsecx2 elsewhere/ JJ 13/07/15
+      ! PMCAMx-UF does not calculate qn elsewhere/ JJ 13/07/15
+      do i=1,nsec
+        qt(i)=0.d0
+        do ki=2,nsp-1 ! use dry basis first, tmg (01/23/02)
+          qt(i)=qt(i)+q((i-1)*nsp+ki) ! total mass per section(ug/m3)
+        enddo  
+        qn(i)=qt(i)/dsec(i)**3 ! calculate 0th moment(number of particles)
+      enddo
+cdav------------------------------------------------------------------
+
       ng = nsp*nsecx2                       ! gases
       prod=rgas*temp/(1.01325D5*pres)       ! conversion from ppm to umoles/m3
                                             ! pres (bkoo, 06/09/00)
+
       WI(1) = 0.0D0
       WI(2) = Q(ng+ih2SO4) / PROD*1.0d-6
       WI(3) = q(ng+iNH3)   / PROD*1.0d-6

@@ -21,8 +21,8 @@ c  Common /ptrs/ contains pointer to CAMx species requird by PM routines
 c
       common /ptrs/ kso2_c,kh2o2_c,kform_c,khono_c,ko3_c,koh_c,
      &              kho2_c,kno3_c,kno_c,kno2_c,kpan_c,kcg1_c,
-     &              kcg2_c,kcg3_c,kcg4_c,khno3_c,knh3_c,kh2so4_c,
-     &              khcl_c,ksoa1_c,ksoa2_c,ksoa3_c,ksoa4_c,
+     &              kcg2_c,kcg3_c,kcg4_c,kcg5_c,khno3_c,knh3_c,kh2so4_c,
+     &              khcl_c,ksoa1_c,ksoa2_c,ksoa3_c,ksoa4_c,ksoa5_c,
      &              kcrst_c,kpoc_c,kpec_c,kph2o_c,kpcl_c,kna_c,
 cjgj     &              kpnh4_c,kpno3_c,kpso4_c,knxoy_c
      &              kpnh4_c,kpno3_c,kpso4_c,knxoy_c,knum_c

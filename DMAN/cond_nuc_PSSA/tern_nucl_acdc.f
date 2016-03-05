@@ -42,8 +42,8 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision nh3                  ! concentration of gas phase ammonia [molec cm-3]      
 c
       integer ii                 ! counter
-      double precision    ii1, ii2, ii3, ii4, ii5
-      double precision    ic1, ic2, ic3, ic4, ic5
+      double precision    ii1, ii2, ii3, ii4, ii5  !david real ->doudle
+      double precision    ic1, ic2, ic3, ic4, ic5  !david real ->doudle
       integer itemp, irh, ics, icna, inh3
       integer itemp1,irh1, ics1,icna1,inh31
 
@@ -56,10 +56,15 @@ C
       nh3  = nh3_i  !molec cm-3
  
       !Limit All Values to Upper Bound on Lookup Table
-      tmp = max(min(tmp,319.9d0),180.1d0)
-      relh   = max(min(relh,0.999d0),0.001d0)
-      cs   = max(min(cs,0.99d-1),1.01d-5)
+cdavid      tmp = max(min(tmp,319.9),180.1)
+      tmp = max(min(tmp,319.9d0),180.1d0) 
+cdavid      relh   = max(min(relh,0.999),0.001)
+      relh   = max(min(relh,0.999d0),0.001d0)   
+cdavid      cs   = max(min(cs,0.99e-1),1.01e-5)
+      cs   = max(min(cs,0.99d-1),1.01d-5) 
+cdavid      cna  = max(min(cna,3.15e9),1.01e4)
       cna  = max(min(cna,3.16227d9),1.0001d4)
+cdavid       nh3  = max(min(nh3,0.99e11),1.01e6)
       nh3  = max(min(nh3,9.9999999999d10),1.000001d6)
 
       !Locate the lower-bound indices of all the 
@@ -134,6 +139,7 @@ C
       ! The biggest cluster in ACDC simulation (and to which the J corresponds to) 
       ! had a mobility diameter of about 1.2 nm -> set rnuc to 0.6 nm
  
+cdavid      rnuc = 0.6
       rnuc = 0.6d0
       return
 
@@ -171,7 +177,7 @@ c
       integer iH2SO4, iNH3, iCS, iTEMP, iRH
       character*99 fname
       
-      fname='DMAN/cond_nuc_PSSA/ACDC_H2SO4_NH3_RH_2014-12-04.txt'
+      fname='ACDC_H2SO4_NH3_RH_2014-12-04.txt'
       open(unit=98,file=fname)
 
       !First read header and toss it

@@ -119,10 +119,10 @@ c
       integer   NSPNAM
       integer   NRADNM
 c
-      parameter ( MXSPEC  =   636 )
-      parameter ( MXRADCL =    12 )
+      parameter ( MXSPEC  =   713 )
+      parameter ( MXRADCL =    18 )
       parameter ( MXPHT1  =     6 )
-      parameter ( MXPHT2  =    10 )
+      parameter ( MXPHT2  =    24 )
       parameter ( NTEMPR  =   101 )
       parameter ( TEMPLO  = 120.0 )
       parameter ( TEMPHI  = 320.0 )
@@ -130,8 +130,8 @@ c
 c cf      parameter ( PRESLO  = 126.0 )
       parameter ( PRESLO  = 80.0 )      
       parameter ( PRESHI  = 1100. )
-      parameter ( MXRXN   =   100 )
-      parameter ( NSPNAM  =   700 )
+      parameter ( MXRXN   =   216 )
+      parameter ( NSPNAM  =   749 )
       parameter ( NRADNM  =    26 )
 c
 c-----------------------------------------------------------------------

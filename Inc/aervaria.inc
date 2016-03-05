@@ -45,6 +45,13 @@ c
       parameter (pres0 = 1.0133E+5) ! [=] Pa
       parameter (temp0 = 298.15) ! [=] K
       parameter (dpmin = 0.0008)
+
+      double precision  mol_weight
+      double precision  liquid_density
+
+      parameter (mol_weight= 200.0d0 )
+      parameter (liquid_density= 1400.0d0 )
+
 c
 c Environmental setting and speices flags
 c
@@ -59,8 +66,8 @@ c
       parameter (mgso2 = 1)  ! sulfur dioxide
       parameter (mgsvi = 2)  ! sulfuric acid
       parameter (mgnh3 = 3)  ! ammonia
-      parameter (srtorg=2, srtnh3=3)
-cdbg      parameter (srtso4=1, srth2o=4) ! moved to sizecode.COM
+
+      parameter (srtnh3=8)
 c
 c NUMBER OF EQUATIONS FOR THE AEROSOL OPERATOR
 c
@@ -139,10 +146,10 @@ c
       common /xronos/ itcommon
       common /meteorology/ rad
       common /convert/ xko
-      common /pm/ pm
+cdav      common /pm/ pm
       common /nh3flux/ nh3flux
 cPMCAMx      common /sulfuric/ dsulfdt
 cPMCAMx      common /xk/ dp4xk, dpmean4xk
-      common /tomasdiag/ mnfixdiagn, mnfixdiagm, conddiagn, conddiagm,
-     &		      coagdiagn, coagdiagm
+cdda      common /tomasdiag/ mnfixdiagn, mnfixdiagm, conddiagn, conddiagm,
+cdav     &		      coagdiagn, coagdiagm
 cdbg      common /nh3ppt/ nh3ppt
