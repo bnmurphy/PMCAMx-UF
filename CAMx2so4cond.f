@@ -124,6 +124,9 @@ c
        pres = pressure * 1.01325d5 ! Pa
        relh = rh ! Change a relative humidity variable for DMAN
 c
+       moxid=0.0
+       Mk=0.d0
+c
       do i=1, ibins !Transfer moxid0
       ! Check negative moxid0
       if (moxid0(i,kpnh4_c).lt.0.0) moxid0(i,kpnh4_c)=0.0            !jjung

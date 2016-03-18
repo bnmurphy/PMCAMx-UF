@@ -216,7 +216,8 @@ c
       integer   kso2  ,ksoa1 ,ksoa2
       integer   ksoa3 ,ksoa4 ,ksulf
       integer   kterp ,ktol  ,kxn  
-      integer   kxyl     ,ksoa1_1  ,ksoa1_2
+      integer   kxyl  , kcg5
+      integer   ksoa1_1  ,ksoa1_2
       integer   ksoa1_3  ,ksoa1_4  ,ksoa1_5
       integer   ksoa1_6  ,ksoa1_7  ,ksoa1_8
       integer   ksoa1_9  ,ksoa1_10 ,ksoa2_1
@@ -229,7 +230,11 @@ c
       integer   ksoa3_10 ,ksoa4_1  ,ksoa4_2
       integer   ksoa4_3  ,ksoa4_4  ,ksoa4_5
       integer   ksoa4_6  ,ksoa4_7  ,ksoa4_8
-      integer   ksoa4_9  ,ksoa4_10 ,kpoc_1
+      integer   ksoa4_9  ,ksoa4_10 
+      integer   ksoa5_1  ,ksoa5_2  ,ksoa5_3
+      integer   ksoa5_4  ,ksoa5_5  ,ksoa5_6
+      integer   ksoa5_7  ,ksoa5_8  ,ksoa5_9
+      integer   ksoa5_10 ,kpoc_1
       integer   kpoc_2   ,kpoc_3   ,kpoc_4
       integer   kpoc_5   ,kpoc_6   ,kpoc_7
       integer   kpoc_8   ,kpoc_9   ,kpoc_10

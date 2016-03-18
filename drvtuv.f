@@ -83,7 +83,7 @@ c
       integer NELT
       parameter (NELT = 51)
       integer naero_tmp
-      parameter (naero_tmp = 14)
+      parameter (naero_tmp = 15)
       integer i, j, k, l
       integer iz, izz, nz, nn
       integer rh1d(MXLAYA), lspc
@@ -171,13 +171,13 @@ c
 c
 c-----Input data for Aerosol Properties
 c
-c               soa1 soa2 soa3  soa4 poc  pec   crst 
+c               soa1 soa2 soa3  soa4 soa5 poc  pec   crst 
 c                       pcl  na   pnh4 pno3 pso4 ph2o num
-      data bext /7.0, 7.0, 7.0, 7.0, 7.0, 18.0, 0.4, 
+      data bext /7.0, 7.0, 7.0, 7.0, 7.0, 7.0, 18.0, 0.4, 
      &                  1.5, 1.5, 7.0, 7.0, 7.0, 0.0, 0/
-      data rhadj /0,   0,   0,   0,  0,   0,    0,   
+      data rhadj /0,   0,   0,   0,   0,   0,   0,    0,   
      &                  1,   1,   1,   1,   1,   0,   0  /
-      data ssa  /0.8, 0.8, 0.8, 0.8, 0.8, 0.25, 0.7, 
+      data ssa  /0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.25, 0.7, 
      &                0.99,0.99,0.99,0.99,0.99,0.99,  0/
 
       do ibext=1,naero

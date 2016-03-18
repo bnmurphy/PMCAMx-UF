@@ -192,7 +192,6 @@ c     The order(kk) saves the order of species as the same way
 c     as increasing the order of size bins.
 c
       nsect = 43
-      naero = 15    !david
 c
       do kk=1,ngas
          order(kk) = kk

@@ -519,7 +519,7 @@ c        Currently, soap is turned off.
         else                        ! call SOAP + AER
         pressure=pres
 c
-        call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch,,fndt)
+        call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch,fndt)
         endif
 c
 c     map q back to con 

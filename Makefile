@@ -47,7 +47,7 @@ DMAN  = ./DMAN
 
 PSSA  = ./DMAN/cond_nuc_PSSA
 
-MOD   = ./
+MOD   = ./mod
 
 TARGT = CAMx
 
@@ -58,7 +58,7 @@ ifeq ($(COMPILER),ifort)
   LIB_CDF = -L$(NCDF_LIB) -lnetcdf -lnetcdff
 
   FC   := ifort
-  FLGS := -I$(INC) -I$(NCDF_INC) 
+  FLGS := -I$(INC) -module mod/ -I$(NCDF_INC) 
   FLGS := $(FLGS) -O2
   FLGS := $(FLGS) -fpe3 -reentrancy threaded -traceback -align dcommons -extend_source -convert big_endian -mcmodel=large -shared-intel
 

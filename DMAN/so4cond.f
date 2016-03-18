@@ -188,6 +188,10 @@ cdbg      endif
 
       !If PSSA is on, turn on Gcflag(srtso4) for ezcond does H2SO4 condensatoin.
       Gcflag(srtso4)=1 !PSSA
+      !organics are not condensing in this routine, inert species not at all
+      do j=srtinrt,srtsoa5
+         Gcflag(j)=1
+      enddo
 
 C Repeat from this point if multiple internal time steps are needed
  10   continue
@@ -476,7 +480,8 @@ cdbg             gasfrac=0.998 ! not allow less than 0.2% of reduction exponenti
              gasfrac=0.50 ! not allow less than 10% of reduction exponentially
            else
 cdbg             gasfrac=0.999 ! not allow less than 0.1% of reduction theoretically
-             gasfrac=0.55 ! not allow less than 5% of reduction theoretically
+cJJ             gasfrac=0.55 ! not allow less than 5% of reduction theoretically
+              gasfrac=0.75
            endif
         endif
 cdbg        if (j .eq. srtso4) then ! Deal only sulfuric acid by jgj
