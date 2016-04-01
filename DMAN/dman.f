@@ -43,8 +43,10 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
       integer jchm ! j coordinate in PMCAMx
       integer kchm ! k coordinate in PMCAMx
 cd    david new variable
-      integer icond_soa 
-      double precision fndt(njnuc) !nucleation diagnostic 
+      integer icond_soa  
+
+      double precision fndt(njnuc) !nucleation diagnostic
+
 C-----VARIABLE DECLARATIONS---------------------------------------------
 
 C     Definition of Variables
@@ -92,7 +94,6 @@ C     tend : simulation end time from midnight (hr)
 
       double precision sum_soa1_dman,sum_soa2_dman,sum_soa3_dman
       double precision sum_soa4_dman,sum_soa5_dman !EXLVOCS
-      double precision fn ! nucleation rate [# cm-3 s-1] 
 C-----EXTERNAL FUNCTIONS------------------------------------------------
 
 C-----ADJUSTABLE PARAMETERS---------------------------------------------
@@ -177,12 +178,15 @@ C-----Print output files
 
 C-----Micro physical processes 6/9/04
 
+ 
+      !moved these two lines here from inside the icond if statement
+      !otherwise icond=0 means that there is junk values in Gc
+      Gc(srtso4)=boxmass*ygas(mgsvi)*1.0d-12*gmw(srtso4)/28.9
+      Gc(srtnh3)=boxmass*ygas(mgnh3)*1.0d-12*gmw(srtnh3)/28.9
 
       !Call condensation with "dt"
       if (icond .eq. 1) then
-        !Converting gas unit from ppt to kg
-        Gc(srtso4)=boxmass*ygas(mgsvi)*1.0d-12*gmw(srtso4)/28.9
-        Gc(srtnh3)=boxmass*ygas(mgnh3)*1.0d-12*gmw(srtnh3)/28.9
+        
 
         Call so4cond(Nk,Mk,Gc,Nkout,Mkout,Gcout,dt,ichm,jchm,kchm,
      &              iflagez) 

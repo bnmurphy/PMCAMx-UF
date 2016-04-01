@@ -274,8 +274,8 @@ c     ADD THE MASS CHANGE TO THE CORRESPONDING SECTION
 c
 c      do isect=5, 7  ! for sections 0.1 to 10 um
 c      do isect=4, 6  ! for sections 0.04 to 40 um
-cd      do isect=27, 35  ! for sections 0.0008 to 40 um ! bug 7
-      do isect=21, 35  !for sections 0.0008 to 40 um bins 21=80nm no 27
+cd      do isect=27, 35  ! for sections 0.0008 to 40 um  !bug 4
+      do isect=21, 35   !david  21=> 80 nm
       aerosol(isect,nan)=aerosol(isect,nan)+dnit1*fdist2(isect)    ! NITRATE (aq) in ug/m3
       aerosol(isect,nac)=aerosol(isect,nac)+dchlor1*fdist2(isect)  ! CHLORIDE (aq) in ug/m3
       aerosol(isect,naa)=aerosol(isect,naa)+dammon1*fdist2(isect)  ! AMMONIUM (aq) in ug/m3   
@@ -286,7 +286,8 @@ cd      do isect=27, 35  ! for sections 0.0008 to 40 um ! bug 7
 c
 c      do isect=8, 10 ! for sections 0.1 to 10 um
 c      do isect=7, 8  ! for sections 0.04 to 40 um
-      do isect=36, 41  ! for sections 0.04 to 40 um
+c      do isect=36, 41  ! for sections 0.04 to 40 um
+      do isect=36,43  !for sections from 2.6 to 40 um
       aerosol(isect,nan)=aerosol(isect,nan)+dnit2*fdist2(isect)    ! NITRATE (aq) in ug/m3
       aerosol(isect,nac)=aerosol(isect,nac)+dchlor2*fdist2(isect)  ! CHLORIDE (aq) in ug/m3
       aerosol(isect,naa)=aerosol(isect,naa)+dammon2*fdist2(isect)  ! AMMONIUM (aq) in ug/m3   

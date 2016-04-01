@@ -151,7 +151,9 @@ c      integer ispc,naero
       real dsulfdt !sulfuric acid production rate
       double precision fndt(2) !nucleation diagnostic
       real Jnuc(ncol,nrow,nlay,2) !Common Nucleation Diagnostic
+      real,allocatable,save :: Jnucsav(:,:,:,:) !local saved copy of nucleation rates
       integer inuc
+      logical,save :: frstcall=.true. ! flag for first call to the routine 
 c
 c-----Entry point
 c
@@ -159,6 +161,21 @@ cdbg      write(*,*)'At the beginning of chemdriv'
       call flush(6)
       call flush(iout)
 c
+
+      !need to allocate the size of Jnucsav. The size can not be given in the variable definition
+      !since one can not use dummy arguments (ncol etc.) together with the save attribute
+      !Notice that this will only work as long as ncol, nrow and nlay are the same each call,
+      !so if the grid size is changing within a run something else needs to be done to fix the nucleation
+      !rate printing
+
+      if (.not.allocated(Jnucsav)) allocate(Jnucsav(ncol,nrow,nlay,2))
+
+      !initialize Jnucsav to zeroes if this is the first time chemdriv is called
+      if (frstcall) then
+         Jnucsav=0.0
+         frstcall=.false.
+      end if
+
       dtchem = dt/3600.
       con(nspec+1) = 0.
 c
@@ -209,9 +226,6 @@ c
             endif
          enddo
       enddo
-
-      !Set Nucleation Rate Diagnostic Variable to Zero
-      Jnuc(:,:,:,:) = 0.
 
 c
       igrdchm = igrd
@@ -435,15 +449,15 @@ c======================== Process Analysis End =========================
      &             sddm,nddmsp,ngas,ddmjac5,lddm,nirrrxn,titrt,rrxn_irr,
      &             lirr,dsulfdt) ! to get sulfuric acid production rate
 
-
-                   if ( laero_upd )
-     &             call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
+                 if ( laero_upd ) then
+                    call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
      &                         MXSPEC,MXRADCL,NSPEC,NGAS,
      &                         con,crad,convfac,time,aero_dt(igrd),
      &                         ichm,jchm,kchm,height,dsulfdt,fndt)
-                 do inuc = 1,2
-                   Jnuc(i,j,k,inuc) = real(fndt(inuc))
-                 enddo
+                    do inuc = 1,2
+                       Jnucsav(i,j,k,inuc) = real(fndt(inuc))
+                    enddo
+                 endif
 
                elseif (idmech.eq.6) then
                  if (ldark(i,j)) then
@@ -458,14 +472,15 @@ c
      &             sddm,nddmsp,ngas,ddmjac6,lddm,nirrrxn,titrt,rrxn_irr,
      &             lirr,dsulfdt) ! to get sulfuric acid production rate
 
-                 if ( laero_upd )
-     &           call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
+                 if ( laero_upd ) then
+                    call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
      &                         MXSPEC,MXRADCL,NSPEC,NGAS,
      &                         con,crad,convfac,time,aero_dt(igrd),
      &                         ichm,jchm,kchm,height,dsulfdt,fndt)
-                 do inuc = 1,2
-                   Jnuc(i,j,k,inuc) = real(fndt(inuc))
-                 enddo
+                    do inuc = 1,2
+                       Jnucsav(i,j,k,inuc) = real(fndt(inuc))
+                    enddo
+                 endif
 
                endif
 c
@@ -653,6 +668,7 @@ c    added by LA
                   con(is)=1.0e-37
                endif
             enddo
+
 c     end LA
 
             if (ngas.lt.nspec) then
@@ -723,5 +739,10 @@ c     - increase grd_time (& date_aer) by dtaero (or multiple of dtaero)
       endif
   93  continue
 c
+
+      ! assign Jnuc the values in Jnucsav, which is either from the call to fullaero on this timestep
+      ! or a saved one from when fullaero was last called
+      Jnuc=Jnucsav
+
       return
       end

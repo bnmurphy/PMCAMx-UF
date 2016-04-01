@@ -217,11 +217,13 @@ c     aerosol species mapping
         r_aer(7)  = (a3fe/56./convfac)*1.e-6
         r_aer(8)  = (b2mn/55./convfac)*1.e-6
         r_aer(9)  = (potcl/74./convfac)*1.e-6
-c     call RADM
+
+c        call RADM
         call get_param(igrdchm,ichm,jchm,kchm,iout,idiag)
         call raqchem(tempk,pres_pa,dt_sec,cw_kgm3,r_gas,r_aer,
      &               idiag,iout,igrdchm,ichm,jchm,kchm)
-c     map gas back to con
+
+c      map gas back to con
         con(kso2_c)  = amax1(r_gas(1)*1.e6,0.0)    ! SO2 (ppm)
         con(khno3_c) = amax1(r_gas(2)*1.e6,0.0)
         con(knxoy_c) = amax1(r_gas(3)*2.*1.e6,0.0) ! N2O5 gas (ppm)
@@ -257,6 +259,7 @@ c     add the differences to the corresponding section
           con(kpno3_c+(ksec-1))=con(kpno3_c+(ksec-1))+dnit *fdist(ksec)
           con(kpcl_c +(ksec-1))=con(kpcl_c +(ksec-1))+dchlo*fdist(ksec)
         enddo
+
 c     adjust mass to avoid negative concentration sections
         r_idx(1) = kpso4_c
         r_idx(2) = kpnh4_c

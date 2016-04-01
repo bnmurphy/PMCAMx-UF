@@ -276,7 +276,7 @@ cdbg            density = 1000.
           endif
           mp=1.414*xk(k)
         endif
-        Dpk(k)=((mp/density)*(6./pi))**(0.333)
+        Dpk(k)=((mp/density)*(6./pi))**(1./3.)
         Dpk(k)=h2ogrowth*Dpk(k)
         if (icond_test .eq. 1) then
           beta(srtso4)=1.
@@ -379,27 +379,21 @@ C-----Calculate tau values for all species/bins
       enddo
 
       do k=1,ibins ! added by JJ: now we can loop over the bins and do the next part
-         ! JJ change: instead of comparing total so4 to total ammonia in order to get
-         ! taumax for the current bin, check the so4 and ammonia in the current bin.
-         ! For this purpose calculate Gcknh3 already outside of the if statement
-         sumataunh3=0.0
-         do kk=1,ibins
-            sumataunh3=sumataunh3+atau(kk,srtnh4)
-         enddo
-         Gcknh3(k)=Gcf(srtnh4)*atau(k,srtnh4)/sumataunh3
          
         !Separate the cases of total ammonia is greater than existing sulfate
         ! or not.
-
-cdavid        if (0.375*Mktot(srtso4).gt.(Mktot(srtnh4)+Gcf(srtnh4))) then
-         if (0.375*Mkf(k,srtso4).gt.Mkf(k,srtnh4)+Gcknh3(k)) then !JJ change
+         if (0.375*Mktot(srtso4).gt.(Mktot(srtnh4)+Gcf(srtnh4))) then
         !Sulfate rich condition
-               Mknh3max=Mkf(k,srtnh3)+Gcknh3(k)              ! maximally allowable NH4 mass
+            sumataunh3=0.0
+            do kk=1,ibins
+               sumataunh3=sumataunh3+atau(kk,srtnh4)
+            enddo
+            Gcknh3(k)=Gcf(srtnh4)*atau(k,srtnh4)/sumataunh3
+            Mknh3max=Mkf(k,srtnh3)+Gcknh3(k)
+                                         ! maximally allowable NH4 mass
          else                   !Total ammonia rich condition
-               Mknh3max=0.375*Mkf(k,srtso4) ! maximally allowable NH4 mass
+            Mknh3max=0.375*Mkf(k,srtso4) ! maximally allowable NH4 mass
          endif
-
-
 cdbg        if (Nkf(k) .gt. 0.) then
          if (Nkf(k) .gt. Neps) then
             taumax=1.5*((Mknh3max**tdt)-(Mkf(k,srtnh3)**tdt))/(Nkf(k)
@@ -430,13 +424,7 @@ C-----Adjust a time step
       do j=1,icomp-1
         if(Gcflag(j).eq.1) goto 30 ! If gas concentration is tiny, then skip 
                                    ! condensation. 12/06/07 jgj
-       if(j.eq.srtinrt) goto 30
-       if(j.eq.srtsoa1) goto 30
-       if(j.eq.srtsoa2) goto 30
-       if(j.eq.srtsoa3) goto 30
-       if(j.eq.srtsoa4) goto 30
-       if(j.eq.srtsoa5) goto 30
-
+        if(j.eq.srtinrt) goto 30 ! OM does not have condensation process.
         do k=1,ibins
           if (Nkf(k) .gt. Neps) then
             mc=0.0
@@ -530,13 +518,6 @@ C Call condensation subroutine to do mass transfer
       do j=1,icomp-1  !Loop over all aerosol components
         if(Gcflag(j).eq.1) goto 40 ! If gas concentration is tiny, then skip 
                                    ! condensation. 12/06/07 jgj
-cdav        if(j.eq.srtorg) goto 40 ! OM does not have condensation process.
-       if(j.eq.srtinrt) goto 40
-       if(j.eq.srtsoa1) goto 40
-       if(j.eq.srtsoa2) goto 40
-       if(j.eq.srtsoa3) goto 40
-       if(j.eq.srtsoa4) goto 40
-       if(j.eq.srtsoa5) goto 40
 
         !Swap tau values for this species into array for cond
         do k=1,ibins
@@ -669,19 +650,19 @@ C Repeat process if necessary
       if (time .lt. dt) then
         !Iteration
         itr=itr+1
-cdavid        if (itr.gt.5000) then
-        if (itr.gt.10000) then
+        if (itr.gt.5000) then
+c        if (itr.gt.500) then
            write(*,*) 'Coord.(i,j,k)=',ichm,jchm,kchm
-           write(*,*) 'An iteration in so4cond exceeds 10000 DAVID'
+           write(*,*) 'An iteration in so4cond exceeds 500'
            write(*,*) 'dt=',dt,'time=',time,'cdt=',cdt
            write(*,*) 'exponential decaying frac=',
      &               exp(-1.d0*sK(srtnh4)*cdt)
-           iflagez=1
-           return
+c$$$           iflagez=1
+c$$$           return
            ! JJ change : if there is a problem just stop the program and
            ! fix this routine. Condensing just with whatever routine does not 
            ! fail is not a good design.
-cdav           STOP
+           STOP
         endif
         goto 10
       endif

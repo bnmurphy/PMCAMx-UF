@@ -62,7 +62,6 @@ c
       double precision totmass, newmass! For updating Nk when Mk is less
                                        ! than zero.
       double precision eps
-      double precision fn ! nucleation rate [# cm-3 s-1]
 c
 C-----------------------------------------------------------
       real organic_ppt(5) !organic [=] ppt
@@ -76,7 +75,7 @@ c-----------------------------------------------------------
       real boxvol     ! A volume of arbitrary box
       real pres       ! Pa 
       real rt_pom(ibins), rt_ec(ibins), rt_crst(ibins), rt_cl(ibins),
-     &    rt_na(ibins), rt_no3(ibins)
+     &    rt_na(ibins), rt_no3(ibins) ! Ratios of each inert component
 
 
       real tot_soa1,tot_soa2   
@@ -311,6 +310,9 @@ c-----------------------------------------------------------------------
                      ! CRST                Cl
      &                q((i-1)*nsp+kna)+
                      ! Na                  
+c     &                q((i-1)*nsp+kcl+1)+q((i-1)*nsp+kcl+2)+    !david
+c     &                q((i-1)*nsp+kcl+3)+q((i-1)*nsp+kcl+4)+    !david
+c                     ! SOA                                      !david
      &                q((i-1)*nsp+kno3))
                      ! Nitrate
 
@@ -525,6 +527,7 @@ C---------------------   H2SO4   -------------------------
           write(*,*)'dsulfdt=',dsulfdt
           STOP
         endif
+
       endif
 
 C---------------------   NH3     -------------------------     

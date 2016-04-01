@@ -96,9 +96,6 @@ C microphysics is operating.
 
       double precision boxvol     !volume of grid cell (cm3)
       double precision boxmass    !mass of grid cell (kg)
-cdbg      double precision temp       !temperature (K) of grid cell
-cdbg      double precision pres       !air pressure (Pa) of grid cell
-cdbg      double precision rh         !relative humidity (0-1)
 c
       real temp       !temperature (K) of grid cell
       real pres       !air pressure (Pa) of grid cell

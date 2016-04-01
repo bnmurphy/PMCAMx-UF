@@ -52,7 +52,7 @@ C     VARIABLE COMMENTS...
 
 C-----ADJUSTABLE PARAMETERS---------------------------------------------
 
-      parameter(Neps=1.0d+10,Meps=1.0d-32)
+      parameter(Neps=1.0d-10,Meps=1.0d-32)
 
 C-----CODE--------------------------------------------------------------
 

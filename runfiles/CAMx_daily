@@ -20,7 +20,7 @@ set DATE2   = $2
 #endif
 
 #
-set RUN     = "PMCAMxUF_ELVOC_take2"
+set RUN     = "PMCAMxUF_ELVOC_faster"
 set OUTPUT  = $PMCAMxUF_USER_OUTPUT/$RUN
 #
 if ($DATE == "01") then
@@ -200,11 +200,11 @@ ieof
 #  --- Execute the model ---
 #
 cd ../
-/usr/bin/time ./PMCAMx.exe
+#/usr/bin/time ./PMCAMx.exe
  
 #setenv OMP_NUM_THREADS 16
 #setenv OMP_STACKSIZE 1024M
-#amplxe-cl -c hotspots -result-dir ${OUTPUT}/Vtune/Hotspots_$DATE -- ./PMCAMx.exe
+amplxe-cl -collect hotspots -result-dir ${OUTPUT}/Vtune/ -- ./PMCAMx.exe
 
 date 
 #

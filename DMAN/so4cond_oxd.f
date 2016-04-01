@@ -210,10 +210,10 @@ C-----Calculate tau values for all species/bins
       !Update atau considering the amount added by aqueous chemistry
       do k=iact,ibins
          do j=1,icomp-1
-          ! JJ bugfix: both the initial and final masses need to be 
-          ! average mass of single particle (Adams & Seinfeld 2002, Eq. 9&10)
-          Mko(k,j)=Mkf(k,j)+moxid(k,j)!*(1./Nkf(k)))
-          atau(k,j)=1.5*((Mko(k,j)**tdt)-(Mkf(k,j)**tdt))/(Nkf(k)**tdt)
+            ! JJ bugfix: both the initial and final masses need to be 
+            ! average mass of single particle (Adams & Seinfeld 2002, Eq. 9&10)
+            Mko(k,j)=Mkf(k,j)+moxid(k,j) !*(1./Nkf(k)))
+            atau(k,j)=1.5*((Mko(k,j)**tdt)-(Mkf(k,j)**tdt))/(Nkf(k)**tdt)
          enddo
       enddo
       do k=1,ibins
@@ -232,7 +232,7 @@ C-----Adjust a time step
 C Call condensation subroutine to do mass transfer
 
       do j=1,icomp-1  !Loop over all aerosol components
-         if (Gcflag(j).eq.1) goto 40
+        if (Gcflag(j).eq.1) goto 40
 
         !Swap tau values for this species into array for cond
         do k=1,ibins
