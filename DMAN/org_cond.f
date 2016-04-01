@@ -281,7 +281,7 @@ C Calculate tj and tk factors needed to calculate tau values
 
 cdav            mp=(Mkf(k,srtso4)+Mkf(k,srtnh3))/Nkf(k)
           mp=(Mkf(k,srtso4)+Mkf(k,srtsoa1)+Mkf(k,srtsoa2)+
-     &     +Mkf(k,srtsoa3)+Mkf(k,srtsoa4)
+     &     +Mkf(k,srtsoa3)+Mkf(k,srtsoa4)+Mkf(k,srtinrt)+
      &     +Mkf(k,srtnh3))/Nkf(k)
 
          else
@@ -325,15 +325,17 @@ c@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 cd
 
        do k=1,ibins
-         kelvin(k)=exp(A_kelvin/dpk(k)) !kelvin effect
+         kelvin(k)=exp(A_kelvin/Dpk(k)) !kelvin effect
 cd     
          sum_tot_organic(k)= Mkf(k,srtsoa1) + Mkf(k,srtsoa2) +
      &    + Mkf(k,srtsoa3) + Mkf(k,srtsoa4) + 
-     &    + Mkf(k,srtso4) + Mkf(k,srtnh3) 
+     &    + Mkf(k,srtso4) + Mkf(k,srtnh3) + Mkf(k,srtinrt)+Mkf(k,srth2o)
 
           do dii=srtsoa1,srtsoa4
-            x_mol(k,dii)=Mkf(k,dii)/sum_tot_organic(k)  !mass fraction
-            if (x_mol(k,dii).ne.x_mol(k,dii)) then
+            if (Mkf(k,dii).gt.0.d0.and.sum_tot_organic(k).gt.0.d0) then
+               x_mol(k,dii)=Mkf(k,dii)/sum_tot_organic(k) !mass fraction
+            else
+cJJ            if (x_mol(k,dii).ne.x_mol(k,dii)) then
                x_mol(k,dii)= 1.d-36
             endif
           end do
@@ -442,6 +444,7 @@ C-----Adjust a time step
 
       !Make sure masses of individual species don't change too much
       do j= srtsoa1,srtsoa4
+        if (Gcflag(j).eq.1) goto 30
         do k=1,ibins
           if (Nkf(k) .gt. Neps) then
             mc=0.0
@@ -457,7 +460,7 @@ cd              !species has significant mass in particle - limit change
               if (abs(atau(k,j))/(mc**tdt) .gt.cond_step ) then
                 ttr=abs(atau(k,j))/(mc**tdt)/cond_step2
 
-                if (ttr. gt. tr) then 
+                if (ttr .gt. tr) then 
 cdbg                  limit='amass'
 cdbg                  write(limit(7:11),'(I2,X,I2)') k,j
                   tr=ttr
@@ -476,7 +479,11 @@ cdbg                  write(limit(7:11),'(I2,X,I2)') k,j
         !Make sure gas phase concentrations don't change too much
         !control gas reduction rate on 12/15/07, jgj
         if (dt.gt.120.) then
-           gasfrac=0.50 ! not allow less than 50% of reduction theoretically
+           if (dt.lt.900.) then
+              gasfrac=0.50      ! not allow less than 50% of reduction theoretically
+           else
+              gasfrac=0.75
+           end if
         else
            gasfrac=0.25 ! not allow less than 75% of reduction theoretically
         endif
