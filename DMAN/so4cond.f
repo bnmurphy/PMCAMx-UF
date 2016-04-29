@@ -532,8 +532,8 @@ C Call condensation subroutine to do mass transfer
           tau(k)=corfactor*tau(k) ! A correction factor is applied.
         enddo
 
-cd        call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm)
-          call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm,7)
+        call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm)
+cJJ          call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm,7)
 
             ! adjust average mass in each size bin within boundaries
 

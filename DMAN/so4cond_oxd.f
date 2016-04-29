@@ -244,7 +244,8 @@ C Call condensation subroutine to do mass transfer
           tau(k)=corfactor*tau(k) ! A correction factor is applied.
         enddo
 
-        call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm,8)
+cJJ        call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm,8)
+        call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm)
             ! adjust average mass in each size bin within boundaries
 
         !oxidated mass calculation, dummy, not using it, jgj
@@ -271,7 +272,8 @@ C Update time
  100  continue   !skip to here if there is no gas phase to condense
 
       ! Adjust finally before return
-      call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm,9)
+cJJ      call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm,9)
+      call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm)
 
       RETURN
       END

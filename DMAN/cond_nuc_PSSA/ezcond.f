@@ -88,7 +88,8 @@ C-----CODE--------------------------------------------------------------
          enddo
       enddo
 
-      call mnfix_PSSA(Nk1,Mk1,ichm,jchm,kchm,1)
+cJJ      call mnfix_PSSA(Nk1,Mk1,ichm,jchm,kchm,1)
+      call mnfix_PSSA(Nk1,Mk1,ichm,jchm,kchm)
 
       ! get the sink fractions
       call getCondSink(Nk1,Mk1,spec,CS,sinkfrac)
@@ -183,7 +184,8 @@ cdbg               print*,'k',k,'mpw',mpw,'maddp(k)',maddp(k),'WR',WR
             endif
          enddo
 
-         call mnfix_PSSA(Nk1,Mk1,ichm,jchm,kchm,2)
+cJJ         call mnfix_PSSA(Nk1,Mk1,ichm,jchm,kchm,2)
+         call mnfix_PSSA(Nk1,Mk1,ichm,jchm,kchm)
 
          !adjustment by jgj from a comparison with analytic solutions
 cdbg         do k=1,ibins

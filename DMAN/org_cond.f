@@ -141,7 +141,11 @@ cd      double precision x_mol(ibins,13)
                                      ! when ammonia is limited.
       double precision sumataunh3    ! sum of atuc(ibins,srtnh3)
       double precision diameter_atau(41)
-      double precision tau_max_evap(ibins,icomp)
+      double precision tau_max_evap
+      double precision atau_fac(ibins,icomp) !pre-factor for atau
+      double precision atau_fac_spec(icomp) !size bin independent part of atau pre-factor
+      double precision atau_exp(icomp) !exponential term in atau
+      double precision mass_change  ! estimated particle mass change due to cond/evap
     
 
       character*12 limit        !description of what limits time step
@@ -167,12 +171,13 @@ C-----ADJUSTABLE PARAMETERS---------------------------------------------
                          !Neps is set a little higher than multicoag 
                          !to avoid redundant time step segregations.
       parameter(corfactor=1.0) ! a correction factor
+      parameter(tdt=2.d0/3.d0,cond_step=0.1d0,cond_step2=0.05d0)
 
 C-----CODE--------------------------------------------------------------
       ssss= 0.025d0    !surface tension  
-      cond_step= 0.1d0      
+c      cond_step= 0.1d0  !now a parameter      
 
-      cond_step2=cond_step/2.d0
+c      cond_step2=cond_step/2.d0
 
       do dii=srtsoa1,srtsoa5
          DH_elthap(dii)= 30.d0    !(KJ/mol )
@@ -187,7 +192,7 @@ C-----CODE--------------------------------------------------------------
        psat(srtsoa2) = 1.238786d-4  !Pa =>10 ug/m3
        psat(srtsoa3) = 1.238786d-3  !Pa =>100 ug/m3
        psat(srtsoa4) = 1.238786d-2  !Pa =>1000 ug/m3
-       psat(srtsoa5) = 1.238786e-8  !Pa =>10^-3 ug/m3  !EXLVOCS
+       psat(srtsoa5) = 1.238786d-8  !Pa =>10^-3 ug/m3  !EXLVOCS
 
         
       !new Psat    
@@ -202,7 +207,7 @@ C-----CODE--------------------------------------------------------------
 
       dNerr=0.0
       time=0.0         !subroutine exits when time=dt
-      tdt=2.d0/3.d0
+c      tdt=2.d0/3.d0  !now a parameter
       tunning=10.0     !multiplication for Mktot
       do j=1,icomp-1
         Gcf(j)=Gci(j)
@@ -238,358 +243,379 @@ C-----CODE--------------------------------------------------------------
       !If PSSA is on, turn on Gcflag(srtso4) for ezcond does H2SO4 condensatoin.
        Gcflag(srtso4)=1 !PSSA          
 
+       !JJ moved these before the main time loop  as they do not change with the adaptive time steps
+       mu=2.5277e-7*temp**0.75302
+       mfp=2.0*mu/(pres*sqrt(8.0*0.0289/(pi*R*temp))) !S&P eqn 8.6
+       do j=1,icomp-1
+          Di=gasdiff(temp,pres,gmw(j),Sv(j))
+          tj(j)=2.*pi*Di*molwt(j)*1.0d-3/(R*temp)
+       enddo
+
+       density=1400.0   ! [=] kg/m3
+
 C Repeat from this point if multiple internal time steps are needed
- 10   continue
+c 10   continue
+       do while (time .lt. dt) ! time step loop
 
       !Set dp equals to zero
-      dp=0.0d0
+cJJ          dp=0.0d0 !dp not currently needed since atauc is not used
 
 
-C Calculate tj and tk factors needed to calculate tau values
-      mu=2.5277e-7*temp**0.75302
-      mfp=2.0*mu/(pres*sqrt(8.0*0.0289/(pi*R*temp)))  !S&P eqn 8.6
-      do j=1,icomp-1
-        if (icond_test .eq. 1) then
-          Di=0.1*1.0e-4 ! m^2/s ! cond_test 6/12/04 jgj
-        else
-          Di=gasdiff(temp,pres,gmw(j),Sv(j))
-        endif
-        tj(j)=2.*pi*Di*molwt(j)*1.0d-3/(R*temp)
-      enddo
-      sK(srtso4)=0.0d0
-      sK(srtnh3)=0.0d0
-
-      do dii=srtsoa1,srtsoa5     ! EXLVOCs  
-         sK(dii)=0.0d0
-      end do
+C Calculate tj and tk factors needed to calculate tau values          
+        
+         sK=0.0d0
 
  
-      do k=1,ibins
-         if (Nkf(k) .gt. Neps) then
-
-            density=1400.0 ! [=] kg/m3
+         do k=1,ibins
+            if (Nkf(k) .gt. Neps) then
 
 c            mp=(Mkf(k,srtso4)+Mkf(k,srtnh3))/Nkf(k)
-          mp=(Mkf(k,srtso4) +Mkf(k,srtsoa1)+Mkf(k,srtsoa2)+
-     &       +Mkf(k,srtsoa3)+Mkf(k,srtsoa4)+Mkf(k,srtsoa5)+      !  EXLVOCs
-     &       +Mkf(k,srtinrt)+Mkf(k,srtnh3))/Nkf(k)
+               mp=(Mkf(k,srtso4) +Mkf(k,srtsoa1)+Mkf(k,srtsoa2)+ 
+     &              +Mkf(k,srtsoa3)+Mkf(k,srtsoa4)+Mkf(k,srtsoa5)+ !  EXLVOCs
+     &              +Mkf(k,srtinrt)+Mkf(k,srtnh3))/Nkf(k)
 
-         else
+            else
            !nothing in this bin - set to "typical value"
-             density=1400.0 ! Mk's are calculated based on this density
-                           ! in initbounds. Dpk can be derived from this
-                           ! density.
-           mp=1.414*xk(k)
-         endif
+               
+               mp=1.414*xk(k)
+            endif
 
-         Dpk(k)=((mp/density)*(6./pi))**(1.d0/3.d0)
-         diameter_atau(k)=((mp/density)*(6./pi))**(0.333)
-         Dpk(k)=h2ogrowth*Dpk(k)
-         if (icond_test .eq. 1) then
-           beta(srtso4)=1.
-         else
-           Kn=2.0*mfp/Dpk(k)                             !S&P eqn 11.35 (text)
+            Dpk(k)=((mp/density)*(6./pi))**(1.d0/3.d0)
+c           diameter_atau(k)=((mp/density)*(6./pi))**(0.333) !not used
+            Dpk(k)=h2ogrowth*Dpk(k)
+         
+            Kn=2.0*mfp/Dpk(k)   !S&P eqn 11.35 (text)
 
-           do dii=srtsoa1,srtsoa5    !!WITH EXLVOCs
-              beta(dii)=(1.+Kn)/(1.+2.*Kn*(1.+Kn)/alpha(dii)) 
-           end do            
-         endif
+            do dii=srtsoa1,srtsoa5 !!WITH EXLVOCs
+               beta(dii)=(1.+Kn)/(1.+2.*Kn*(1.+Kn)/alpha(dii)) 
+            end do            
 
-         do dii=srtsoa1,srtsoa5      !!WITH EXLVOCS
-             tk(k,dii)=(6./(pi*density))**(1./3.)*beta(dii)
-         end do
+            do dii=srtsoa1,srtsoa5 !!WITH EXLVOCS
+               tk(k,dii)=(6./(pi*density))**(1./3.)*beta(dii)
+            end do
 
-         if (Nkf(k) .gt. 0.0) then
-           Mtot=0.0
-           do jj=1, icomp
-             Mtot=Mtot+Mkf(k,jj)
-           enddo
+            if (Nkf(k) .gt. 0.0) then
+               Mtot=0.0
+               do jj=1, icomp
+                  Mtot=Mtot+Mkf(k,jj)
+               enddo
 
-           do dii=srtsoa1,srtsoa5    !!WITH EXLVOCS
-              sK(dii)=sK(dii)+tk(k,dii)*Nkf(k)*(Mtot
-     &             /Nkf(k))**(1.d0/3.d0)
-           end do
-         endif
-      enddo
+               do dii=srtsoa1,srtsoa5 !!WITH EXLVOCS
+                  sK(dii)=sK(dii)+tk(k,dii)*Nkf(k)*(Mtot
+     &                 /Nkf(k))**(1.d0/3.d0)
+               end do
+            endif
+         enddo
 
 c@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-       do k=1,ibins
-         kelvin(k)=exp(A_kelvin/Dpk(k))
+         do k=1,ibins
+            kelvin(k)=exp(A_kelvin/Dpk(k))
 
-         sum_tot_organic(k)=Mkf(k,srtsoa1) +Mkf(k,srtsoa2)+  !
-     &    +Mkf(k,srtsoa3)+Mkf(k,srtsoa4)+ Mkf(k,srtsoa5)     ! EXLVOCs
-     &    +Mkf(k,srtso4)+Mkf(k,srtnh3)+ Mkf(k,srtinrt)+Mkf(k,srth2o)                       ! 
+            sum_tot_organic(k)=Mkf(k,srtsoa1) +Mkf(k,srtsoa2)+ !
+     &           +Mkf(k,srtsoa3)+Mkf(k,srtsoa4)+ Mkf(k,srtsoa5)+ ! EXLVOCs
+     &           +Mkf(k,srtso4)+Mkf(k,srtnh3)+ Mkf(k,srtinrt)+Mkf(k,srth2o) ! 
 
-          do dii=srtsoa1,srtsoa5   !!WITH EXLVOCS
-             if (Mkf(k,dii).gt.0.d0.and.sum_tot_organic(k).gt.0.d0) then
-                x_mol(k,dii)=Mkf(k,dii)/sum_tot_organic(k) !mass fraction
-             else
+            do dii=srtsoa1,srtsoa5 !!WITH EXLVOCS
+               if (Mkf(k,dii).gt.0..and.sum_tot_organic(k).gt.0.) then
+                  x_mol(k,dii)=Mkf(k,dii)/sum_tot_organic(k) !mass fraction
+               else
 cJJ            if (x_mol(k,dii).ne.x_mol(k,dii)) then
-                x_mol(k,dii)= 1.d-36
-            endif
-          end do
-       enddo
+                  x_mol(k,dii)= 1.d-36
+               endif
+            end do
+         enddo
 
-       do dii=srtsoa1,srtsoa5  !!WITH EXLVOCS
+         do dii=srtsoa1,srtsoa5 !!WITH EXLVOCS
             Gcsat(dii)=(psat(dii)*200.d0*boxmass)/(28.9*pres)
-       end do 
+         end do 
 
-       do k=1,ibins
-
-          do dii=srtsoa1,srtsoa5   !!WITH EXLVOCS
-             dp(k,dii)=(Gcf(dii)/200.d0)/(boxmass/28.9)*pres
-     &                -(psat(dii)*kelvin(k))*x_mol(k,dii) !!WITH EXLVOCS
-          end do 
-
-       enddo
+cJJ dp not currently needed since atauc is not used         
+c$$$         do k=1,ibins
+c$$$            
+c$$$            do dii=srtsoa1,srtsoa5   !!WITH EXLVOCS
+c$$$               dp(k,dii)=(Gcf(dii)/200.d0)/(boxmass/28.9)*pres
+c$$$     &              -(psat(dii)*kelvin(k))*x_mol(k,dii) !!WITH EXLVOCS
+c$$$            end do 
+c$$$         
+c$$$         enddo
 
 cdav   organic
-       do dii=srtsoa1,srtsoa5    ! !WITH EXLVOCS
-               sK(dii)=sK(dii)*zeta13*tj(dii)*R*temp/
+         do dii=srtsoa1,srtsoa5 ! !WITH EXLVOCS
+            sK(dii)=sK(dii)*zeta13*tj(dii)*R*temp/
      &           (molwt(dii) *1.d-3)/(boxvol*1.d-6)
-       end do
+         end do
+
+         !caculate a pre-factor for atau, which does not change if time step is shortened
+         do dii=srtsoa1,srtsoa5
+            atau_fac_spec(dii)=tj(dii)*R*temp/(molwt(dii)*1.d-3)/
+     &           (boxvol*1.d-6)/sK(dii)
+            do k=1,ibins
+               atau_fac(k,dii)=atau_fac_spec(dii)*tk(k,dii)*
+     &              (Gcf(dii)-(kelvin(k)*Gcsat(dii))*x_mol(k,dii))
+            end do
+         end do
           
 C Choose appropriate time step
 
       !Try to take full time step
-      cdt=dt-time
+         cdt=dt-time
 
       !Not more than 15 minutes
-      if (cdt .gt. 900.) then
-        cdt=900.
-      endif
+         if (cdt .gt. 900.) then
+            cdt=900.
+         endif
 
- 20   continue   !if time step is shortened, repeat from here
-
+c 20   continue   !if time step is shortened, repeat from here
+         do ! do-loop executes as many times as the time step is shortened
 
 C-----Calculate tau values for all species/bins
 
       !Set atauc and atau equal to zero
-      do k=1,ibins
-         do j=1,icomp-1
-            atauc(k,j)=0.0d0  
-            atau(k,j)=0.0d0
-         enddo
+cJJ      do k=1,ibins
+cJJ this initialization is not needed, atau gets set to correct value depending on sk
+c         do j=1,icomp-1
+cJJ            atauc(k,j)=0.0d0  !not used
+c            atau(k,j)=0.0d0
+c         enddo
 
         !atauc is tau that is a parameter to describe condensation
         !driving force when pressure difference is equal to constant.
         !atau is same to atauc except having a exponential decaying
-        !pressure term. The current ammonia condensation uses atauc as atau.
-        !In case atauc is bigger than taumax that atau is forced to be taumax.
+        !pressure term. 
  
 
 c        organic
-         do dii=srtsoa1,srtsoa5   !!WITH EXLVOCS
-             atauc(k,dii)=tj(dii)*tk(k,dii)*dp(k,dii)*cdt
-         end do
+cJJ atauc is not used for anything
+c$$$         do dii=srtsoa1,srtsoa5   !!WITH EXLVOCS
+c$$$             atauc(k,dii)=tj(dii)*tk(k,dii)*dp(k,dii)*cdt
+c$$$         end do
 
 c---------------------------------------------------------------------------
-         do dii=srtsoa1,srtsoa5    !!WITH EXLVOCS
-            if (sK(dii) .gt. 0.0) then
+            do dii=srtsoa1,srtsoa5 !!WITH EXLVOCS
+               atau_exp(dii)=1.d0-exp(-1.d0*sK(dii)*cdt)
+               do k=1,ibins
+                  if (sK(dii) .gt. 0.0) then
 c               evap(k,dii)=Gcf(dii)-(kelvin(k)*Gcsat(dii))*x_mol(k,dii)
 
-               atau(k,dii)=tj(dii)*R*temp/(molwt(dii)*1.d-3)
-     &              /(boxvol*1.d-6)*tk(k,dii)
-     &              *(Gcf(dii)-(kelvin(k)*Gcsat(dii))*x_mol(k,dii))/sK(dii)
-     &              *(1.d0-exp(-1.d0*sK(dii)*cdt))
+                     atau(k,dii)=atau_fac(k,dii)*atau_exp(dii)
 
-               if (atau(k,dii).lt.0.0) then
-                  tau_max_evap(k,dii) = tj(dii)*R*temp/(molwt(dii)*1.d-3)
-     &              /(boxvol*1.d-6)*tk(k,dii)
-     &              *(-1.d0*Mkf(k,dii))/sK(dii)
+                     if (atau(k,dii).lt.0.0) then
+                        tau_max_evap = atau_fac_spec(dii)*tk(k,dii)*
+     &                       (-1.d0*Mkf(k,dii))*atau_exp(dii)
 c     &              *(-0.01d0*Mkf(k,dii))/sK(dii)
-     &              *(1.d0-exp(-1.d0*sK(dii)*cdt))
 
-                  if (abs(atau(k,dii)).ge.abs(tau_max_evap(k,dii))) then
-                     atau(k,dii)=tau_max_evap(k,dii)
-                  end if
-               end if
-
-            else
-               atau(k,dii)=0.0d0 !nothing to condense onto
-            endif
-         end do 
-      enddo
+                        if (abs(atau(k,dii)).ge.abs(tau_max_evap)) then
+                           atau(k,dii)=tau_max_evap
+                        end if
+                     end if
+                     
+                  else
+                     atau(k,dii)=0.0d0 !nothing to condense onto
+                  endif
+               end do 
+            enddo
         
 C-----Adjust a time step 
 
-      tr=1.0 !The following sections limit the condensation time step
+            tr=1.0 !The following sections limit the condensation time step
              !when necessary.  tr is a factor that describes by
              !how much to reduce the time step.
 
       !Make sure masses of individual species don't change too much
-      do j= srtsoa1,srtsoa5   !!WITH EXLVOCS
-        if (Gcflag(j).eq.1) goto 30 
-        do k=1,ibins
-          if (Nkf(k) .gt. Neps) then
-            mc=0.d0
-            do jj=1,icomp-1
-              mc=mc+Mkf(k,jj)/Nkf(k)
-            enddo
-            if (mc/xk(k) .gt. 1.0d-3) then
-                 if (ttr.gt.max_ttr)then
-                  max_ttr=ttr
-                 end if      
+            !JJ: do ELVOC first since it might affect tr the most
+            outer: do j= srtsoa5,srtsoa1,-1 !!WITH EXLVOCS
+               if (Gcflag(j).eq.1) cycle !goto 30
+               !Make sure gas phase concentrations don't change too much
+               !control gas reduction rate on 12/15/07, jgj
+               if (dt.gt.120.) then
+                  if (dt.lt.900.) then
+                     gasfrac=0.50 ! not allow less than 50% of reduction theoretically
+                  else
+                     gasfrac=0.75
+                  end if
+               else
+                  gasfrac=0.25  ! not allow less than 75% of reduction theoretically
+               endif
+               if (exp(-1.d0*sK(j)*cdt) .lt. gasfrac) then
+                  ttr=-2.d0*cdt*sK(j)/log(gasfrac)
+                  if (ttr .gt. tr) then 
+                     tr=ttr
+                     EXIT !see if this reduction is enough
+                  endif
+                  
+               endif
 
+
+               do k=1,ibins
+                  if (Nkf(k) .gt. Neps) then
+                     mc=0.
+                     do jj=1,icomp-1
+                        mc=mc+Mkf(k,jj)!/Nkf(k)
+                     enddo
+                     mc=mc/Nkf(k)                     
+cJJ                     if (mc/xk(k) .gt. 1.0d-3) then  
+                     if (mc .gt. 1.0d-3*xk(k)) then
+cJJ                        mass_change=abs(atau(k,j))/(mc**tdt) !pre-calculate to save time
+                        !this calculation saves even more time /JJ
+                        mass_change=(abs(atau(k,j)))**3-1.0d-3*mc*mc
 cd              !species has significant mass in particle - limit change
-              if (abs(atau(k,j))/(mc**tdt) .gt.cond_step ) then
-                ttr=abs(atau(k,j))/(mc**tdt)/cond_step2
+cJJ                        if (abs(atau(k,j))/(mc**tdt) .gt.cond_step) then
+cJJ                           ttr=abs(atau(k,j))/(mc**tdt)/cond_step2
+                        if (mass_change .gt.0.d0) then
+                           ttr=2.d0*abs(atau(k,j))/(cond_step*mc**tdt)
 
-                if (ttr .gt. tr) then 
-                  tr=ttr
-                endif
-              endif
-            else
+                           if (ttr .gt. tr) then 
+                              tr=ttr
+                              EXIT outer
+                           endif
+                        endif
+                     else
               !species is new to particle - set max time step
-              if ((cdt/tr .gt. 0.1) .and. (atau(k,j).gt. 0.0)) then 
-                tr=cdt/0.1
-              endif
-            endif
-          endif
-        enddo
-        !Make sure gas phase concentrations don't change too much
-        !control gas reduction rate on 12/15/07, jgj
-        if (dt.gt.120.) then
-           if (dt.lt.900.) then
-              gasfrac=0.50      ! not allow less than 50% of reduction theoretically
-           else
-              gasfrac=0.75
-           end if
-        else
-           gasfrac=0.25 ! not allow less than 75% of reduction theoretically
-        endif
-        if (exp(-1.d0*sK(j)*cdt) .lt. gasfrac) then
-          ttr=-2.d0*cdt*sK(j)/log(gasfrac)
-          if (ttr .gt. tr) then 
-            tr=ttr
-          endif
-           if (ttr .gt.100000.)then
-                   ttr = tr
-                 end if
+                        if ((cdt/tr.gt.0.1).and.(atau(k,j).gt.0.0)) then 
+                           tr=cdt/0.1
+                           EXIT outer
+                        endif
+                     endif
+                  endif
+               enddo
 
-        endif
-
- 30   continue
-      enddo
+ 30            continue
+            enddo outer
 
       !Never shorten timestep by less than half
 c      if (tr .gt. 1.d0) tr=max(tr,2.d0)
 
       !Repeat for shorter time step if necessary
-      if (tr .gt. 1.0) then
-         cdt=cdt/tr
-         goto 20
-      endif
+            if (tr .gt. 1.0) then
+               cdt=cdt/tr
+c         goto 20
+            else
+               EXIT  !exit the do-loop for timestep adjustment
+            endif
+         end do
 
 C Call condensation subroutine to do mass transfer
 
-      do j= srtsoa1,srtsoa5  !!WITH EXLVOCS    !Loop over all aerosol components
-         if (Gcflag(j).eq.1) goto 40
+         do j= srtsoa1,srtsoa5  !!WITH EXLVOCS    !Loop over all aerosol components
+            if (Gcflag(j).eq.1) cycle !goto 40
 
         !Swap tau values for this species into array for cond
-        do k=1,ibins
-          tau(k)=atau(k,j)
+            do k=1,ibins
+               tau(k)=atau(k,j)
 
-          tau(k)=corfactor*tau(k) ! A correction factor is applied.
-        enddo
+               !JJ: for organics corfactor is set to 1.0
+cJJ               tau(k)=corfactor*tau(k) ! A correction factor is applied.
+            enddo
         
-        call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm,6)
+cJJ            call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm,6)
+            call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm)
             ! adjust average mass in each size bin within boundaries
 
-        !Call condensation routine
-        Ntotf=0.0d0
-        do k=1,ibins
-          Ntotf=Ntotf+Nkf(k)
-        enddo
+            !Call condensation routine
+            Ntotf=0.0d0
+            do k=1,ibins
+               Ntotf=Ntotf+Nkf(k)
+            enddo
 
-        !oxidated mass calculation
-        do k=1, ibins
-          moxd(k)=0.0d0 !oxidated mass
-        enddo
+            !oxidated mass calculation
+            do k=1, ibins
+               moxd(k)=0.0d0    !oxidated mass
+            enddo
 
-        call tmcond(tau,xk,Mkf,Nkf,Mko,Nko,j,moxd)
+            call tmcond(tau,xk,Mkf,Nkf,Mko,Nko,j,moxd)
 
-        !Check for number conservation
-        Ntoto=0.0d0
-        do k=1,ibins
-          Ntoto=Ntoto+Nko(k)
-        enddo
+            !Check for number conservation
+            Ntoto=0.0d0
+            do k=1,ibins
+               Ntoto=Ntoto+Nko(k)
+            enddo
 
-        dNerr=Ntotf-Ntoto
+            dNerr=Ntotf-Ntoto
 
-        if (abs(dNerr/Ntoto) .gt. 1.d-4) then
-          write(*,*)'ERROR in so4cond: Number not conserved'
-          write(*,*)'Ntoto, Ntotf, dNerr/Ntoto'
-     &             ,Ntoto, Ntotf, dNerr/Ntoto
-          if (abs(dNerr/Ntoto) .gt. 1d-2) then
-            write(*,*)'Serious Error in so4cond: Number not conserved 
+            if (abs(dNerr/Ntoto) .gt. 1.d-4) then
+               write(*,*)'ERROR in so4cond: Number not conserved'
+               write(*,*)'Ntoto, Ntotf, dNerr/Ntoto'
+     &              ,Ntoto, Ntotf, dNerr/Ntoto
+               if (abs(dNerr/Ntoto) .gt. 1d-2) then
+                  write(*,*)'Serious Error in so4cond: Number not conserved 
      &       less than 1 %'
-            STOP
-          endif
-        endif
+                  STOP
+               endif
+            endif
 
-        !Update gas phase concentration
-        mi(j)=0.0d0
-        mf(j)=0.0d0
-        do k=1,ibins
-          mi(j)=mi(j)+Mkf(k,j)
-          mf(j)=mf(j)+Mko(k,j)
-        enddo
+            !Update gas phase concentration
+            mi(j)=0.0d0
+            mf(j)=0.0d0
+            do k=1,ibins
+               mi(j)=mi(j)+Mkf(k,j)
+               mf(j)=mf(j)+Mko(k,j)
+            enddo
 
-        Gcf(j)=Gcf(j)+(mi(j)-mf(j))*gmw(j)/molwt(j)
+            Gcf(j)=Gcf(j)+(mi(j)-mf(j))*gmw(j)/molwt(j)
 
-        !Swap into Nk, Mk
-        do k=1,ibins
-          Nkf(k)=Nko(k)
-          do jj=1,icomp-1
-            Mkf(k,jj)=Mko(k,jj)
-          enddo
-        enddo
+            !check if gas concentration has become practically zero/ JJ 04/2016
+            if (Gcf(j) .lt. cthresh*boxmass) then
+               if (Gcf(j) .gt. 0.0) then
+                  Gcflag(j)=1   !do not condense this species further
+               else if (abs(Gcf(srtso4)) .le. 1.d-5) then ! if more negative than this the program will stop shortly
+                  Gcf(j)=0.d0
+                  Gcflag(j)=1
+               end if
+            end if
+            
+            !Swap into Nk, Mk
+            do k=1,ibins
+               Nkf(k)=Nko(k)
+               do jj=1,icomp-1
+                  Mkf(k,jj)=Mko(k,jj)
+               enddo
+            enddo
 
         !Update water concentrations
 c        call ezwatereqm(Mkf)
- 40   continue
-      enddo
+ 40         continue
+         enddo
 
 C Update time
-      time=time+cdt
+         time=time+cdt
 
 c=======================================================================    
        !Check organic gas
-      do fff=srtsoa1,srtsoa5    !!WITH EXLVOCS
-      if (Gcflag(fff) .eq. 0.d0) then
-        if (Gcf(fff) .lt. 0.0d0) then
-          if (abs(Gcf(fff)) .gt. 1.d-5) then
+         do fff=srtsoa1,srtsoa5 !!WITH EXLVOCS
+            if (Gcflag(fff) .eq. 0) then
+               if (Gcf(fff) .lt. 0.0) then
+                  if (abs(Gcf(fff)) .gt. 1.d-5) then
             !Gcf is substantially less than zero - this is a problem
-            write(*,*) 'ERROR in organis cond: organic(g) < 0'
-            write(*,*) 'time=',time
-            write(*,*) 'Gcf()=',Gcf(fff),fff
-            write(*,*) 'organic [=] ppt',Gcf(fff)/boxmass/1.0e-12
-     &               /gmw(fff)*28.9
-            write(*,*) 'Gass consumed in kg',(mi(fff)-mf(fff))
-     &               *gmw(fff)/molwt(fff)
-            write(*,*) 'time=',time,'cdt=',cdt
-            write(*,*) 'exponential decaying frac=',
-     &               exp(-1.d0*sK(fff)*cdt)
-            Mktot(fff)=0.0d0
-            do kk=1,ibins
-               Mktot(fff)=Mktot(fff)+Mk(kk,fff)
-            enddo
-            write(*,*)'Max. Possible Total Mkorgan =',
-     &         0.375d0*Mktot(fff)
-            write(*,*)'Initial organic mass=',Gci(fff)
-            STOP
-          else
+                     write(*,*) 'ERROR in organis cond: organic(g) < 0'
+                     write(*,*) 'time=',time
+                     write(*,*) 'Gcf()=',Gcf(fff),fff
+                     write(*,*) 'organic [=] ppt',Gcf(fff)/boxmass/1.0e-12
+     &                    /gmw(fff)*28.9
+                     write(*,*) 'Gass consumed in kg',(mi(fff)-mf(fff))
+     &                    *gmw(fff)/molwt(fff)
+                     write(*,*) 'time=',time,'cdt=',cdt
+                     write(*,*) 'exponential decaying frac=',
+     &                    exp(-1.d0*sK(fff)*cdt)
+                     Mktot(fff)=0.0d0
+                     do kk=1,ibins
+                        Mktot(fff)=Mktot(fff)+Mk(kk,fff)
+                     enddo
+                     write(*,*)'Max. Possible Total Mkorgan =',
+     &                    Mktot(fff)
+                     write(*,*)'Initial organic mass=',Gci(fff)
+                     STOP
+                  else
             !Gcf is negligibly less than zero - probably roundoff error
-            Gcf(fff)=0.0d0
-          endif
-        endif
-      endif
-      end do
-   
+                     Gcf(fff)=0.0d0
+                  endif
+               endif
+            endif
+         end do
+
+      end do !main loop
 C Repeat process if necessary
-      if (time .lt. dt) goto 10
+c      if (time .lt. dt) goto 10
      
  100  continue   !skip to here if there is no gas phase to condense
 

@@ -41,7 +41,8 @@ C-----ADJUSTABLE PARAMETERS---------------------------------------------
 C-----CODE--------------------------------------------------------------
 
       call eznh3eqm(Gci,Mki)
-      call mnfix_PSSA(Nki,Mki,ichm,jchm,kchm,3)
+cJJ      call mnfix_PSSA(Nki,Mki,ichm,jchm,kchm,3)
+      call mnfix_PSSA(Nki,Mki,ichm,jchm,kchm)
           ! adjust average mass in each size bin within boundaries
 
       do k=1, ibins

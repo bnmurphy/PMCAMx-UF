@@ -20,7 +20,7 @@ set DATE2   = $2
 #endif
 
 #
-set RUN     = "PMCAMxUF_ELVOC_faster"
+set RUN     = "PMCAMxUF_fastertmcond2"
 set OUTPUT  = $PMCAMxUF_USER_OUTPUT/$RUN
 #
 if ($DATE == "01") then

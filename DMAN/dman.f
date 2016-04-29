@@ -222,7 +222,8 @@ C-----Micro physical processes 6/9/04
 c---------------------------------------------------------
       !Call coagulation with dt/2
       if (icoag .eq. 1) then
-        call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm,4)
+cJJ        call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm,4)
+        call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm)
         call multicoag(dt/2.,time,Nk,Mk,Nkout,Mkout,ichm,jchm,kchm) !coagulation
 c
         do i=1,ibins
@@ -254,7 +255,8 @@ c
       ygas(mgsvi)=Gc(srtso4)*1.0d+12/boxmass*28.9/gmw(srtso4)
       ygas(mgnh3)=Gc(srtnh3)*1.0d+12/boxmass*28.9/gmw(srtnh3)
 
-      call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm,11)
+cJJ Not called here in master either - not necessary (?)
+cJJ      call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm,11)
 
       endif  
 
@@ -293,8 +295,9 @@ c--------------------------------------------------------
 
       end if
 
-
-       call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm,10)
+      ! should not be necessary to call mnfix here /JJ
+cJJ       call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm,10)
+      call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm)
 
       !Call coagulation with dt/2
       if (icoag .eq. 1) then
@@ -307,7 +310,8 @@ c
           Nk(i)=Nkout(i)
         enddo
 
-        call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm,5)
+cJJ        call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm,5)
+        call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm)
 
       endif
 

@@ -70,7 +70,6 @@ Cpja End of my additional notes
       PARAMETER (EX2=2.d0/3.d0,ZERO=0.0d0)
       double precision moxd(ibins) !moxid/Nact (win, 5/25/06)
       double precision c1, c2 !correction factor (win, 5/25/06)
-      double precision massfrac !condensing species mass fraction (of dry mass)
 
       external DMDT_INT
 
@@ -96,12 +95,11 @@ Cpja Sometimes, after repeated condensation calls, the average bin mass
 Cpja can be just above the bin boundary - in that case, transfer a some
 Cpja to the next highest bin
       do k=1,ibins-idiag
-         AMKD_tot=0.0d0
-         do kk=1,icomp-idiag
-            AMKD_tot=AMKD_tot+AMKD(k,kk)
-         enddo
-cJJ         if (AMKD_tot/ANKD(k).gt.xk(k+1)) then
-         if (AMKD_tot.gt.xk(k+1)*ANKD(k)) then
+        AMKD_tot=0.0d0
+        do kk=1,icomp-idiag
+        AMKD_tot=AMKD_tot+AMKD(k,kk)
+        enddo
+         if (AMKD_tot/ANKD(k).gt.xk(k+1)) then
             do j=1,icomp
                AMKD(k+1,j)=AMKD(k+1,j)+0.1d0*AMKD(k,j)
                AMKD(k,j)=AMKD(k,j)*0.9d0
@@ -118,27 +116,16 @@ Cpja Initialize ventilation variables so they don't do anything
       ENDDO
 
 Cpja Initialize AMKDRY and WR
-cJJ      DO L=1,ibins
-cJJ         AMKDRY(L)=0.0d0
-CJJ         AMKWET(L)=0.0d0
-cJJ         DO J=1,icomp-idiag
-cJJ            AMKDRY(L)=AMKDRY(L)+AMKD(L,J)
-cJJ         ENDDO
-cJJ         DO J=1,icomp
-cJJ            AMKWET(L)=AMKWET(L)+AMKD(L,J)
-cJJ         ENDDO
-cJJ         WR(L)=AMKWET(L)/AMKDRY(L)
-cJJ      ENDDO
-
-cJJ speeding up the initialization of AMKDRY and WR, note that AMKWET is unnecessary
-      AMKDRY=0.0d0
-      DO J=1,icomp-1
-         DO L=1,ibins
+      DO L=1,ibins
+         AMKDRY(L)=0.0d0
+         AMKWET(L)=0.0d0
+         DO J=1,icomp-idiag
             AMKDRY(L)=AMKDRY(L)+AMKD(L,J)
          ENDDO
-      ENDDO
-      DO L=1,ibins
-         WR(L)=1.d0+AMKD(L,srth2o)/AMKDRY(L)
+         DO J=1,icomp
+            AMKWET(L)=AMKWET(L)+AMKD(L,J)
+         ENDDO
+         WR(L)=AMKWET(L)/AMKDRY(L)
       ENDDO
 
 Cpja Initialize X() array of particle masses based on xk()
@@ -163,16 +150,19 @@ c
             ANK(L)=ANKD(L)
          ENDDO
       ELSE
-         AMK=0.d0
-         ANK=0.d0
-         
+         DO L=1,ibins
+            DO J=1,icomp
+               AMK(L,J)=0.d0
+            ENDDO
+            ANK(L)=0.d0
+         ENDDO
          WW=0.5d0
 c        IF(TAU.LT.0.)WW=.5d0
 c
 c identify tophats and do lagrangian growth
 c
          DO L=1,ibins
-            IF(ANKD(L).EQ.0.) CYCLE !GOTO 200
+            IF(ANKD(L).EQ.0.)GOTO 200
 
             !if tau is zero, leave everything in same bin
             IF (TAU(L) .EQ. 0.) THEN
@@ -181,9 +171,8 @@ c
                   AMK(L,J)=AMK(L,J)+AMKD(L,J)
                ENDDO
             ENDIF
-            IF (TAU(L) .EQ. 0.) CYCLE !GOTO 200
+            IF (TAU(L) .EQ. 0.) GOTO 200
 
-            massfrac=AMKD(L,CSPECIES)/AMKDRY(L)
 Cpja Limiting AVG, the average particle size to lie within the size
 Cpja bounds causes particles to grow or shrink arbitrarily and is
 Cpja wreacking havoc with choosing condensational timesteps and
@@ -191,7 +180,7 @@ Cpja conserving mass.  I have turned them off.
 c            AVG=MAX(X(L),MIN(X(L+1),AMKDRY(L)/(NEPS+ANKD(L))))
             AVG=AMKDRY(L)/ANKD(L)
             XX=X(L)/AVG
-            XI=0.5d0 + XX*(1.5d0 - XX)
+            XI=.5d0 + XX*(1.5d0 - XX)
             if (XI .LT. 1.d0) then
                !W1 will have sqrt of negative number
                write(*,*)'ERROR: tmcond - XI<1 for bin: ',L
@@ -209,19 +198,16 @@ c            AVG=MAX(X(L),MIN(X(L+1),AMKDRY(L)/(NEPS+ANKD(L))))
                write(*,*)'WTH>1 in cond.f, bin #',L
                STOP
             ENDIF
-            XU=AVG+WTH*0.5d0
-            XL=AVG-WTH*0.5d0
-
-            ! Ventilation variables set to zero -> no adjustment for tau /JJ
-            TAU_L=TAU(L)
+            XU=AVG+WTH*.5d0
+            XL=AVG-WTH*.5d0
 c Ventilation added bin-by-bin
-cJJ            TAU_L=TAU(l)*MAX(1.d0,VNTF(L)*VSW)
-cJJ            IF(TAU_L/TAU(l).GT. 6.) THEN
-cJJ               PRINT *,'TAU..>6.',TAU(l),TAU_L,VSW,L
-cJJ            ENDIF
-cJJ            IF(TAU_L.GT.TAU(l)) THEN 
-cJJ               PRINT *,'TAU...',TAU(l),TAU_L,VSW,L
-cJJ            ENDIF
+            TAU_L=TAU(l)*MAX(1.d0,VNTF(L)*VSW)
+            IF(TAU_L/TAU(l).GT. 6.) THEN
+               PRINT *,'TAU..>6.',TAU(l),TAU_L,VSW,L
+            ENDIF
+            IF(TAU_L.GT.TAU(l)) THEN 
+               PRINT *,'TAU...',TAU(l),TAU_L,VSW,L
+            ENDIF
 ! prior to 5/25/06 (win)
 !            YU=DMDT_INT(XU,TAU_L,WR(L))
 !            YUC=XU*AMKD(L,CSPECIES)/AMKDRY(L)+YU-XU
@@ -231,35 +217,26 @@ cJJ            ENDIF
 !            ENDIF
 !            YL=DMDT_INT(XL,TAU_L,WR(L)) 
 !            YLC=XL*AMKD(L,CSPECIES)/AMKDRY(L)+YL-XL
-!add new correction factor to YU and YL (win, 5/25/06)               
+!add new correction factor to YU and YL (win, 5/25/06)
             YU=DMDT_INT(XU,TAU_L,WR(L))
             YL=DMDT_INT(XL,TAU_L,WR(L)) 
-cJJ            if(moxd(L).eq.0d0) then
-cJJ               c1=1.d0          !for so4cond call, without correction factor.
-cJJ            else
-cJJ               !c1 = moxd(L)/((YU+YL)/2.-(XU+XL)/2.)
-cJJ               c1 = moxd(L)*2.d0/(YU+YL-XU-XL)
-cJJ            endif
-cJJ            c2 = c1 - (c1-1.d0)*(XU+XL)/(YU+YL)
-cJJ            YU = YU*c2
-cJJ            YL = YL*c2
-            ! since c1=1 will lead to c2=1 and unchanged YU&YL anyway /JJ
-            if(moxd(L).gt.0d0) then 
+            if(moxd(L).eq.0d0) then
+               c1=1.d0          !for so4cond call, without correction factor.
+            else
+               !c1 = moxd(L)/((YU+YL)/2.-(XU+XL)/2.)
                c1 = moxd(L)*2.d0/(YU+YL-XU-XL)
-               c2 = c1 - (c1-1.d0)*(XU+XL)/(YU+YL)
-               YU = YU*c2
-               YL = YL*c2
             endif
+            c2 = c1 - (c1-1.d0)*(XU+XL)/(YU+YL)
+            YU = YU*c2
+            YL = YL*c2
 !end part for fudging to get higher AVG 
 
-cJJ           YUC=XU*AMKD(L,CSPECIES)/AMKDRY(L)+YU-XU
-            YUC=XU*massfrac+YU-XU
+            YUC=XU*AMKD(L,CSPECIES)/AMKDRY(L)+YU-XU
             IF (YU .GT. X(ibins+1) ) THEN
                YUC=YUC*X(ibins+1)/YU
                YU=X(ibins+1)
             ENDIF
-cJJ            YLC=XL*AMKD(L,CSPECIES)/AMKDRY(L)+YL-XL
-            YLC=XL*massfrac+YL-XL
+            YLC=XL*AMKD(L,CSPECIES)/AMKDRY(L)+YL-XL
             DYI=1.d0/(YU-YL)
 
 c            print*,'XL',XL,'YL',YL,'XU',XU,'YU',YU
@@ -296,10 +273,9 @@ c               endif
                      AMK(L,J)=AMK(L,J)+AMKD(L,J)
                   endif
                enddo
-               CYCLE
-c               GOTO 200
+               GOTO 200
             ENDIF
-            IF(YU.LT.X(1)) CYCLE !GOTO 200
+            IF(YU.LT.X(1))GOTO 200
 c
 c Begin remapping (start search at present location if condensation)
 c
@@ -324,8 +300,7 @@ c
                         DM=AMKD(L,J)*(X(I+1)-YL)*DYI
                         IF (J.EQ.CSPECIES) THEN
                            XP=DMDT_INT(X(I+1),-1.0d0*TAU_L,WR(L))
-cJJ                           YM=XP*AMKD(L,J)/AMKDRY(L)+X(I+1)-XP
-                           YM=XP*massfrac+X(I+1)-XP
+                           YM=XP*AMKD(L,J)/AMKDRY(L)+X(I+1)-XP
                            AMK(I,J)=DN*(YM+YLC)*0.5d0+AMK(I,J)
                         ELSE
                            AMK(I,J)=AMK(I,J)+DM
@@ -333,14 +308,13 @@ cJJ                           YM=XP*AMKD(L,J)/AMKDRY(L)+X(I+1)-XP
                      enddo
                      ANK(I)=ANK(I)+DN
                      DO K=I+1,ibins
-                        IF(YU.LE.X(K+1)) EXIT !GOTO 100
+                        IF(YU.LE.X(K+1))GOTO 100
                         DN=ANKD(L)*(X(K+1)-X(K))*DYI
                         do j=1,icomp
                            DM=AMKD(L,J)*(X(K+1)-X(K))*DYI
                            IF (J.EQ.CSPECIES) THEN
                               XP=DMDT_INT(X(K),-1.0d0*TAU_L,WR(L))
-cJJ                              YM=XP*AMKD(L,J)/AMKDRY(L)+X(K)-XP
-                              YM=XP*massfrac+X(K)-XP
+                              YM=XP*AMKD(L,J)/AMKDRY(L)+X(K)-XP
                               AMK(K,J)=DN*1.5d0*YM+AMK(K,J)
                            ELSE
                               AMK(K,J)=AMK(K,J)+DM
@@ -348,19 +322,14 @@ cJJ                              YM=XP*AMKD(L,J)/AMKDRY(L)+X(K)-XP
                         enddo
                         ANK(K)=ANK(K)+DN
                      ENDDO
-                     IF (K.gt.ibins) THEN
-                        STOP 'Trying to put stuff in bin ibins+1'
-                     END IF
+                     STOP 'Trying to put stuff in bin ibins+1'
  100                 CONTINUE
                      DN=ANKD(L)*(YU-X(K))*DYI
                      do j=1,icomp
                         DM=AMKD(L,J)*(YU-X(K))*DYI
                         IF (J.EQ.CSPECIES) THEN
-                           if (K.ne.I+1) then
-                              XP=DMDT_INT(X(K),-1.0d0*TAU_L,WR(L))
-cJJ                           YM=XP*AMKD(L,J)/AMKDRY(L)+X(K)-XP
-                              YM=XP*massfrac+X(K)-XP
-                           end if
+                           XP=DMDT_INT(X(K),-1.0d0*TAU_L,WR(L))
+                           YM=XP*AMKD(L,J)/AMKDRY(L)+X(K)-XP
                            AMK(K,J)=DN*(YUC+YM)*0.5d0+AMK(K,J)
                         ELSE
                            AMK(K,J)=AMK(K,J)+DM
@@ -368,8 +337,7 @@ cJJ                           YM=XP*AMKD(L,J)/AMKDRY(L)+X(K)-XP
                      enddo
                      ANK(K)=ANK(K)+DN
                   ENDIF  !YU.LE.X(I+1)
-                  EXIT !out of the I loop /JJ
-cJJ                  GOTO 200
+                  GOTO200
                ENDIF   !YL.LT.X(I+1)
             ENDDO !I loop
  200        CONTINUE
