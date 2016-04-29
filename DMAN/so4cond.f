@@ -392,8 +392,8 @@ C-----Calculate tau values for all species/bins
         ! dp, but that is used to calculate atauc, not atau!
 
         !Calculate a driving force for ammonia condensation
-c        if (sK(srtnh3) .gt. 0.0  .and. atauc(k,srtnh3).gt.0.D0) then
-        if (sK(srtnh3) .gt. 0.0) then
+        if (sK(srtnh3) .gt. 0.0  .and. atauc(k,srtnh3).gt.0.D0) then
+c        if (sK(srtnh3) .gt. 0.0) then
           atau(k,srtnh3)=tj(srtnh3)*R*temp/(molwt(srtnh3)*1.d-3)
      &      /(boxvol*1.d-6)*tk(k,srtnh3)*Gcf(srtnh3)/sK(srtnh3)
      &      *(1.d0-exp(-1.d0*sK(srtnh3)*cdt))
@@ -402,8 +402,8 @@ c        if (sK(srtnh3) .gt. 0.0  .and. atauc(k,srtnh3).gt.0.D0) then
         endif
 
         !Calculate a driving force for amine condensation
-c        if (sK(srtdma) .gt. 0.0 .and. atauc(k,srtdma).gt.0.0) then
-        if (sK(srtdma) .gt. 0.0) then
+        if (sK(srtdma) .gt. 0.0 .and. atauc(k,srtdma).gt.0.0) then
+c        if (sK(srtdma) .gt. 0.0) then
           atau(k,srtdma)=tj(srtdma)*R*temp/(molwt(srtdma)*1.d-3)
      &      /(boxvol*1.d-6)*tk(k,srtdma)*Gcf(srtdma)/sK(srtdma)
      &      *(1.d0-exp(-1.d0*sK(srtdma)*cdt))

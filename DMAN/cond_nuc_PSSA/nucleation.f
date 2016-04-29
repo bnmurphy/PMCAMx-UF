@@ -91,7 +91,6 @@ c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
 
       fn = 0.d0
       rnuc = 0.d0
-      gtime = 0.d0
       fn_all = 0.d0
 
       ! if no nucleation occurs the final arrays will be same as the initial arrays
@@ -167,76 +166,6 @@ c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
          endif    
       endif
 
-C     if nucleation occured, see how many particles grow to join the first size
-C     section
-c$$$      if (fn.gt.0.d0) then
-cdbg         print*, 'entered fn'
-cdbg         print*, 'fn', fn, 'rnuc',rnuc
-         ! get the time it takes to grow to first size bin
-Cjrp         d1 = rnuc*2.d0*1E-9
-Cjrp         d2 = (6.d0*sqrt(xk(1)*xk(2))/1800.d0/pi)**(1.d0/3.d0)
-Cjrp         print*, 'd1', d1, 'd2', d2
-Cjrp         call getGrowthTime(d1,d2,Gc(srtso4),temp,
-Cjrp     &        boxvol,gtime)
-Cjrp         print*, 'gtime', gtime
-Cjrp         ! get the first order loss rate of these particles due to coagulation
-Cjrp         ! get loss rate for cluster size
-Cjrp         d1 = rnuc*2.d0*1E-9
-Cjrp         call getCoagLoss(d1,ltc1)
-Cjrp         print*, 'd1', d1, 'ltc1', ltc1
-Cjrp         ! we want the loss rate for particles at the size where they are added
-Cjrp         ! to bin 1
-Cjrp         Mktot = 0.d0
-Cjrp         do j=1,icomp
-Cjrp            Mktot=Mktot+Mk(1,j)
-Cjrp         enddo
-Cjrp         Mktot=Mktot+2.d0*Mk(1,srtso4)/96.d0-Mk(1,srtnh4)/18.d0 ! account for h+
-Cjrp
-Cjrp         if (Mktot.gt.meps)then
-Cjrp            density=aerodens_PSSA(Mk(1,srtso4),0.d0,Mk(1,srtnh4),
-Cjrp     &           0.d0,Mk(1,srth2o)) !assume bisulfate
-Cjrp         else
-Cjrp            density = 1400.
-Cjrp         endif
-Cjrp
-Cjrp         if(Nk(1).gt.neps .and. Mktot.gt.meps)then
-Cjrp            mp=Mktot/Nk(1)
-Cjrp         else
-Cjrp            mp=sqrt(xk(1)*xk(2))
-Cjrp         endif
-Cjrp         
-Cjrp         d1 = (6.d0*mp/density/pi)**(1.d0/3.d0)
-Cjrp         call getCoagLoss(d1,ltc2)
-Cjrp         print*, 'd1', d1, 'ltc2', ltc2 
-Cjrp
-Cjrp         ! take average of loss rate constants
-Cjrp         ltc = (ltc1 + ltc2)/2.d0
-Cjrp         print*, 'ltc', ltc
-Cjrp
-Cjrp	 if (gtime.lt.0.d0)then
-Cjrp	    gtime=0.d0
-Cjrp         endif
-Cjrp
-Cjrp         frac = exp(-ltc*gtime)
-Cjrp         print*,'frac', frac
-Cjrpc         frac = 1.d0
-
-cdbg         print*,'Nk_NUC',Nki(nuc_bin),Nkf(nuc_bin)
-c$$$         Gcf(srtso4) = Gci(srtso4)! - (Mkf(nuc_bin,srtso4)-mold)
-c$$$                                  !PSSA decide Gc as a diagnostic way
-
-
-C there is a chance that Gcf will go less than zero because we are artificially growing
-C particles into the first size bin.  don''t let it go less than zero.
-c         if (Gcf(srtso4).lt.0.d0)then
-c            Mkf(nuc_bin,srtso4) = Mki(nuc_bin,srtso4) + 
-c     &           Gci(srtso4)*96./98.
-c            Nkf(nuc_bin) = Nki(1) + Gci(srtso4)*96./98./mnuc
-c            Gcf(srtso4) = 0.d0
-c            print*,'used up h2so4 in nuc subroutine'
-c         endif
-
-c$$$      endif
 
       RETURN
       END
