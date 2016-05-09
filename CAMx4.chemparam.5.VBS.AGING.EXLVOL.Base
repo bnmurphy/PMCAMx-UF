@@ -1,10 +1,10 @@
 CAMx Version       |VERSION4.0
 Mechanism ID       |5
 Description        |SAPRC 99 Fixed Parameter
-No of gas species  |68
-#aero #bin dt_aero |15 43 15.0 
+No of gas species  |69
+#aero #bin dt_aero |16 43 15.0 
 bin cutpoints [um] |0.0008,0.001008,0.00127,0.0016,0.002016,0.00254,0.0032,0.004032,0.00508,0.0064,0.008063,0.010159,0.0128,0.016127,0.020319,0.0256,0.032254,0.040637,0.0512,0.064508,0.081275,0.1024,0.129016,0.16255,0.2048,0.258032,0.3251,0.4096,0.516064,0.650199,0.8192,1.032127,1.300399,1.6384,2.064255,2.600798,3.2768,4.128509,5.201596,6.5536,8.257019,10.40319,20.,40.
-No of reactions    |216
+No of reactions    |217
 Prim photo rxns    |6 1 123 124 18 131 173
 No of sec photo rxn|24
 ID, prim ID, scale | 15 1   2.379E+00
@@ -101,6 +101,7 @@ Species Records
  66  CG3         1.00E-12  2.70e+03    -6492.      2.50       0.0        1.
  67  CG4         1.00E-12  2.70e+03    -6492.      2.50       0.0        1.
  68  CG5         1.00E-12  2.70e+03    -6492.      2.50       0.0        1.
+ 69  AMINE	 1.00E-12  9.62e+00        0.	   2.50	      0.0	 1.
      Aero Spec   lower bnd      Density
   1  SOA1        1.00E-09       1.0
   2  SOA2        1.00E-09       1.0
@@ -115,8 +116,9 @@ Species Records
  11  PNH4        1.00E-09       1.5
  12  PNO3        1.00E-09       1.5
  13  PSO4        1.00E-09       1.5
- 14  PH2O        1.00E-09       1.0
- 15  NUM         1.00E-09       1.8
+ 14  PAMINE	 1.00E-09       1.5
+ 15  PH2O        1.00E-09       1.0
+ 16  NUM         1.00E-09       1.8
 Reaction Records
 Rxn Typ Order Parameters (1 to 12, depending upon Typ)
 1    1    1           0.0
@@ -335,4 +337,5 @@ Rxn Typ Order Parameters (1 to 12, depending upon Typ)
 214  1    2    3.6883E+03
 215  1    2    3.6883E+03
 216  1    2    0.0000E+00
+217  2	  2    3.8692E+04      -60.14
 
