@@ -102,9 +102,9 @@ cdbg      print*,'h2so4',h2so4,'nh3ppt',nh3ppt
 
 C     if requirements for nucleation are met, call nucleation subroutines
 C     and get the nucleation rate and critical cluster size
-      if (h2so4.gt.1.d4) then
-         if (amine_nuc.eq.1.and.dma_molec.gt.1.d4) then
-            call amine_nucl(temp,cs,h2so4,dma_molec,fn,rnuc) !amine nuc
+      if (amine_nuc.eq.1 .and.h2so4.gt.minval(amine_nuc_tbl_H2SO4).and.
+     &     dma_molec.gt.minval(amine_nuc_tbl_DMA)) then
+         call amine_nucl(temp,cs,h2so4,dma_molec,fn,rnuc) !amine nuc
 
 c$$$            !Update DMA Concentration
 c$$$	    !The 0.31 factor should be the mass fraction of DMA in
@@ -118,52 +118,52 @@ c$$$               print*, 'Neg DMA in nucleation', dmappt
 c$$$               dmappt = 0.d0
 c$$$            end if
 
-            if (fn.gt.0.d0) then
-               !update mass and number
-               !nuclei consist of sulfate and amine compounds
-	       !assume 1-to-1 ratio of DMA and sulfuric acid
-               mfrac = (/0.69, 0.0, 0.0, 0.31, 0.0/)
-               call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+         if (fn.gt.0.d0) then
+            !update mass and number
+            !nuclei consist of sulfate and amine compounds
+	    !assume 1-to-1 ratio of DMA and sulfuric acid
+            mfrac = (/0.69, 0.0, 0.0, 0.31, 0.0/)
+            call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
                
-               !Update DMA gas phase concentration
-               Gcf(srtdma)=Gcf(srtdma)-Mkf(nuc_bin,srtdma)   ! kg/grid cell
-               !nucleation could use all of the DMA so check that we do not get negative
-               if (Gcf(srtdma).lt.0.d0) then
-                  print*, 'Neg DMA in nucleation', Gcf(srtdma)
-                  Gcf(srtdma) = 0.d0
-               end if
+            !Update DMA gas phase concentration
+            Gcf(srtdma)=Gcf(srtdma)-Mkf(nuc_bin,srtdma) ! kg/grid cell
+            !nucleation could use all of the DMA so check that we do not get negative
+            if (Gcf(srtdma).lt.0.d0) then
+               print*, 'Neg DMA in nucleation', Gcf(srtdma)
+               Gcf(srtdma) = 0.d0
+            end if
 
-               !set amine nucleation rate as number 3 for now (it is
-               !the latest addition to fn_all
-               fn_all(3)=fn
-            endif
-         endif       
+            !set amine nucleation rate as number 3 for now (it is
+            !the latest addition to fn_all
+            fn_all(3)=fn
+         endif
+      endif       
 
-         if (nh3_molec.gt.1.d6.and.tern_nuc.eq.1) then
+      if (h2so4.gt.minval(tern_nuc_tbl_H2SO4).and.
+     &     nh3_molec.gt.minval(tern_nuc_tbl_NH3).and.tern_nuc.eq.1) then
 c$$$         if (nh3ppt.gt.0.1.and.tern_nuc.eq.1) then
 c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
-            call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc)
+         call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc)
 
-            if (fn.gt.0.d0) then
-               !update mass and number
-               !nuclei are assumed as ammonium bisulfte
-               mfrac = (/0.8144, 0.0, 0.1856, 0.0, 0.0/)
-               call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
-               fn_all(1) = fn
-            endif
+         if (fn.gt.0.d0) then
+            !update mass and number
+            !nuclei are assumed as ammonium bisulfte
+            mfrac = (/0.8144, 0.0, 0.1856, 0.0, 0.0/)
+            call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+            fn_all(1) = fn
          endif
+      endif
 
-         if (bin_nuc.eq.1) then
-            call vehk_nucl(temp,rh,h2so4,fn,rnuc) !binary nuc
+      if (h2so4.gt.1.d4.and.bin_nuc.eq.1) then
+         call vehk_nucl(temp,rh,h2so4,fn,rnuc) !binary nuc
 
-            if (fn.gt.0.d0) then
-               !update mass and number
-               !nuclei are assumed to be sulfuric acid
-               mfrac = (/1.0, 0.0, 0.0, 0.0, 0.0/)
-               call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
-               fn_all(2) = fn
-            endif
-         endif    
+         if (fn.gt.0.d0) then
+            !update mass and number
+            !nuclei are assumed to be sulfuric acid
+            mfrac = (/1.0, 0.0, 0.0, 0.0, 0.0/)
+            call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+            fn_all(2) = fn
+         endif
       endif
 
 

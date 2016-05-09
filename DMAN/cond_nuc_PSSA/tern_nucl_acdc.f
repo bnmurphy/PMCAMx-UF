@@ -123,11 +123,11 @@ C
       end if
 
       !Store the complements of these factors
-      ic1  = 1. - ii1
-      ic2  = 1. - ii2
-      ic3  = 1. - ii3
-      ic4  = 1. - ii4
-      ic5  = 1. - ii5
+      ic1  = 1.d0 - ii1
+      ic2  = 1.d0 - ii2
+      ic3  = 1.d0 - ii3
+      ic4  = 1.d0 - ii4
+      ic5  = 1.d0 - ii5
 
       !Combine Contributions in all five dimensions to yield
       !Nucleation Rate [particles cm-3 s-1]
@@ -164,6 +164,7 @@ C
      &     ic1*ii2*ii3*ii4*ii5*log10(tern_nuc_tbl_J(itemp, irh1, ics1, icna1, inh31)) +
      &     ii1*ii2*ii3*ii4*ii5*log10(tern_nuc_tbl_J(itemp1, irh1, ics1, icna1, inh31))
       
+      fn=10**fn
       ! The biggest cluster in ACDC simulation (and to which the J corresponds to) 
       ! had a mobility diameter of about 1.2 nm -> set rnuc to 0.6 nm
  
