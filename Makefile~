@@ -453,10 +453,11 @@ $(PSSA)/eznh3.o \
 $(PSSA)/ezwatereqm.o \
 $(PSSA)/getNucRate.o \
 $(PSSA)/getNucMass.o \
-$(PSSA)/nuc_massupd.o \
-$(PSSA)/tern_nucl_acdc.o \
 $(PSSA)/napa_nucl.o \
+$(PSSA)/amine_nucl.o \
+$(PSSA)/tern_nucl_acdc.o \
 $(PSSA)/vehk_nucl.o \
+$(PSSA)/nuc_massupd.o \
 $(PSSA)/mnfix_PSSA.o \
 $(PSSA)/waterso4.o \
 $(PSSA)/waternacl.o
@@ -1561,10 +1562,7 @@ $(PSSA)/getH2SO4conc.o    : $(PSSA)/getH2SO4conc.f                             \
 $(PSSA)/getNucRate.o	  : $(PSSA)/getNucRate.f                               \
 			  $(INC)/sizecode.COM
 
-$(PSSA)/getNucMass.o	  : $(PSSA)/getNucMass.f                               \
-			  $(INC)/sizecode.COM
-
-$(PSSA)/nuc_massupd.o	  : $(PSSA)/nuc_massupd.f                               \
+$(PSSA)/getNucMass.o	  : $(PSSA)/getNucMass.f			       \
 			  $(INC)/sizecode.COM
 
 $(PSSA)/mnfix_PSSA.o	  : $(PSSA)/mnfix_PSSA.f                               \
@@ -1572,11 +1570,16 @@ $(PSSA)/mnfix_PSSA.o	  : $(PSSA)/mnfix_PSSA.f                               \
 
 $(PSSA)/napa_nucl.o	  : $(PSSA)/napa_nucl.f                          
 
+$(PSSA)/amine_nucl.o	  : $(PSSA)/amine_nucl.f
+
+$(PSSA)/tern_nucl_acdc.o  : $(PSSA)/tern_nucl_acdc.f			       \
+			  $(INC)/sizecode.COM                          
+
 $(PSSA)/nucleation.o	  : $(PSSA)/nucleation.f                               \
 			  $(INC)/sizecode.COM
 
-$(PSSA)/tern_nucl_acdc.o  : $(PSSA)/tern_nucl_acdc.f			       \
-			  $(INC)/sizecode.COM
+$(PSSA)/nuc_massupd.o     : $(PSSA)/nuc_massupd.f				\
+                          $(INC)/sizecode.COM
 
 $(PSSA)/vehk_nucl.o	  : $(PSSA)/vehk_nucl.f                      
 

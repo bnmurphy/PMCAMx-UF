@@ -84,6 +84,8 @@ c
       character*20 version
       character*10 name
       dimension tmass(97,90,14,nsec) ! should be improved by jgj 2/18/06
+      integer igrd
+
 c
       data version /'CAMx v4.02, 03-07-09'/
 c
@@ -109,7 +111,7 @@ c
         call zeros(avcnc(iptr4d(igrd)),nodes)
         nodes = ncol(igrd)*nrow(igrd)*3*navspc
         call zeros(depfld(iptrdp(igrd)),nodes)
-        nodes = ncol(igrd)*nrow(igrd)*nlay(igrd)*2
+        nodes = ncol(igrd)*nrow(igrd)*nlay(igrd)*3
         call zeros(avJnuc(iptr4d(igrd)),nodes)
       enddo
 c
@@ -876,7 +878,7 @@ c
           call zeros(avcnc(iptr4d(igrd)),nodes)
           nodes = ncol(igrd)*nrow(igrd)*3*navspc
           call zeros(depfld(iptrdp(igrd)),nodes)
-          nodes = ncol(igrd)*nrow(igrd)*nlay(igrd)*2
+          nodes = ncol(igrd)*nrow(igrd)*nlay(igrd)*3
           call zeros(avJnuc(iptr4d(igrd)),nodes)
         enddo
 

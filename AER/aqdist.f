@@ -83,6 +83,8 @@ c     working in log space for a log-normal distribution
 
       do i = 1,nsect
       fdistx2(i) = 0.d0
+      fdistx2a(i) = 0.d0
+      fdistx2b(i) = 0.d0
       fdistx(i) = 0.d0
       sumx = 0.d0
       enddo
@@ -107,24 +109,25 @@ c Normalize so fdist sums to 1
       fdistx(i) = fdistx(i)/sumx
       enddo
       
+      !We want the fraction of material in each PMCAMx aerosol bin
+      !representative of the sum of both lognormal size distirbutions
+      !(fdistx2a and fdistx2b)
       sumx1 = 0.d0
       sumx2 = 0.d0
-cdavid      do i = isect,nsect ! bug6 no exit isect, replace isect with 1
-      do i = 1,nsect ! david   
-      if(daer(i) .gt. dactiv .and. daer(i) .lt. dsep) then
-      sumx1 = sumx1+fdistx2a(i)
-      else
-      sumx2 = sumx2+fdistx2b(i)
-      endif
+      do i = 1,nsect
+         if(daer(i) .gt. dactiv .and. daer(i) .lt. dsep) then
+            sumx1 = sumx1+fdistx2a(i)
+         else
+            sumx2 = sumx2+fdistx2b(i)
+         endif
       enddo
-
-cdavid      do i = isect,nsect ! bug6 no exit isect, replace isect with 1      
-      do i = 1,nsect ! david
-      if(daer(i) .gt. dactiv .and. daer(i) .lt. dsep) then
-      fdistx2(i) = fdistx2a(i)/sumx1
-      else
-      fdistx2(i) = fdistx2b(i)/sumx2
-      endif
+      
+      do i = 1,nsect
+         if(daer(i) .gt. dactiv .and. daer(i) .lt. dsep) then
+            fdistx2(i) = fdistx2a(i)/sumx1
+         else
+            fdistx2(i) = fdistx2b(i)/sumx2
+         endif
       enddo                 
 
       return

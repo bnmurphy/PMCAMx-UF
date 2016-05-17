@@ -25,7 +25,8 @@ c
      &              khcl_c,ksoa1_c,ksoa2_c,ksoa3_c,ksoa4_c,ksoa5_c,
      &              kcrst_c,kpoc_c,kpec_c,kph2o_c,kpcl_c,kna_c,
 cjgj     &              kpnh4_c,kpno3_c,kpso4_c,knxoy_c
-     &              kpnh4_c,kpno3_c,kpso4_c,knxoy_c,knum_c
+     &              kpnh4_c,kpno3_c,kpso4_c,knxoy_c,knum_c,
+     &              kamine_c,kpamine_c
 c
 c  Common /wtfac/ contains adjustment factors for aerosol mol. wts. 
 c   for interface between aerosol modules = CAMx mol.wts / Aerosol module mol.wts. 

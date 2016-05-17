@@ -241,7 +241,9 @@ c      tdt=2.d0/3.d0  !now a parameter
       if (Gci(srtsoa5) .lt. cthresh*boxmass) Gcflag(srtsoa5)=1 ! EXLVOCs 
 
       !If PSSA is on, turn on Gcflag(srtso4) for ezcond does H2SO4 condensatoin.
-       Gcflag(srtso4)=1 !PSSA          
+       Gcflag(srtso4)=1 !PSSA
+       Gcflag(srtnh3)=1
+       Gcflag(srtdma)=1
 
        !JJ moved these before the main time loop  as they do not change with the adaptive time steps
        mu=2.5277e-7*temp**0.75302
@@ -272,7 +274,7 @@ C Calculate tj and tk factors needed to calculate tau values
 c            mp=(Mkf(k,srtso4)+Mkf(k,srtnh3))/Nkf(k)
                mp=(Mkf(k,srtso4) +Mkf(k,srtsoa1)+Mkf(k,srtsoa2)+ 
      &              +Mkf(k,srtsoa3)+Mkf(k,srtsoa4)+Mkf(k,srtsoa5)+ !  EXLVOCs
-     &              +Mkf(k,srtinrt)+Mkf(k,srtnh3))/Nkf(k)
+     &              +Mkf(k,srtinrt)+Mkf(k,srtnh3)+Mkf(k,srtdma))/Nkf(k)
 
             else
            !nothing in this bin - set to "typical value"
@@ -314,7 +316,8 @@ c@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
             sum_tot_organic(k)=Mkf(k,srtsoa1) +Mkf(k,srtsoa2)+ !
      &           +Mkf(k,srtsoa3)+Mkf(k,srtsoa4)+ Mkf(k,srtsoa5)+ ! EXLVOCs
-     &           +Mkf(k,srtso4)+Mkf(k,srtnh3)+ Mkf(k,srtinrt)+Mkf(k,srth2o) ! 
+     &           +Mkf(k,srtso4)+Mkf(k,srtnh3)+ Mkf(k,srtdma)+
+     &           +Mkf(k,srtinrt)+Mkf(k,srth2o) ! 
 
             do dii=srtsoa1,srtsoa5 !!WITH EXLVOCS
                if (Mkf(k,dii).gt.0..and.sum_tot_organic(k).gt.0.) then

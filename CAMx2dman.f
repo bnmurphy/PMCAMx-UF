@@ -40,17 +40,17 @@ c
 c-----Variable declarations
 c
       integer ibins, icomp
-      parameter (ibins=41, icomp=9)
+      parameter (ibins=41, icomp=10)
 
 
-      integer srtso4, srtinrt,  srtnh3, srth2o
+      integer srtso4, srtinrt, srtnh3, srtdma, srth2o !species indicators
       integer srtsoa1, srtsoa2, srtsoa3, srtsoa4 
       integer srtsoa5    !!EXLVOCS
 c
       parameter (srtso4=1, srtinrt=2)
       parameter (srtsoa1=3, srtsoa2= 4, srtsoa3=5, srtsoa4=6)
       parameter (srtsoa5=7)  !!EXLVOCS
-      parameter (srtnh3=8, srth2o=9)
+      parameter (srtnh3=8, srtdma=9, srth2o=10)
       integer i, j ! counter variables
       integer ii, jj ! counter variables
       integer iflag ! a flag for checking a negative mass
@@ -69,6 +69,7 @@ c-----------------------------------------------------------
  
       real h2so4      ! sulfuric acid gas [=] ppt
       real nh3ppt     ! ammonia gas [=] ppt
+      double precision dmappt ! dma gas [=] ppt
       real relh       ! relative humidity
       real tstart     ! starting time and ending time of simulation
       real tend       ! starting time and ending time of simulation
@@ -86,12 +87,7 @@ c-----------------------------------------------------------
       real tot_inert2 ! total inert mass after calling dman
 c
       real cvt, cvt2
-      real sum_num_dman,sum_num_dman2, sum_mass_dman, sum_soa1_dman
-      real  sum_soa2_dman,  sum_soa3_dman,  sum_soa4_dman
-      real  sum_soa5_dman !EXLVOCS
-      real  sum_init_dman, sum_nh4_dman
-
-      double precision fndt(2) !Nucleation diagnostic
+      double precision fndt(3) !Nucleation diagnostic
 c
 c-----Adjustable parameters
 c
@@ -218,7 +214,7 @@ C========================================================================
         endif
       endif
 
-c------------------------------------------------------------------------
+      !Ammonia
       if (q(naer+inh3).ge.0.d0) then
         nh3ppt = q(naer+inh3) * 1.0d6 
       else
@@ -233,15 +229,30 @@ c------------------------------------------------------------------------
           STOP
         endif
       endif
-c---------------------------------------------------------------------
 
-      do i=1,ibins
-c----------- check num   ---------------------------------------      
+      !Dimethyl Amine
+      if (q(naer+idma).ge.0.d0) then
+        dmappt = q(naer+idma) * 1.0d6 
+      else
+        if (q(naer+idma).gt.(-eps*1.0d-6)) then
+          dmappt = eps
+          q(naer+idma) = eps * 1.0d-6
+        else
+          write(*,*)'DMA is less than zero'
+          write(*,*)'q(naer+inh3) [ppm]=',q(naer+idma)
+          write(*,*)'Coordinate =', ich, jch, kch
+          write(*,*)'dsulfdt=',dsulfdt
+          STOP
+        endif
+      endif
+ 
+      !Load Aerosol Variables
+      do i=1, ibins
          ! First check for negative tracers
          if (q((i-1)*nsp+knum).lt.0.0) then
             if (q((i-1)*nsp+knum).gt.(-Neps*(1./boxvol)))then
-               q((i-1)*nsp+knum) = Neps*(1./boxvol)
-               do j=2, nsp-1 ! from KNa to KEC, all mass species wo H2O 
+               q((i-1)*nsp+knum) = Neps*(1./boxvol) 
+               do j=2, nsp-1 ! all mass species wo H2O
                   q((i-1)*nsp+j) = Neps*(1./boxvol)*1.4*xk(i)*(1./real(nsp-2))
                enddo
             else
@@ -253,7 +264,7 @@ c----------- check num   ---------------------------------------
                   write(*,*)q((ii-1)*nsp+knum)
                enddo
                write(*,*)'q(+k...)='
-               do jj=2, nsp-1 ! from KNa to KEC, all mass species wo H2O 
+               do jj=2, nsp-1 ! all mass species wo H2O
                   write(*,*)'species=',jj
                   do ii=1,ibins
                      write(*,*)q((ii-1)*nsp+jj)
@@ -264,7 +275,7 @@ c----------- check num   ---------------------------------------
          endif
 c---------------------------------------------------------------------         
          totmass=0.0
-         do j=2, nsp-1 ! from KNa to KEC, all mass species wo H2O  !orig 13(14) 
+         do j=2, nsp-1 ! all mass species wo H2O
             totmass=totmass+q((i-1)*nsp+j)
             if (q((i-1)*nsp+j).lt.0.0) then
                if (q((i-1)*nsp+j).gt.(-Meps*(1./(cvt*boxvol)))) then
@@ -279,7 +290,7 @@ c---------------------------------------------------------------------
                      write(*,*)q((ii-1)*nsp+knum)
                   enddo
                   write(*,*)'q(+k...)='
-                  do jj=2, nsp-1 ! from KNa to KEC, all mass species wo H2O 
+                  do jj=2, nsp-1 ! all mass species wo H2O
                      write(*,*)'species=',jj
                      do ii=1,ibins
                         write(*,*)q((ii-1)*nsp+jj)
@@ -292,7 +303,7 @@ c---------------------------------------------------------------------
 c--------------------------------------------------------------------------         
          if (iflag.eq.1) then
             newmass=0.0
-            do jj=2, nsp-1 ! from KNa to KEC, all mass species wo H2O 
+            do jj=2, nsp-1 ! all mass species wo H2O
                newmass=newmass+q((i-1)*nsp+jj)
             enddo
             q((i-1)*nsp+knum)=q((i-1)*nsp+knum)*newmass/totmass
@@ -333,6 +344,7 @@ c
          Mk(i,srtsoa5) = q((i-1)*nsp+kcl+5) * cvt * boxvol !!EXLVOCS
 
          Mk(i,srtnh3)=q((i-1)*nsp+knh4) * cvt * boxvol
+         Mk(i,srtdma)=q((i-1)*nsp+kpami)* cvt * boxvol     !amine /JJ
          Mk(i,srth2o)=q((i-1)*nsp+kh2o) * cvt * boxvol
       enddo
 
@@ -340,8 +352,8 @@ c
 
 c================ SUBROUTINE DMAN ======================================
    
-      call dman(tstart,tend,Nk,Mk,h2so4,nh3ppt,relh,tempK,pres,dsulfdt,
-     &     organic_ppt,ich,jch,kch,fndt)
+      call dman(tstart,tend,Nk,Mk,h2so4,nh3ppt,dmappt,relh,tempK,pres,
+     &     dsulfdt,organic_ppt,ich,jch,kch,fndt)
 
 C======================================================================
 
@@ -414,6 +426,7 @@ c-----Return DMAN values to the PMCAMx variable, check I can call initbounds
         q((i-1)*nsp+kso4) = Mk(i,srtso4) * cvt2 * (1.0/boxvol)
 
         q((i-1)*nsp+knh4) = Mk(i,srtnh3) * cvt2 * (1.0/boxvol)
+        q((i-1)*nsp+kpami)= Mk(i,srtdma) * cvt2 * (1.0/boxvol)
         q((i-1)*nsp+kh2o) = Mk(i,srth2o) * cvt2 * (1.0/boxvol)
 
         ! Mk [=] kg, q [=] ug/m3
@@ -545,7 +558,22 @@ C---------------------   NH3     -------------------------
           STOP
         endif
       endif
-C---------------------------------------------------------
+
+      !Dimethyl Amine
+      if (dmappt.ge.0.0) then
+        q(naer+idma) = dmappt * 1.0d-6 
+      else
+        if (dmappt.gt.-eps) then
+          q(naer+idma) = eps * 1.0d-6
+          dmappt = eps
+        else
+          write(*,*)'DMA is less than zero'
+          write(*,*)'dmappt=',dmappt
+          write(*,*)'Coordinate =', ich, jch, kch
+          write(*,*)'dsulfdt=',dsulfdt
+          STOP
+        endif
+      endif
 
       RETURN
       END

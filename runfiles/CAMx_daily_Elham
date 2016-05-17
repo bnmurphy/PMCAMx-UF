@@ -1,51 +1,61 @@
 #!/bin/csh
 #
-#   Script to Run PMCAMx for eastern US July 12-28, 2001 test case
+#   Script to Run PMCAMx for Europe May 01-29, 2008 test case
 #
-#set INPUT  = "/home1/jgj/CAMx4inputs"
-#set INPUTA = "/home1/jgj/CAMx4inputs/prep/area"
-#set INPUTP = "/home1/jgj/CAMx4inputs/prep/point"
-set INPUT  = "/usr/people/BaseInput/July"
-set INPUT2  = "/usr/people/jgj"
-set INPUTA = "/usr/people/jgj/prep/area"
-set INPUTP = "/usr/people/jgj/prep/point"
+#set INPUT  = "/home/christos/Research/ICEHT/eucaari"
+#set INPUT2 = "/home/christos/Research/ICEHT/ufeu/inputs"
+#set INPUT  = "/home/x_elhba/PMCAMxUF/Research/eucaari"
+#set INPUT2 = "/home/x_elhba/PMCAMxUF/Research/ufeu/inputs"
+
+set INPUT  = "/nobackup/global/x_elhba/Inputs_May_Europe"
+set INPUT2 = $INPUT
+
+
 
 set DATE    = $1
 set DATE2   = $2
-@ DATE3   = $DATE - 1
+@ DATE3   = $DATE2 + 121
+@ DATE4   = $DATE2 + 120
+
+if ($DATE < 10) then
+  set DATE = 0$DATE
+endif
+
 #
-set RUN     = "2001BaseE"
-set OUTPUT  = "/home1/jgj/Outputs/PMCAMxOutput3/$RUN"
-#set OUTPUT  = "/usr/people/jgj/Outputs/PMCAMxOutput3/$RUN"
+set RUN     = "tuv_lCorrected"
+#set OUTPUT  = "/home/x_elhba/PMCAMxUF/Research/ufeu/default/outputs/$RUN"
+set OUTPUT  = "/nobackup/global/x_elhba/outputs/$RUN"
 #
-if ($DATE == "193") then
+if ($DATE == "01") then
   mkdir -p $OUTPUT
   set RST  = "false"
   set RSTF = ""
 else
   set RST  = "true"
-  set RSTF = $OUTPUT/4rpos.baseE.$DATE3.$RUN.inst.2
+  set RSTF = $OUTPUT/Eucaari.May.$DATE4.$RUN.inst.2
 endif 
-echo $OUTPUT/4rpos.baseE.$DATE3.$RUN.inst.2
+echo $OUTPUT/Eucaari.May.$DATE4.$RUN.inst.2
 #
 date 
 #
 #  --- Create the input file (always called CAMx.in)
 #
 cat << ieof > CAMx.in
-CAMx Version       |VERSION4.0
-Run Message        |PMCAMx v4.0 eastern US PM Test Run July 12-28 2001
-Root output name   |$OUTPUT/4rpos.baseE.$DATE.$RUN
-Start yr/mo/dy/hr  |01 07 $DATE2 0000.
-End   yr/mo/dy/hr  |01 07 $DATE2 2400.
-DT:max,met,ems,out |15. 60. 60. 60.
-nx,ny,nz           |97   90   14
-sCoordinate ID     |LAMBERT
-xorg,yorg,dx,dy    |-900. -1620.  36.  36. -97 40 33 45
-time zone          |5
+CAMx Version       |VERSION4.0 
+Run Message        |PMCAMx v4.0 Europe PM Test Run May 01-29 2008
+Root output name   |$OUTPUT/Eucaari.May.$DATE3.$RUN
+Start yr/mo/dy/hr  |08 05 $DATE 0000.
+End   yr/mo/dy/hr  |08 05 $DATE 2400.
+DT:max,met,ems,out |5. 60. 60. 60.
+nx,ny,nz           |150   162   14
+sCoordinate ID     |POLAR
+xorg,yorg,dx,dy    |0. 0. 36. 36. -32. 60. -27.528389 34.245880
+time zone          |0
 PiG parameters     |2000. 12.
 Avg output species |615
                    |NO        NO2       O3        HNO3      NH3       SO2
+		   |SULF      FORM      PAN       ETH       CO        TOL
+                   |XYL       AMINE
                    |SOA1_1    SOA1_2    SOA1_3    SOA1_4    SOA1_5    SOA1_6
                    |SOA1_7    SOA1_8    SOA1_9    SOA1_10   SOA1_11   SOA1_12
                    |SOA1_13   SOA1_14   SOA1_15   SOA1_16   SOA1_17   SOA1_18
@@ -78,7 +88,7 @@ Avg output species |615
                    |POC_3     POC_4     POC_5     POC_6     POC_7     POC_8
                    |POC_9     POC_10    POC_11    POC_12    POC_13    POC_14
                    |POC_15    POC_16    POC_17    POC_18    POC_19    POC_20
-                   |POC_21    POC_21    POC_22    POC_23    POC_25    POC_26
+                   |POC_21    POC_22    POC_23    POC_24    POC_25    POC_26
                    |POC_27    POC_28    POC_29    POC_30    POC_31    POC_32
                    |POC_33    POC_34    POC_35    POC_36    POC_37    POC_38
                    |POC_39    POC_40    POC_41    POC_42    POC_43    PEC_1
@@ -99,8 +109,8 @@ Avg output species |615
                    |PNH4_43   PNO3_1    PNO3_2    PNO3_3    PNO3_4    PNO3_5
                    |PNO3_6    PNO3_7    PNO3_8    PNO3_9    PNO3_10   PNO3_11
                    |PNO3_12   PNO3_13   PNO3_14   PNO3_15   PNO3_16   PNO3_17
-                   |PNO3_18   PNO3_19   PNO3_20   PNO3_21   PNO3_21   PNO3_22
-                   |PNO3_23   PNO3_25   PNO3_26   PNO3_27   PNO3_28   PNO3_29
+                   |PNO3_18   PNO3_19   PNO3_20   PNO3_21   PNO3_22   PNO3_23
+                   |PNO3_24   PNO3_25   PNO3_26   PNO3_27   PNO3_28   PNO3_29
                    |PNO3_30   PNO3_31   PNO3_32   PNO3_33   PNO3_34   PNO3_35
                    |PNO3_36   PNO3_37   PNO3_38   PNO3_39   PNO3_40   PNO3_41
                    |PNO3_42   PNO3_43   PSO4_1    PSO4_2    PSO4_3    PSO4_4
@@ -132,22 +142,21 @@ Avg output species |615
                    |NA_26     NA_27     NA_28     NA_29     NA_30     NA_31
                    |NA_32     NA_33     NA_34     NA_35     NA_36     NA_37
                    |NA_38     NA_39     NA_40     NA_41     NA_42     NA_43
-                   |NUM_1     NUM_2     NUM_3     NUM_4     NUM_5     NUM_6
-                   |NUM_7     NUM_8     NUM_9     NUM_10    NUM_11    NUM_12
-                   |NUM_13    NUM_14    NUM_15    NUM_16    NUM_17    NUM_18
-                   |NUM_19    NUM_20    NUM_21    NUM_22    NUM_23    NUM_24
-                   |NUM_25    NUM_26    NUM_27    NUM_28    NUM_29    NUM_30
-                   |NUM_31    NUM_32    NUM_33    NUM_34    NUM_35    NUM_36
-                   |NUM_37    NUM_38    NUM_39    NUM_40    NUM_41    NUM_42
-                   |NUM_43    PH2O_1    PH2O_2    PH2O_3    PH2O_4    PH2O_5
-                   |PH2O_6    PH2O_7    PH2O_8    PH2O_9    PH2O_10   PH2O_11
-                   |PH2O_12   PH2O_13   PH2O_14   PH2O_15   PH2O_16   PH2O_17
-                   |PH2O_18   PH2O_19   PH2O_20   PH2O_21   PH2O_22   PH2O_23
-                   |PH2O_24   PH2O_25   PH2O_26   PH2O_27   PH2O_28   PH2O_29
-                   |PH2O_30   PH2O_31   PH2O_32   PH2O_33   PH2O_34   PH2O_35
-                   |PH2O_36   PH2O_37   PH2O_38   PH2O_39   PH2O_40   PH2O_41
-                   |PH2O_42   PH2O_43   SULF      FORM      PAN       ETH
-                   |CO        TOL       XYL
+                   |PH2O_1    PH2O_2    PH2O_3    PH2O_4    PH2O_5    PH2O_6
+                   |PH2O_7    PH2O_8    PH2O_9    PH2O_10   PH2O_11   PH2O_12
+                   |PH2O_13   PH2O_14   PH2O_15   PH2O_16   PH2O_17   PH2O_18
+                   |PH2O_19   PH2O_20   PH2O_21   PH2O_22   PH2O_23   PH2O_24
+                   |PH2O_25   PH2O_26   PH2O_27   PH2O_28   PH2O_29   PH2O_30
+                   |PH2O_31   PH2O_32   PH2O_33   PH2O_34   PH2O_35   PH2O_36
+                   |PH2O_37   PH2O_38   PH2O_39   PH2O_40   PH2O_41   PH2O_42
+                   |PH2O_43   NUM_1     NUM_2     NUM_3     NUM_4     NUM_5
+                   |NUM_6     NUM_7     NUM_8     NUM_9     NUM_10    NUM_11
+                   |NUM_12    NUM_13    NUM_14    NUM_15    NUM_16    NUM_17
+                   |NUM_18    NUM_19    NUM_20    NUM_21    NUM_22    NUM_23
+                   |NUM_24    NUM_25    NUM_26    NUM_27    NUM_28    NUM_29
+                   |NUM_30    NUM_31    NUM_32    NUM_33    NUM_34    NUM_35
+                   |NUM_36    NUM_37    NUM_38    NUM_39    NUM_40    NUM_41
+                   |NUM_42    NUM_43    
 # nested grids     |0
 SMOLAR,BOTT, PPM?  |PPM
 Chemistry solver   |CMC
@@ -158,32 +167,31 @@ Wet dep            |true
 PiG submodel       |false
 Staggered winds    |false
 Treat area emiss   |true
-Treat point emiss  |true
+Treat point emiss  |false
 1-day emiss inputs |true
 3-D average file   |true
 Source Apportion   |false
-Chemparam          |$INPUT2/init/CAMx4.chemparam.6
-Photolysis rates   |$INPUT/rate/rate.2001$DATE.do.mech3
-Landuse            |$INPUT2/init/surf.4rpos.36.ld.bin
-Height/pressure    |$INPUT/pres/pres.2001$DATE.4rpos.36.14.mm5.ld.camx
-Wind               |$INPUT/wind/wind.2001$DATE.4rpos.36.14.mm5.ld.camx
-Temperature        |$INPUT/temp/temp.2001$DATE.4rpos.36.14.mm5.ld.camx
-Water vapor        |$INPUT/wvap/wvap.2001$DATE.4rpos.36.14.mm5.ld.camx
-Cloud/rain         |$INPUT/clranew/clra.2001$DATE.4rpos.36.14.mm5.ld.camx
-Vertical diffsvty  |$INPUT/vdif/vdif.2001$DATE.4rpos.36.14.mm5.ld.camx.PATCH
-Initial conditions |$INPUT2/init/init.2001.4rpos.36.14.m3profile.ld.camx
-Boundary conditions|$INPUT2/init/bndr.0701.4rpos.36.14.m3profile.ld.camx.crrct
-Top concentration  |$INPUT2/init/topc.2001.4rpos.36.14.m3profile.ld.camx
-Albedo/haze/ozone  |$INPUT/ahoz/ahoz.2001$DATE.4rpos.36.ld
-Point emiss        |$INPUTP/ptsr.2001$DATE.4rpos.NR.baseE.ld.camx
-Area emiss         |$INPUTA/lamb.2001$DATE.4rpos.36.baseE.ld.camx
+Chemparam          |$INPUT2/CAMx4.chemparam.6
+Photolysis rates   |$INPUT/photolysis_rates/tuv_euro_ps2str_S99.0805$DATE.txt
+Landuse            |$INPUT/Metfields/lu_d02.bin
+Height/pressure    |$INPUT/Metfields/zp_d02.200805$DATE.bin
+Wind               |$INPUT/Metfields/uv_d02.200805$DATE.bin
+Temperature        |$INPUT/Metfields/tp_d02.200805$DATE.bin
+Water vapor        |$INPUT/Metfields/qa_d02.200805$DATE.bin
+Cloud/rain         |$INPUT/cr_files/cr_patched/cr_d02.200805$DATE.patched.bin
+Vertical diffsvty  |$INPUT/Metfields/kv_d02.200805$DATE.patched.bin
+Initial conditions |$INPUT2/IC_BC_TCs/ICs43_Eucaari_2.bin
+Boundary conditions|$INPUT2/IC_BC_TCs/BCs43_Eucaari_2_edges.bin
+Top concentration  |$INPUT2/IC_BC_TCs/TCs43_Eucaari_2.txt
+Albedo/haze/ozone  |$INPUT/ahomap/ahomap.monthEU.0805$DATE
+Point emiss        |
+Area emiss         |$INPUT2/ufeu_emiss/emnnum.0805$DATE.bin
 Restart file name  |$RSTF
 ieof
 #
 #  --- Execute the model ---
 #
-#/usr/bin/time pgdbg -text -core core.8982 /home/jgj/PMCAMx/finalPMCAMxcode3/CAMx.ladco.linux
-#/usr/bin/time pgdbg -text /home/jgj/PMCAMx/finalPMCAMxcode3/CAMx.ladco.linux
-/usr/bin/time /home/jgj/PMCAMx/finalPMCAMxcode3/CAMx.ladco.linux
+/usr/bin/time /nobackup/global/x_elhba/tuv4cldtrns/PMCAMx.exe
 date 
 #
+

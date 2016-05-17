@@ -198,9 +198,9 @@ zeros.o \
 zrates.o \
 $(AERO)/hlconst.o \
 $(AERO)/hlindex.o \
-$(AERO)/isocom_v1.6.o \
-$(AERO)/isofwd_v1.6.o \
-$(AERO)/isorev_v1.6.o \
+$(AERO)/isocom.o \
+$(AERO)/isofwd.o \
+$(AERO)/isorev.o \
 $(AERO)/raqchem.o \
 $(BNRY)/areaprep.o \
 $(BNRY)/bndprep.o \
@@ -453,10 +453,11 @@ $(PSSA)/eznh3.o \
 $(PSSA)/ezwatereqm.o \
 $(PSSA)/getNucRate.o \
 $(PSSA)/getNucMass.o \
-$(PSSA)/nuc_massupd.o \
-$(PSSA)/tern_nucl_acdc.o \
 $(PSSA)/napa_nucl.o \
+$(PSSA)/amine_nucl.o \
+$(PSSA)/tern_nucl_acdc.o \
 $(PSSA)/vehk_nucl.o \
+$(PSSA)/nuc_massupd.o \
 $(PSSA)/mnfix_PSSA.o \
 $(PSSA)/waterso4.o \
 $(PSSA)/waternacl.o
@@ -743,13 +744,13 @@ zadvec.o 		: zadvec.f                                             \
 zrates.o 		: zrates.f                                             \
                         $(INC)/camx.prm $(INC)/bndary.com $(INC)/flags.com
 
-$(AERO)/isocom_v1.6.o 	: $(AERO)/isocom_v1.6.f	                               \
+$(AERO)/isocom.o 	: $(AERO)/isocom.f	                               \
                         $(INC)/isrpia.inc
 
-$(AERO)/isofwd_v1.6.o 	: $(AERO)/isofwd_v1.6.f	                               \
+$(AERO)/isofwd.o 	: $(AERO)/isofwd.f	                               \
                         $(INC)/isrpia.inc
 
-$(AERO)/isorev_v1.6.o 	: $(AERO)/isorev_v1.6.f	                               \
+$(AERO)/isorev.o 	: $(AERO)/isorev.f	                               \
                         $(INC)/isrpia.inc
 
 $(BNRY)/areaprep.o 	: $(BNRY)/areaprep.f                                   \
@@ -1564,22 +1565,24 @@ $(PSSA)/getH2SO4conc.o    : $(PSSA)/getH2SO4conc.f                             \
 $(PSSA)/getNucRate.o	  : $(PSSA)/getNucRate.f                               \
 			  $(INC)/sizecode.COM
 
-$(PSSA)/getNucMass.o	  : $(PSSA)/getNucMass.f                               \
-			  $(INC)/sizecode.COM
-
-$(PSSA)/nuc_massupd.o	  : $(PSSA)/nuc_massupd.f                               \
+$(PSSA)/getNucMass.o	  : $(PSSA)/getNucMass.f			       \
 			  $(INC)/sizecode.COM
 
 $(PSSA)/mnfix_PSSA.o	  : $(PSSA)/mnfix_PSSA.f                               \
 			  $(INC)/sizecode.COM
 
-$(PSSA)/tern_nucl_acdc.o  : $(PSSA)/tern_nucl_acdc.f                           \
-                          $(INC)/sizecode.COM
-
 $(PSSA)/napa_nucl.o	  : $(PSSA)/napa_nucl.f                          
+
+$(PSSA)/amine_nucl.o	  : $(PSSA)/amine_nucl.f
+
+$(PSSA)/tern_nucl_acdc.o  : $(PSSA)/tern_nucl_acdc.f			       \
+			  $(INC)/sizecode.COM                          
 
 $(PSSA)/nucleation.o	  : $(PSSA)/nucleation.f                               \
 			  $(INC)/sizecode.COM
+
+$(PSSA)/nuc_massupd.o     : $(PSSA)/nuc_massupd.f				\
+                          $(INC)/sizecode.COM
 
 $(PSSA)/vehk_nucl.o	  : $(PSSA)/vehk_nucl.f                      
 

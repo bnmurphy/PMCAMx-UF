@@ -161,6 +161,8 @@ c
       kpso4_c  = kpso4_1
       knxoy_c  = knxoy        ! RADM
       knum_c   = knum_1       ! jgj 2/28/06
+      kamine_c = kamine       ! BNM and JJ 17/10/14
+      kpamine_c= kpamine_1    ! JJ 09/07/15
 c
 c  set wtfacs for interface between aerosol modules
 c

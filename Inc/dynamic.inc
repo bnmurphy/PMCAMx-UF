@@ -15,7 +15,7 @@ c  ** changes in nsec necesitate changes in formats for subroutine SPCPRINT **
       parameter(neqsec=4)             ! Number of equilibrium sections
 cbk      parameter(neqsec=2)
       parameter(nsecd=nsec-neqsec)    ! Number of dynamic sections
-      parameter(nexti=6)              ! Number of external inorganic aerosol species
+      parameter(nexti=7)              ! Number of external inorganic aerosol species + amines
 c
       parameter(imovsec=1)         ! 0 is fixed sections 1 is moving sections
 c      parameter(imovsec=0)         ! 0 is fixed sections 1 is moving sections
@@ -40,7 +40,9 @@ c
       parameter (KEC  = 13)!pointer for external Elemental Carbon Aerosol
       parameter (KCRUS =14)!pointer for external Crustal Aerosol 
 c
-      parameter (KNUM = 15)!pointer for number concentration
+      parameter (KPAMI= 15) !pointer for external aerosol amines
+c
+      parameter (KNUM = 16)!pointer for number concentration
 c
 c
 c      parameter(ninti=18)       ! Number of internal inorganic aerosol species
@@ -71,7 +73,7 @@ c
        parameter(nnum=1)              ! Add number conc. 2/28/06
 cbk       parameter(nsoap=4)             ! Number or secondary organic aerosol species
 cbk       parameter(ngas=4+nsoap)        ! Number of gases of interest, 4 inorganic + nsoap
-       parameter(ngas=4+4+1) ! bkoo (03/09/03)
+       parameter(ngas=5+5) ! bkoo (03/09/03)  BNM and JJ (17/10/14)
        parameter(INH3  =1)            ! Pointer of NH3 in the gas phase
        parameter(IHNO3 =2)            ! Pointer of HNO3 in the gas phase
        parameter(IH2SO4=3)            ! Pointer of H2SO4 in the gas phase
@@ -81,7 +83,8 @@ cbk       parameter(ngas=4+nsoap)        ! Number of gases of interest, 4 inorga
        parameter(ICG3  =7)            ! Pointer of CG3 condensable gas #3 in the gas phase arrary
        parameter(ICG4  =8)            ! Pointer of CG4 condensable gas #4 in the gas phase arrary
        parameter(ICG5  =9)            ! Pointer of CG4 condensable gas #5 in the gas phase arrary
-       
+       parameter(IDMA  =10)           ! Pointer of DMA in the gas phase
+c
 cjgj       parameter(nsp=nexti+norg+ninert)
        parameter(nsp=nexti+norg+ninert+nnum)
        parameter(ntotal=nsec*nsp+ngas)

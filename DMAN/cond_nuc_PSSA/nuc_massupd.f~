@@ -52,11 +52,11 @@ C-----OTHER VARIABLES-------------------------------------------------
 C---------------------------------------------------------------------      
 
       !currently Gc is updated neither here or in nucleation.f but we carry it around anyway
-      Gcif(srtso4)=Gcif(srtso4)
+      Gcf(srtso4)=Gci(srtso4)
 
       !calculate the mass of the nucleated particles
       mnuc = (4.d0/3.d0*pi*(rnuc*1D-9)**3)*1350.d0
-      if (mnuc.lt.xk(1))then !this should never happen anymore since rnuc>=0.4 nm
+      if (mnuc.lt.xk(1))then
          print*,'mnuc < xk(1) in nucleation routines',mnuc
          stop
       endif
@@ -68,16 +68,8 @@ C---------------------------------------------------------------------
       
       !update mass based on nucleation rate and mfrac
       Mkif(nuc_bin,srtso4) = Mkif(nuc_bin,srtso4)+mfrac(srtso4)*fn*mnuc*boxvol*dt
-      Mkif(nuc_bin,srtinrt) = Mkif(nuc_bin,srtinrt)+mfrac(srtinrt)*fn*mnuc*boxvol*dt    
-      
-      Mkif(nuc_bin,srtsoa1) = Mkif(nuc_bin,srtsoa1)+mfrac(srtsoa1)*fn*mnuc*boxvol*dt
-      Mkif(nuc_bin,srtsoa2) = Mkif(nuc_bin,srtsoa2)+mfrac(srtsoa2)*fn*mnuc*boxvol*dt
-      Mkif(nuc_bin,srtsoa3) = Mkif(nuc_bin,srtsoa3)+mfrac(srtsoa3)*fn*mnuc*boxvol*dt
-      Mkif(nuc_bin,srtsoa4) = Mkif(nuc_bin,srtsoa4)+mfrac(srtsoa4)*fn*mnuc*boxvol*dt
-      Mkif(nuc_bin,srtsoa5) = Mkif(nuc_bin,srtsoa5)+mfrac(srtsoa5)*fn*mnuc*boxvol*dt 
-
+      Mkif(nuc_bin,srtna) = Mkif(nuc_bin,srtna)+mfrac(srtna)*fn*mnuc*boxvol*dt
       Mkif(nuc_bin,srtnh4) = Mkif(nuc_bin,srtnh4)+mfrac(srtnh4)*fn*mnuc*boxvol*dt
-      Mkif(nuc_bin,srtdma) = Mkif(nuc_bin,srtdma)+mfrac(srtdma)*fn*mnuc*boxvol*dt
       Mkif(nuc_bin,srth2o) = Mkif(nuc_bin,srth2o)+mfrac(srth2o)*fn*mnuc*boxvol*dt
 
       !update number distribution

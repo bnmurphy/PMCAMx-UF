@@ -7,8 +7,8 @@ C     WRITTEN BY Jeff Pierce, April 2007
 
 C     UPDATED BY Ben Murphy & Jan Julin, October-November 2014
 
-C     This subroutine calls the Vehkamaki 2002 and Napari 2002 nucleation
-C     parameterizations and the amine nucleation routine based on the 
+C     This subroutine calls the Vehkamaki 2002 nucleation
+C     parameterizations and the NH3 and amine nucleation routines based on the 
 C     Atmospheric Cluster Dynamic Code (ACDC)and gets the nucleation rates.
 
 C-----INPUTS------------------------------------------------------------
@@ -46,6 +46,8 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
 
       double precision nh3ppt   ! gas phase ammonia in pptv
       double precision nh3_molec! gas phase ammonia in molec cm-3
+      double precision dmappt   ! gas phase dimethyl amine in pptv
+      double precision dma_molec! gas phase dimethyl amine in molec cm-3
       double precision h2so4    ! gas phase h2so4 in molec cc-1
       double precision fn       ! nucleation rate cm-3 s-1
       double precision rnuc     ! critical nucleation radius [nm]
@@ -62,10 +64,12 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision mold     ! saved mass in first bin
       double precision mnuc     !mass of nucleation
       double precision cs       ! condensation sink [s-1]
-      
+      double precision d_dma    ! consumed dimethyl amine by the nucleation
+                                ! process (kg m-3)
       double precision mfrac(icomp) ! fraction of the nucleated mass that will be assigned
-      double precision fn_all(2) !Magnitude of nucleation rates resolved by pathway
                                     ! to each icomp species (passed to nucMassUpdate)
+      double precision fn_all(nJnuc) !Magnitude of nucleation rates resolved by pathway
+
 
 C-----EXTERNAL FUNCTIONS------------------------------------------------
 
@@ -75,7 +79,7 @@ C-----EXTERNAL FUNCTIONS------------------------------------------------
 C-----ADJUSTABLE PARAMETERS---------------------------------------------
 
       parameter (neps=1E8, meps=1E-8)
-      parameter (pi=3.14159)
+      parameter (pi=3.14159d0)
 
 C-----CODE--------------------------------------------------------------
 
@@ -83,11 +87,11 @@ C-----CODE--------------------------------------------------------------
       ! ACDC Lookup table ternary nuclation does not need this in ppt
 c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
       nh3_molec = Gci(srtnh4)/boxvol*1000.d0/17.d0*6.022d23 
+      dma_molec = Gci(srtdma)/boxvol*1000.d0/45.d0*6.022d23 !molec cm-3
 
       fn = 0.d0
       rnuc = 0.d0
-      gtime = 0.d0
-      fn_all = 0.
+      fn_all = 0.d0
 
       ! if no nucleation occurs the final arrays will be same as the initial arrays
       Mkf=Mki
@@ -98,105 +102,70 @@ cdbg      print*,'h2so4',h2so4,'nh3ppt',nh3ppt
 
 C     if requirements for nucleation are met, call nucleation subroutines
 C     and get the nucleation rate and critical cluster size
-      if (h2so4.gt.1.d4) then         
+      if (amine_nuc.eq.1 .and.h2so4.gt.minval(amine_nuc_tbl_H2SO4).and.
+     &     dma_molec.gt.minval(amine_nuc_tbl_DMA)) then
+         call amine_nucl(temp,cs,h2so4,dma_molec,fn,rnuc) !amine nuc
 
-          if (nh3_molec.gt.1.d6.and.tern_nuc.eq.1) then
-c         if (nh3ppt.gt.0.1.and.tern_nuc.eq.1) then
-c         call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
-           call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc)
+c$$$            !Update DMA Concentration
+c$$$	    !The 0.31 factor should be the mass fraction of DMA in
+c$$$	    !the nucleated particles.
+c$$$            d_dma = 0.31d0 * (4.d0/3.d0*pi*(rnuc*1D-9)**3)*1350.d0*fn*1.d6*dt !kg m-3
+c$$$            dmappt = dmappt - d_dma/0.045d0 / (pres/(8.314d0*temp)) * 1.d12 !pptv
+c$$$
+c$$$            !nucleation could use all of the DMA so check that we do not get negative
+c$$$            if (dmappt.lt.0.d0) then
+c$$$               print*, 'Neg DMA in nucleation', dmappt
+c$$$               dmappt = 0.d0
+c$$$            end if
 
-            if (fn.gt.0.d0) then
-               !update mass and number
-               !nuclei are assumed as ammonium bisulfate
-               mfrac = (/0.8144, 0.0, 0., 0., 0., 0., 0., 0.1856,0.0/)
-               call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
-               fn_all(1) = fn
-            endif
+         if (fn.gt.0.d0) then
+            !update mass and number
+            !nuclei consist of sulfate and amine compounds
+	    !assume 1-to-1 ratio of DMA and sulfuric acid
+            mfrac = (/0.69, 0.0, 0., 0., 0., 0., 0., 0.0, 0.31, 0.0/)
+            call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+               
+            !Update DMA gas phase concentration
+            Gcf(srtdma)=Gcf(srtdma)-Mkf(nuc_bin,srtdma) ! kg/grid cell
+            !nucleation could use all of the DMA so check that we do not get negative
+            if (Gcf(srtdma).lt.0.d0) then
+               print*, 'Neg DMA in nucleation', Gcf(srtdma)
+               Gcf(srtdma) = 0.d0
+            end if
+
+            !we set amine nucleation rate as number 3 (it is
+            !the latest addition to fn_all
+            fn_all(3)=fn
          endif
+      endif       
 
-         if (bin_nuc.eq.1) then
-            call vehk_nucl(temp,rh,h2so4,fn,rnuc) !binary nuc
+      if (h2so4.gt.minval(tern_nuc_tbl_H2SO4).and.
+     &     nh3_molec.gt.minval(tern_nuc_tbl_NH3).and.tern_nuc.eq.1) then
+c$$$         if (nh3ppt.gt.0.1.and.tern_nuc.eq.1) then
+c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
+         call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc)
 
-            if (fn.gt.0.d0) then
-               !update mass and number
-               !nuclei are assumed to be sulfuric acid
-               mfrac = (/1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0/)
-               call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
-               fn_all(2) = fn
-            endif
-         endif    
+         if (fn.gt.0.d0) then
+            !update mass and number
+            !nuclei are assumed as ammonium bisulfte
+            mfrac = (/0.8144, 0.0, 0., 0., 0., 0., 0.,0.1856, 0.0, 0.0/)
+            call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+            fn_all(1) = fn
+         endif
       endif
 
-C     if nucleation occured, see how many particles grow to join the first size
-C     section
-c$$$      if (fn.gt.0.d0) then
-cdbg         print*, 'entered fn'
-cdbg         print*, 'fn', fn, 'rnuc',rnuc
-         ! get the time it takes to grow to first size bin
-Cjrp         d1 = rnuc*2.d0*1E-9
-Cjrp         d2 = (6.d0*sqrt(xk(1)*xk(2))/1800.d0/pi)**(1.d0/3.d0)
-Cjrp         print*, 'd1', d1, 'd2', d2
-Cjrp         call getGrowthTime(d1,d2,Gc(srtso4),temp,
-Cjrp     &        boxvol,gtime)
-Cjrp         print*, 'gtime', gtime
-Cjrp         ! get the first order loss rate of these particles due to coagulation
-Cjrp         ! get loss rate for cluster size
-Cjrp         d1 = rnuc*2.d0*1E-9
-Cjrp         call getCoagLoss(d1,ltc1)
-Cjrp         print*, 'd1', d1, 'ltc1', ltc1
-Cjrp         ! we want the loss rate for particles at the size where they are added
-Cjrp         ! to bin 1
-Cjrp         Mktot = 0.d0
-Cjrp         do j=1,icomp
-Cjrp            Mktot=Mktot+Mk(1,j)
-Cjrp         enddo
-Cjrp         Mktot=Mktot+2.d0*Mk(1,srtso4)/96.d0-Mk(1,srtnh4)/18.d0 ! account for h+
-Cjrp
-Cjrp         if (Mktot.gt.meps)then
-Cjrp            density=aerodens_PSSA(Mk(1,srtso4),0.d0,Mk(1,srtnh4),
-Cjrp     &           0.d0,Mk(1,srth2o)) !assume bisulfate
-Cjrp         else
-Cjrp            density = 1400.
-Cjrp         endif
-Cjrp
-Cjrp         if(Nk(1).gt.neps .and. Mktot.gt.meps)then
-Cjrp            mp=Mktot/Nk(1)
-Cjrp         else
-Cjrp            mp=sqrt(xk(1)*xk(2))
-Cjrp         endif
-Cjrp         
-Cjrp         d1 = (6.d0*mp/density/pi)**(1.d0/3.d0)
-Cjrp         call getCoagLoss(d1,ltc2)
-Cjrp         print*, 'd1', d1, 'ltc2', ltc2 
-Cjrp
-Cjrp         ! take average of loss rate constants
-Cjrp         ltc = (ltc1 + ltc2)/2.d0
-Cjrp         print*, 'ltc', ltc
-Cjrp
-Cjrp	 if (gtime.lt.0.d0)then
-Cjrp	    gtime=0.d0
-Cjrp         endif
-Cjrp
-Cjrp         frac = exp(-ltc*gtime)
-Cjrp         print*,'frac', frac
-Cjrpc         frac = 1.d0
+      if (h2so4.gt.1.d4.and.bin_nuc.eq.1) then
+         call vehk_nucl(temp,rh,h2so4,fn,rnuc) !binary nuc
 
-cdbg         print*,'Nk_NUC',Nki(nuc_bin),Nkf(nuc_bin)
-c$$$         Gcf(srtso4) = Gci(srtso4)! - (Mkf(nuc_bin,srtso4)-mold)
-c$$$                                  !PSSA decide Gc as a diagnostic way
+         if (fn.gt.0.d0) then
+            !update mass and number
+            !nuclei are assumed to be sulfuric acid
+            mfrac = (/1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0/)
+            call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+            fn_all(2) = fn
+         endif
+      endif
 
-
-C there is a chance that Gcf will go less than zero because we are artificially growing
-C particles into the first size bin.  don''t let it go less than zero.
-c         if (Gcf(srtso4).lt.0.d0)then
-c            Mkf(nuc_bin,srtso4) = Mki(nuc_bin,srtso4) + 
-c     &           Gci(srtso4)*96./98.
-c            Nkf(nuc_bin) = Nki(1) + Gci(srtso4)*96./98./mnuc
-c            Gcf(srtso4) = 0.d0
-c            print*,'used up h2so4 in nuc subroutine'
-c         endif
-
-c$$$      endif
 
       RETURN
       END

@@ -248,7 +248,7 @@ c$$$      salt(2) = aerosol(8,ksod)+aerosol(9,ksod)+aerosol(10,ksod)
             salt(2)=salt(2)+aerosol(isect,ksod)
          end if
       end do
-
+      
 c
 c     INTEGRATE
 c 
@@ -274,8 +274,8 @@ c     ADD THE MASS CHANGE TO THE CORRESPONDING SECTION
 c
 c      do isect=5, 7  ! for sections 0.1 to 10 um
 c      do isect=4, 6  ! for sections 0.04 to 40 um
-cd      do isect=27, 35  ! for sections 0.0008 to 40 um  !bug 4
-      do isect=21, 35   !david  21=> 80 nm
+c      do isect=27, 35  ! for sections 0.0008 to 40 um
+      do isect=21, 35   ! for sections from 0.08 to 2.6 um
       aerosol(isect,nan)=aerosol(isect,nan)+dnit1*fdist2(isect)    ! NITRATE (aq) in ug/m3
       aerosol(isect,nac)=aerosol(isect,nac)+dchlor1*fdist2(isect)  ! CHLORIDE (aq) in ug/m3
       aerosol(isect,naa)=aerosol(isect,naa)+dammon1*fdist2(isect)  ! AMMONIUM (aq) in ug/m3   

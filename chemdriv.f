@@ -149,11 +149,11 @@ c      integer ispc,naero
       real massum2
       real frctn, nmbr
       real dsulfdt !sulfuric acid production rate
-      double precision fndt(2) !nucleation diagnostic
-      real Jnuc(ncol,nrow,nlay,2) !Common Nucleation Diagnostic
-      real,allocatable,save :: Jnucsav(:,:,:,:) !local saved copy of nucleation rates
+      double precision fndt(3) !nucleation diagnostic
+      real Jnuc(ncol,nrow,nlay,3) !Common Nucleation Diagnostic
+      real,allocatable,save :: Jnucsav(:,:,:,:) !local saved copy of nucleation rates      
       integer inuc
-      logical,save :: frstcall=.true. ! flag for first call to the routine 
+      logical,save :: frstcall=.true. ! flag for first call to the routine
 c
 c-----Entry point
 c
@@ -168,7 +168,7 @@ c
       !so if the grid size is changing within a run something else needs to be done to fix the nucleation
       !rate printing
 
-      if (.not.allocated(Jnucsav)) allocate(Jnucsav(ncol,nrow,nlay,2))
+      if (.not.allocated(Jnucsav)) allocate(Jnucsav(ncol,nrow,nlay,3))
 
       !initialize Jnucsav to zeroes if this is the first time chemdriv is called
       if (frstcall) then
@@ -408,6 +408,7 @@ c
             endif
 c
 c======================== Process Analysis End =========================
+c
             if ( idsolv .EQ. IDCMC ) then
                if (idmech.eq.1) then
                  call trap(rxnrate1,radslvr1,ratejac1,rateslo1,dtchem,
@@ -454,7 +455,7 @@ c======================== Process Analysis End =========================
      &                         MXSPEC,MXRADCL,NSPEC,NGAS,
      &                         con,crad,convfac,time,aero_dt(igrd),
      &                         ichm,jchm,kchm,height,dsulfdt,fndt)
-                    do inuc = 1,2
+                    do inuc = 1,3
                        Jnucsav(i,j,k,inuc) = real(fndt(inuc))
                     enddo
                  endif
@@ -472,15 +473,15 @@ c
      &             sddm,nddmsp,ngas,ddmjac6,lddm,nirrrxn,titrt,rrxn_irr,
      &             lirr,dsulfdt) ! to get sulfuric acid production rate
 
-                 if ( laero_upd ) then
-                    call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
+                  if ( laero_upd ) then
+                     call fullaero(water(i,j,k),tcell,pcell,cwc(i,j,k),
      &                         MXSPEC,MXRADCL,NSPEC,NGAS,
      &                         con,crad,convfac,time,aero_dt(igrd),
      &                         ichm,jchm,kchm,height,dsulfdt,fndt)
-                    do inuc = 1,2
-                       Jnucsav(i,j,k,inuc) = real(fndt(inuc))
-                    enddo
-                 endif
+                     do inuc = 1,3
+                        Jnucsav(i,j,k,inuc) = real(fndt(inuc))
+                     enddo
+                  endif
 
                endif
 c
@@ -668,9 +669,7 @@ c    added by LA
                   con(is)=1.0e-37
                endif
             enddo
-
 c     end LA
-
             if (ngas.lt.nspec) then
               ispc=ngas
               do ii=1,nsect

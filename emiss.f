@@ -85,11 +85,28 @@ c
      &          tempk(ncol,nrow,nlay),press(ncol,nrow,nlay)
       dimension hght1d(MXLAYA),wind1d(MXLAYA),tempk1d(MXLAYA),
      1          dtdz1d(MXLAYA)
+
+      !These pointers are for adding Amine emissions
+      !as a function of ammonia emissions throughout
+      !the domain (Oct 27, 2014)
+      integer knh3, kamine
+      real    amine2nh3
+      !parameter (amine2nh3 = 0.01)
 c
       data gamma,p0 /0.286,1000./
 c
 c-----Entry point
 c
+c$$$      knh3 = 28
+c$$$      kamine = 35
+      !would be better not to hardcode these, knh3 and kamine used in
+      !other routines are defined in chmstry.com 
+      !These correspond to chem mech 5 (version amines and ELVOC, 17/05/2016)
+      knh3 = 57
+      kamine = 69
+      amine2nh3 = 0.0057
+
+
 c-----Update concentration due to area source
 c
       if (larsrc) then
@@ -111,11 +128,19 @@ c
               vol = dx(j)*dy*depth(i,j,1)/(mapscl(i,j)**2)
               dmass = aremis(i,j,lar)*deltat*1e6
               dconc = REAL(dmass)/vol
-              if (l.eq.27) then ! Turn off sulfuric acid emission. by jgj 8/9/2007
-                 dconc=0
-              endif
+
               armass(l) = armass(l) + dmass
               conc(i,j,1,l) = conc(i,j,1,l) + dconc
+
+	      !ADD AMINE EMISSIONS AS A FUNCTION OF AMMONIA EMISSIONS
+              if (l.eq.knh3) then !If the species is ammonia, then also
+	                          !add mass to the amine variable
+                dmass = aremis(i,j,lar)*deltat*1e6 * amine2nh3
+                dconc = REAL(dmass)/vol
+                armass(kamine) = armass(kamine) + dmass
+                conc(i,j,1,kamine) = conc(i,j,1,kamine) + dconc        	  
+              endif
+
 c
 c======================== Process Analysis Begin ====================================
 c
@@ -187,11 +212,19 @@ c
             vol = dx(j)*dy*depth(i,j,k)/(mapscl(i,j)**2)
             dmass = pttrace(n,lpt)*deltat*1e6
             dconc = REAL(dmass)/vol
-            if (l.eq.27) then
-               dconc = 0 ! Turn off sulfuric acid emission. by jgj 8/9/2007
-            endif
+            
             ptmass(l) = ptmass(l) + dmass
             conc(i,j,k,l) = conc(i,j,k,l) + dconc
+
+            !ADD AMINE EMISSIONS AS A FUNCTION OF AMMONIA EMISSIONS
+            if (l.eq.knh3) then !If the species is ammonia, then also
+	                        !add mass to the amine variable
+              dmass = pttrace(n,lpt)*deltat*1e6 * amine2nh3
+              dconc = REAL(dmass)/vol
+              ptmass(kamine) = ptmass(kamine) + dmass
+              conc(i,j,k,kamine) = conc(i,j,k,kamine) + dconc        	  
+            endif
+
 c
 c======================== Process Analysis Begin ====================================
 c

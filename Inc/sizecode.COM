@@ -50,9 +50,9 @@ C approach.  Most loops are from 1 to icomp-idiag as a result.
       integer ibins, icomp
       integer idiag ! number of diagnostic aerosol species
 
-      parameter(ibins=41, icomp=9, idiag=1)
+      parameter(ibins=41, icomp=10, idiag=1)
 
-      integer srtso4, srtinrt, srtnh4, srth2o
+      integer srtso4, srtinrt, srtnh4, srtdma, srth2o
       integer srtsoa1,srtsoa2,srtsoa3,srtsoa4
       integer srtsoa5
 
@@ -64,7 +64,8 @@ C approach.  Most loops are from 1 to icomp-idiag as a result.
      &           srtsoa4=6,
      &           srtsoa5=7,     
      &           srtnh4=8,
-     &           srth2o=9)
+     &		 srtdma=9,
+     &           srth2o=10)
 
 C Nk and Mk contain the number and mass size distributions of the
 C aerosol.  Units are #/grid cell or kg/grid cell, respectively.
@@ -105,26 +106,25 @@ C Physical properties of aerosol components
 
       real molwt(icomp)
 cjgj      data molwt/96.,58.45,18.,18./ ! The 2nd is NaCl
-      data molwt/96.,50.,200.0,200.0,200.0,200.0,200.0,18.,18./ ! The 2nd is organic matter. NEED TO BE UPDATED. 
+      data molwt/96.,50.,200.0,200.0,200.0,200.0,200.0,18.,46.,18./ ! The 2nd is organic matter. NEED TO BE UPDATED. 
       real gmw(icomp)
-      data gmw/98.,50.,200.,200.0,200.0,200.0,200.0,17.,18./
+      data gmw/98.,50.,200.,200.0,200.0,200.0,200.0,17.,45.,18./
       real alpha(icomp) ! accomodation coef  
-      data alpha/0.65,0.,5*1.0,0.08,0./
+      data alpha/0.65,0.,5*1.0,0.08,1.0,0./
            ! alpha(H2SO4) is from U. Poschl et al., J. Phys. Chem. A, 102,
                                                         !10082-10089, 1998
            ! alpha(NH3) is from E. Swartz et al., J. Phys. Chem. A, 103,
                                                         !8824-8833, 1999
       real Sv(icomp)         !parameter used for estimating diffusivity
-CDAV      data Sv /42.88,42.88,42.88,42.88,42.88,42.88,42.88,42.88,42.88/
-      data Sv /42.88,42.88,42.88,42.88,42.88,42.88,42.88,13.41,42.88/
+      data Sv /42.88,42.88,42.88,42.88,42.88,42.88,42.88,13.41,42.88,42.88/
 
 C Flag for which nucleation parameterizations to use
-      integer bin_nuc, tern_nuc   !flags for binary and ternary nuc
-      parameter(bin_nuc=1, tern_nuc=1) ! 1 = on
+      integer bin_nuc, tern_nuc, amine_nuc   !flags for binary and ternary nuc
+      parameter(bin_nuc=1, tern_nuc=1, amine_nuc=1) ! 1 = on
 
 C Nucleation Diagnostic Variables
       integer nJnuc
-      parameter (nJnuc = 2)
+      parameter (nJnuc = 3)
 
 
 cdbg	  double precision NH3ppt_o
@@ -136,6 +136,24 @@ C Make variables common
      &                  boxvol, boxmass, temp, pres, rh
 cdbg     &                  h2so4_print
 cdbg     &                  nh3ppt_o, h2so4_print
+
+
+C Make Common Variable List for Amine Nucleation Lookup Table
+      integer amine_nuc_nH2SO4, amine_nuc_nDMA, amine_nuc_nCS, amine_nuc_nTEMP
+
+      parameter(amine_nuc_nH2SO4=12, amine_nuc_nDMA=11,
+     &          amine_nuc_nCS=6,   amine_nuc_nTEMP=15)
+
+      double precision  amine_nuc_tbl_H2SO4(amine_nuc_nH2SO4), 
+     &                  amine_nuc_tbl_DMA(amine_nuc_nDMA),
+     &                  amine_nuc_tbl_CS(amine_nuc_nCS), 
+     &                  amine_nuc_tbl_TEMP(amine_nuc_nTEMP),
+     &                  amine_nuc_tbl_J(amine_nuc_nTEMP,amine_nuc_nCS,
+     &                                  amine_nuc_nH2SO4,amine_nuc_nDMA)
+
+      common /amine_nuc/ amine_nuc_tbl_H2SO4, amine_nuc_tbl_DMA,
+     &                   amine_nuc_tbl_CS, amine_nuc_tbl_TEMP,
+     &                   amine_nuc_tbl_J
 
 C Make common variable list for ternary NH3-H2SO4-H2O nucleation lookup table
 

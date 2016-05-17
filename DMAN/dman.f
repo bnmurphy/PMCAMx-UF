@@ -17,8 +17,8 @@ C     110, D07S12.
 
 C     For the details of development history, see history.help file.
 
-      SUBROUTINE dman(tstart,tend,Nki,Mki,h2so4,nh3ppt,rhi,tempi,presi
-     &               ,dsulfdt,organic_ppt, ichm, jchm, kchm, fndt)
+      SUBROUTINE dman(tstart,tend,Nki,Mki,h2so4,nh3ppt,dmappt,rhi,tempi,
+     &               presi,dsulfdt,organic_ppt, ichm, jchm, kchm, fndt)
 
       IMPLICIT NONE
 
@@ -35,6 +35,7 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
       double precision Mki(ibins,icomp) !Mass in a box as kg
       real h2so4   ! h2so4 from PMCAMx [=] ppt
       real nh3ppt  ! nh3ppt from PMCAMx
+      double precision dmappt  ! dmappt from PMCAMx
       real rhi     ! relative humidity from PMCAMx
       real tempi   ! temperature from PMCAMx
       real presi   ! pressure from PMCAMx
@@ -45,7 +46,7 @@ C-----ARGUMENT DECLARATIONS---------------------------------------------
 cd    david new variable
       integer icond_soa  
 
-      double precision fndt(njnuc) !nucleation diagnostic
+      double precision fndt(nJnuc) !nucleation diagnostic
 
 C-----VARIABLE DECLARATIONS---------------------------------------------
 
@@ -78,7 +79,7 @@ C     tend : simulation end time from midnight (hr)
       ! for PSSA_cond_nuc
       double precision Nkout(ibins) ! Number output
       double precision Mkout(ibins,icomp) ! Mass output
-      double precision Gcout(icomp-1) ! Gas output
+      double precision Gcout(icomp-1) ! Gas output - DONT INCLUDE WATER
       double precision H2SO4rate ! sulfuric acid production rate [kg box-1 s-1]
 
       integer i ! a counter for size section
@@ -89,11 +90,6 @@ C     tend : simulation end time from midnight (hr)
       integer k ! a counter for size section
       integer iflagez ! if =1, call eznh3eqm
 
-      double precision sum_mass_dman,sum_num_dman
-      double precision sum_so4_dman,sum_init_dman,sum_nh4_dman
-
-      double precision sum_soa1_dman,sum_soa2_dman,sum_soa3_dman
-      double precision sum_soa4_dman,sum_soa5_dman !EXLVOCS
 C-----EXTERNAL FUNCTIONS------------------------------------------------
 
 C-----ADJUSTABLE PARAMETERS---------------------------------------------
@@ -127,6 +123,7 @@ C-----Initialize variables
       !Initialize ygas
       ygas(mgsvi)=h2so4
       ygas(mgnh3)=nh3ppt
+      ygas(mgdma)=dmappt
       rh=rhi
       temp=tempi
       pres=presi
@@ -183,14 +180,14 @@ C-----Micro physical processes 6/9/04
       !otherwise icond=0 means that there is junk values in Gc
       Gc(srtso4)=boxmass*ygas(mgsvi)*1.0d-12*gmw(srtso4)/28.9
       Gc(srtnh3)=boxmass*ygas(mgnh3)*1.0d-12*gmw(srtnh3)/28.9
+      Gc(srtdma)=boxmass*ygas(mgdma)*1.0d-12*gmw(srtdma)/28.9
 
       !Call condensation with "dt"
       if (icond .eq. 1) then
-        
 
         Call so4cond(Nk,Mk,Gc,Nkout,Mkout,Gcout,dt,ichm,jchm,kchm,
      &              iflagez) 
-                                                           !Only ammonia
+                                                           !Only ammonia and amine
         if (iflagez.eq.1) then
           call eznh3(Gc,Mk,Nk,Gcout,Mkout,Nkout,ichm,jchm,kchm)
         endif
@@ -203,19 +200,15 @@ C-----Micro physical processes 6/9/04
         enddo
         Gc(srtnh3) = Gcout(srtnh3)
         Gc(srtso4) = Gcout(srtso4)
+        Gc(srtdma) = Gcout(srtdma)
 
-        !Converting Nk, Mk, and Gc
-        do i=1,ibins
-          do j=1, icomp
-            Mk(i,j)=Mkout(i,j)   
-          enddo
-          Nk(i)=Nkout(i)
-        enddo
         if (icond_test .ne. 1) then !Notice that not equal,"ne"
           Gc(srtso4)=Gcout(srtso4)
           Gc(srtnh3)=Gcout(srtnh3)
+          Gc(srtdma)=Gcout(srtdma)
           ygas(mgsvi)=Gc(srtso4)*1.0d+12/boxmass*28.9/gmw(srtso4)
           ygas(mgnh3)=Gc(srtnh3)*1.0d+12/boxmass*28.9/gmw(srtnh3)
+          ygas(mgdma)=Gc(srtdma)*1.0d+12/boxmass*28.9/gmw(srtdma)
         endif
       endif
 
@@ -243,17 +236,19 @@ c
         call cond_nuc(Nk,Mk,Gc,Nkout,Mkout,Gcout,H2SO4rate,dt,
      &   ichm,jchm,kchm, fndt)
 
-      do i=1,ibins
-        do j=1,icomp
-          Mk(i,j)=Mkout(i,j)
+        do i=1,ibins
+           do j=1,icomp
+              Mk(i,j)=Mkout(i,j)
+           enddo
+           Nk(i)=Nkout(i)
         enddo
-        Nk(i)=Nkout(i)
-      enddo
-      Gc(srtnh3) = Gcout(srtnh3)
-      Gc(srtso4) = Gcout(srtso4)
+        Gc(srtnh3) = Gcout(srtnh3)
+        Gc(srtso4) = Gcout(srtso4)
+        Gc(srtdma) = Gcout(srtdma)
 
-      ygas(mgsvi)=Gc(srtso4)*1.0d+12/boxmass*28.9/gmw(srtso4)
-      ygas(mgnh3)=Gc(srtnh3)*1.0d+12/boxmass*28.9/gmw(srtnh3)
+        ygas(mgsvi)=Gc(srtso4)*1.0d+12/boxmass*28.9/gmw(srtso4)
+        ygas(mgnh3)=Gc(srtnh3)*1.0d+12/boxmass*28.9/gmw(srtnh3)
+        ygas(mgdma)=Gc(srtdma)*1.0d+12/boxmass*28.9/gmw(srtdma)
 
 cJJ Not called here in master either - not necessary (?)
 cJJ      call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm,11)
@@ -265,37 +260,36 @@ c--------------------------------------------------------
       if (icond_soa.eq.1) then
 
         !Converting gas unit from ppt to kg
-       Gc(srtsoa1)=boxmass*organic_ppt(1)*1.0d-12*200.0/28.9
-       Gc(srtsoa2)=boxmass*organic_ppt(2)*1.0d-12*200.0/28.9
-       Gc(srtsoa3)=boxmass*organic_ppt(3)*1.0d-12*200.0/28.9
-       Gc(srtsoa4)=boxmass*organic_ppt(4)*1.0d-12*200.0/28.9
-       Gc(srtsoa5)=boxmass*organic_ppt(5)*1.0d-12*200.0/28.9  !EXLVOCS
+         Gc(srtsoa1)=boxmass*organic_ppt(1)*1.0d-12*200.0/28.9
+         Gc(srtsoa2)=boxmass*organic_ppt(2)*1.0d-12*200.0/28.9
+         Gc(srtsoa3)=boxmass*organic_ppt(3)*1.0d-12*200.0/28.9
+         Gc(srtsoa4)=boxmass*organic_ppt(4)*1.0d-12*200.0/28.9
+         Gc(srtsoa5)=boxmass*organic_ppt(5)*1.0d-12*200.0/28.9 !EXLVOCS
 
-        call org_cond(Nk,Mk,Gc,Nkout,Mkout,Gcout,dt,xkDMAN
+         call org_cond(Nk,Mk,Gc,Nkout,Mkout,Gcout,dt,xkDMAN
      &     ,ichm,jchm,kchm)
 
         !Converting Nk, Mk, and G                                                           !Only ammonia
-        do i=1,ibins
-          do j=1,icomp
-            Mk(i,j)=Mkout(i,j)
-          enddo
-          Nk(i)=Nkout(i)
-        enddo
-        Gc(srtsoa1) = Gcout(srtsoa1)
-        Gc(srtsoa2) = Gcout(srtsoa2)
-        Gc(srtsoa3) = Gcout(srtsoa3)
-        Gc(srtsoa4) = Gcout(srtsoa4)
-        Gc(srtsoa5) = Gcout(srtsoa5)    !EXLVOCS
+         do i=1,ibins
+            do j=1,icomp
+               Mk(i,j)=Mkout(i,j)
+            enddo
+            Nk(i)=Nkout(i)
+         enddo
+         Gc(srtsoa1) = Gcout(srtsoa1)
+         Gc(srtsoa2) = Gcout(srtsoa2)
+         Gc(srtsoa3) = Gcout(srtsoa3)
+         Gc(srtsoa4) = Gcout(srtsoa4)
+         Gc(srtsoa5) = Gcout(srtsoa5) !EXLVOCS
 
-       organic_ppt(1)=Gc(srtsoa1)*1.0d+12/boxmass*28.9/200.0 !gmw(srtsoa1)
-       organic_ppt(2)=Gc(srtsoa2)*1.0d+12/boxmass*28.9/200.0 !gmw(srtsoa2)
-       organic_ppt(3)=Gc(srtsoa3)*1.0d+12/boxmass*28.9/200.0 !gmw(srtsoa3)
-       organic_ppt(4)=Gc(srtsoa4)*1.0d+12/boxmass*28.9/200.0 !gmw(srtsoa4)
-       organic_ppt(5)=Gc(srtsoa5)*1.0d+12/boxmass*28.9/200.0  !EXLVOCS
+         organic_ppt(1)=Gc(srtsoa1)*1.0d+12/boxmass*28.9/200.0 !gmw(srtsoa1)
+         organic_ppt(2)=Gc(srtsoa2)*1.0d+12/boxmass*28.9/200.0 !gmw(srtsoa2)
+         organic_ppt(3)=Gc(srtsoa3)*1.0d+12/boxmass*28.9/200.0 !gmw(srtsoa3)
+         organic_ppt(4)=Gc(srtsoa4)*1.0d+12/boxmass*28.9/200.0 !gmw(srtsoa4)
+         organic_ppt(5)=Gc(srtsoa5)*1.0d+12/boxmass*28.9/200.0 !EXLVOCS
 
       end if
 
-      ! should not be necessary to call mnfix here /JJ
 cJJ       call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm,10)
       call mnfix_PSSA(Nk,Mk,ichm,jchm,kchm)
 
@@ -324,6 +318,7 @@ c--------------------------------------------------------
       !Return gas concentrations
       ygas(mgsvi)=Gc(srtso4)*1.0d+12/boxmass*28.9/gmw(srtso4)
       ygas(mgnh3)=Gc(srtnh3)*1.0d+12/boxmass*28.9/gmw(srtnh3)
+      ygas(mgdma)=Gc(srtdma)*1.0d+12/boxmass*28.9/gmw(srtdma)
 
       do i=1,ibins
         Nki(i)=Nk(i)
@@ -334,13 +329,14 @@ c--------------------------------------------------------
 
       h2so4 = ygas(mgsvi)
       nh3ppt = ygas(mgnh3)
+      dmappt = ygas(mgdma)
 
       
-       organic_ppt(1)=Gc(srtsoa1)*1.0d+12/boxmass*28.9/200.0 
-       organic_ppt(2)=Gc(srtsoa2)*1.0d+12/boxmass*28.9/200.0 
-       organic_ppt(3)=Gc(srtsoa3)*1.0d+12/boxmass*28.9/200.0 
-       organic_ppt(4)=Gc(srtsoa4)*1.0d+12/boxmass*28.9/200.0 
-       organic_ppt(5)=Gc(srtsoa5)*1.0d+12/boxmass*28.9/200.0  !EXLVOCS
+      organic_ppt(1)=Gc(srtsoa1)*1.0d+12/boxmass*28.9/200.0 
+      organic_ppt(2)=Gc(srtsoa2)*1.0d+12/boxmass*28.9/200.0 
+      organic_ppt(3)=Gc(srtsoa3)*1.0d+12/boxmass*28.9/200.0 
+      organic_ppt(4)=Gc(srtsoa4)*1.0d+12/boxmass*28.9/200.0 
+      organic_ppt(5)=Gc(srtsoa5)*1.0d+12/boxmass*28.9/200.0 !EXLVOCS
 c==============================================================
 
       RETURN

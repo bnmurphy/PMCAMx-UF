@@ -66,7 +66,7 @@ c
       logical lgas, losat
       real tempk(ncol,nrow,nlay),press(ncol,nrow,nlay),
      &          avcnc(ncol,nrow,nlayav,nspav),conc(ncol,nrow,nlay,nspc),
-     &          avJnuc(ncol,nrow,nlayav,2),Jnuc(ncol,nrow,nlay,2)
+     &          avJnuc(ncol,nrow,nlayav,3),Jnuc(ncol,nrow,nlay,3)
       integer  lmap(nspc)
 c
 c-----Entry point
@@ -102,14 +102,14 @@ c
                 endif
                 avcnc(i,j,k,l) = convfac*conc(i,j,k,lsp)*dtfact + 
      &                           avcnc(i,j,k,l)
-                !Store running average of nucleation rates. The 2 limit
+                !Store running average of nucleation rates. The 3 limit
                 !on l is confusing and something more straight-forward
                 !could be done. This value should MATCH the number of
                 !nucleation mechniasms that are being tracked. It has
                 !NOTHING to do with the number of species even though
                 !we made it look like it does. (unsigned commenter)
-                if (l.le.2) then
-                  avJnuc(i,j,k,l) = Jnuc(i,j,k,l)*dtfact + avJnuc(i,j,k,l)
+                if (l.le.3) then
+                  avJnuc(i,j,k,l) = Jnuc(i,j,k,l)*dtfact + avJnuc(i,j,k,l) 
                 endif
 c
 c========================= Process Analysis Begin ==============================

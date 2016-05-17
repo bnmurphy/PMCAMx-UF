@@ -33,7 +33,7 @@ c
 
       integer ibins, icomp
       integer naqbin
-      parameter (ibins=41, icomp=9)
+      parameter (ibins=41, icomp=10)
       parameter (naqbin=2)
 c
 c-----Argument declarations
@@ -42,20 +42,22 @@ c
       real*8 t0, t1
       real tempK      ! temperature [=] K
       real pressure   ! atm
-      real*4 moxid0(ibins+naqbin,naers)    
-                      !sulfate produced by aqueous chemistry [=]ug/m3
+      real*4 moxid0(ibins+naqbin,naers)
+                   !Inert species from the aqueous chemistry routine
+		   !(BNM)
+                !sulfate produced by aqueous chemistry [=]ug/m3
       integer ich, jch, kch ! coordiate, x, y, z
 c
 c-----Variable declarations
 c
-      integer srtso4, srtinrt,  srtnh3, srth2o
+      integer srtso4, srtinrt, srtnh3, srtdma, srth2o !species indicators
       integer srtsoa1, srtsoa2, srtsoa3, srtsoa4
       integer srtsoa5  !david
 
       parameter (srtso4=1, srtinrt=2)
       parameter (srtsoa1=3, srtsoa2= 4, srtsoa3=5, srtsoa4=6)
       parameter (srtsoa5=7)  !david
-      parameter (srtnh3=8, srth2o=9)
+      parameter (srtnh3=8, srtdma=9, srth2o=10)
 
       integer i, j ! counter variables
       integer ii, jj ! counter variables
@@ -129,35 +131,37 @@ c
 c
       do i=1, ibins !Transfer moxid0
       ! Check negative moxid0
-      if (moxid0(i,kpnh4_c).lt.0.0) moxid0(i,kpnh4_c)=0.0            !jjung
-      if (moxid0(i,kpso4_c).lt.0.0) moxid0(i,kpso4_c)=0.0
-      if (moxid0(i,kpno3_c).lt.0.0) moxid0(i,kpno3_c)=0.0            !jjung
-      if (moxid0(i,kna_c).lt.0.0) moxid0(i,kna_c)=0.0
-      if (moxid0(i,kpoc_c).lt.0.0) moxid0(i,kpoc_c)=0.0
-      if (moxid0(i,kpec_c).lt.0.0) moxid0(i,kpec_c)=0.0
-      if (moxid0(i,kcrst_c).lt.0.0) moxid0(i,kcrst_c)=0.0
-      if (moxid0(i,kpcl_c).lt.0.0) moxid0(i,kpcl_c)=0.0
+      if (moxid0(i,naa).lt.0.0) moxid0(i,naa)=0.0            !jjung
+      if (moxid0(i,na4).lt.0.0) moxid0(i,na4)=0.0
+      if (moxid0(i,nan).lt.0.0) moxid0(i,nan)=0.0            !jjung
+      if (moxid0(i,nas).lt.0.0) moxid0(i,nas)=0.0
+      if (moxid0(i,nao).lt.0.0) moxid0(i,nao)=0.0
+      if (moxid0(i,nae).lt.0.0) moxid0(i,nae)=0.0
+      if (moxid0(i,nar).lt.0.0) moxid0(i,nar)=0.0
+      if (moxid0(i,nac).lt.0.0) moxid0(i,nac)=0.0
+      if (moxid0(i,naami).lt.0.0) moxid0(i,naami)=0.0       ! amine /JJ
 c
-         moxid(i,srtnh3)=moxid0(i,kpnh4_c)*cvt*boxvol
-         moxid(i,srtso4)=moxid0(i,kpso4_c)*cvt*boxvol
-         add_tot_inert(i) = moxid0(i,kpno3_c)+moxid0(i,kna_c)+         ! cf
-c                            ! Nitrate                 Na              !
+         moxid(i,srtnh3)=moxid0(i,naa)*cvt*boxvol
+         moxid(i,srtso4)=moxid0(i,na4)*cvt*boxvol
+         moxid(i,srtdma)=moxid0(i,naami)*cvt*boxvol        !amine /JJ
+         add_tot_inert(i) = moxid0(i,nan)+moxid0(i,nas)+         ! cf
+c                            ! Nitrate            Na              !
 c         add_tot_inert(i) = moxid0(i,kna_c)+                          ! cf
                      !        Na
-     &                moxid0(i,kpcl_c)+moxid0(i,kpoc_c)+
+     &                moxid0(i,nac)+moxid0(i,nao)+
                      ! Cl                OC
-     &                moxid0(i,kpec_c)+moxid0(i,kcrst_c)+
+     &                moxid0(i,nae)+moxid0(i,nar)+
                      ! EC                Crust
      &                eps
                      ! for safety
          ! Capture ratios added before calling dman 
-         add_rt_no3(i) = moxid0(i,kpno3_c) * (1.0/add_tot_inert(i))   ! cf
-         add_rt_na(i) = moxid0(i,kna_c) * (1.0/add_tot_inert(i))
-         add_rt_cl(i) = moxid0(i,kpcl_c) * (1.0/add_tot_inert(i))
-         add_rt_pom(i) = moxid0(i,kpoc_c) * (1.0/add_tot_inert(i))
-         add_rt_ec(i) = moxid0(i,kpec_c) * (1.0/add_tot_inert(i))
-         add_rt_crst(i) = moxid0(i,kcrst_c) * (1.0/add_tot_inert(i))
- 
+         add_rt_no3(i)   = moxid0(i,nan) * (1.0/add_tot_inert(i))   ! cf
+         add_rt_na(i)    = moxid0(i,nas) * (1.0/add_tot_inert(i))
+         add_rt_cl(i)    = moxid0(i,nac) * (1.0/add_tot_inert(i))
+         add_rt_pom(i)   = moxid0(i,nao) * (1.0/add_tot_inert(i))
+         add_rt_ec(i)    = moxid0(i,nae) * (1.0/add_tot_inert(i))
+         add_rt_crst(i)  = moxid0(i,nar) * (1.0/add_tot_inert(i))
+
          moxid(i,srtinrt) = add_tot_inert(i)*cvt*boxvol
       enddo
      
@@ -166,7 +170,7 @@ c         add_tot_inert(i) = moxid0(i,kna_c)+                          ! cf
          if (q((i-1)*nsp+knum).lt.0.0) then
             if (q((i-1)*nsp+knum).gt.(-Neps*(1./boxvol)))then
                q((i-1)*nsp+knum) = Neps*(1./boxvol)
-               do j=2, nsp-1 ! from KNa to KEC, all mass species wo H2O 
+               do j=2, nsp-1 ! all mass species wo H2O
                   q((i-1)*nsp+j) = Neps*(1./boxvol)*1.4*xk(i)*(1./real(nsp-2))
                enddo
             else
@@ -179,7 +183,7 @@ c         add_tot_inert(i) = moxid0(i,kna_c)+                          ! cf
                   write(*,*)q((ii-1)*nsp+knum)
                enddo
                write(*,*)'q(+k...)='
-               do jj=2, nsp-1 ! from KNa to KEC, all mass species wo H2O 
+               do jj=2, nsp-1 ! all mass species wo H2O
                   write(*,*)'species=',jj
                   do ii=1,ibins
                      write(*,*)q((ii-1)*nsp+jj)
@@ -189,7 +193,7 @@ c         add_tot_inert(i) = moxid0(i,kna_c)+                          ! cf
             endif
          endif
          totmass=0.0
-         do j=2, nsp-1 ! from KNa to KEC, all mass species wo H2O 
+         do j=2, nsp-1 ! all mass species wo H2O
             totmass=totmass+q((i-1)*nsp+j)
             if (q((i-1)*nsp+j).lt.0.0) then
                if (q((i-1)*nsp+j).gt.(-Meps*(1./(cvt*boxvol)))) then
@@ -204,7 +208,7 @@ c         add_tot_inert(i) = moxid0(i,kna_c)+                          ! cf
                      write(*,*)q((ii-1)*nsp+knum)
                   enddo
                   write(*,*)'q(+k...)='
-                  do jj=2, nsp-1 ! from KNa to KEC, all mass species wo H2O 
+                  do jj=2, nsp-1 ! all mass species wo H2O
                      write(*,*)'species=',jj
                      do ii=1,ibins
                         write(*,*)q((ii-1)*nsp+jj)
@@ -216,7 +220,7 @@ c         add_tot_inert(i) = moxid0(i,kna_c)+                          ! cf
          enddo
          if (iflag.eq.1) then
             newmass=0.0
-            do jj=2, nsp-1 ! from KNa to KEC, all mass species wo H2O 
+            do jj=2, nsp-1 ! all mass species wo H2O
                newmass=newmass+q((i-1)*nsp+jj)
             enddo
             q((i-1)*nsp+knum)=q((i-1)*nsp+knum)*newmass/totmass
@@ -247,6 +251,7 @@ c
 c
          Mk(i,srtinrt) = tot_inert(i) * cvt * boxvol
          Mk(i,srtnh3)=q((i-1)*nsp+knh4) * cvt * boxvol
+         Mk(i,srtdma)=q((i-1)*nsp+kpami)* cvt * boxvol   !amine /JJ
          Mk(i,srth2o)=q((i-1)*nsp+kh2o) * cvt * boxvol
       enddo      
 c
@@ -254,8 +259,8 @@ c     Find a starting activation bin
 c
       i = 1
       ifind = 0
-cd      do while (ifind.eq.1)
-      do while (ifind.eq.0)  !david
+c      do while (ifind.eq.1)
+      do while (ifind.eq.0) ! changed by LA 
         if (daer(i).gt.dactiv) then
           iact = i
           ifind = 1
@@ -352,8 +357,10 @@ c     Only POA has the sum of POA, EC, CRST, Cl, and Na. The rest of
 c     species are set to zero.
 c
         tot_inert2(i) = Mk(i,srtinrt) * cvt2 * (1.0/boxvol)
-        if (tot_inert(i).le.tot_inert2(i)) then
-           dtot_inert(i)=tot_inert2(i)-tot_inert(i) !Increased mass
+        if (tot_inert(i).le.tot_inert2(i)) then   !Increased mass
+	   !Add mass in proportion to the composition of species
+	   !added by the aqueous phase chemistry module
+           dtot_inert(i)=tot_inert2(i)-tot_inert(i) 
            q((i-1)*nsp+kpom) = q((i-1)*nsp+kpom) 
      &                        + dtot_inert(i)* add_rt_pom(i)
            q((i-1)*nsp+kec) = q((i-1)*nsp+kec)
@@ -367,7 +374,8 @@ c
            ! SOA is not added by aqueous chemistry
            q((i-1)*nsp+kno3) = q((i-1)*nsp+kno3)                      ! cf
      &                        + dtot_inert(i) * add_rt_no3(i)         ! cf
-         else !redistribute as the portion of before aqueous chemistry
+         else !Decreased Mass
+	      !redistribute as the portion before aqueous chemistry
            q((i-1)*nsp+kpom) = tot_inert2(i) * rt_pom(i)
            q((i-1)*nsp+kec) = tot_inert2(i) * rt_ec(i)
            q((i-1)*nsp+kcrus) = tot_inert2(i) * rt_crst(i)
@@ -378,6 +386,7 @@ c
          endif   
 c
          q((i-1)*nsp+knh4) = Mk(i,srtnh3) * cvt2 * (1.0/boxvol)
+         q((i-1)*nsp+kpami)= Mk(i,srtdma) * cvt2 * (1.0/boxvol)
          ! Water is not changed by this process
       enddo      
 

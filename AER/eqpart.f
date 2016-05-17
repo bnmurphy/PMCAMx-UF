@@ -53,19 +53,25 @@ C          THE FOLLOWING TWO DIMENSIONAL ARRAYS ARE NECESARY FOR THE
 C          LINKING OF THE WEIGHTING FACTORS FOR NH4, NO3 AND CL.
 C     FRQ(NSEC,nsp)   FRACTION OF DQ TRANSFERED TO EACH AEROSOL SECTION
 C
-cdavid      SUBROUTINE EQPART(t,q)
-      SUBROUTINE EQPART(t,q,nsec_dav)
+      SUBROUTINE EQPART(t,q)
+
 
       include 'dynamic.inc'
       INCLUDE 'equaer.inc'                  ! ISORROPIA declarations
 
 cbk      REAL*8 DQ(NSP),FRQ(nsec,nsp),WI(5),q0(3),q(ntotal)
 cbk      real*8 qsav(ntotal), DQsav(nsp), accom(nsp)
-      REAL*8 DQ(nexti),FRQ(nsec,nexti),WI(5),q0(3),q(ntotal) ! bkoo (03/09/03)
-      real*8 qsav(nexti*nsec), DQsav(nexti), accom(nexti)    ! bkoo (03/09/03)
-      real*8 qq, frq0(nsec,nexti) ! bkoo (10/07/03)
-      integer nsec_dav,ki !new variables david
+c$$$      REAL*8 DQ(nexti),FRQ(nsec,nexti),WI(5),q0(3),q(ntotal) ! bkoo (03/09/03)
+c$$$      real*8 qsav(nexti*nsec), DQsav(nexti), accom(nexti)    ! bkoo (03/09/03)
+c$$$      real*8 qq, frq0(nsec,nexti) ! bkoo (10/07/03)
+      REAL*8 DQ(nsp),FRQ(nsec,nsp),WI(NCOMP),q0(4),q(ntotal) ! JJ (05/08/15)
+      real*8 qsav(ntotal), DQsav(nsp), accom(nsp)    ! JJ (05/08/15)
+      real*8 qq, frq0(nsec,nsp) ! JJ (05/08/15)
+      integer ki
       logical done
+      real*8 WT(NCOMP),Gas(4),Aerliq(16),Aersld(22)
+      real*8 Other(9),CNTRL(2)
+      character SCASI*15
 
 c__cf      if(aerm.eq.'EQUI') then                                     ! cf
 cc                                                                     !
@@ -107,7 +113,6 @@ C     Ambient temperature expressed in Kelvins.
 C
 C *** CONVERT INPUT CONCENTRATIONS TO moles/m3 **************************
 C
-cdav------------------------------------------------------------------
       nsecx2 = nsec                         ! PMCAMx-UF does not define nsecx2 elsewhere/ JJ 13/07/15
       ! PMCAMx-UF does not calculate qn elsewhere/ JJ 13/07/15
       do i=1,nsec
@@ -117,11 +122,18 @@ cdav------------------------------------------------------------------
         enddo  
         qn(i)=qt(i)/dsec(i)**3 ! calculate 0th moment(number of particles)
       enddo
-cdav------------------------------------------------------------------
 
       ng = nsp*nsecx2                       ! gases
       prod=rgas*temp/(1.01325D5*pres)       ! conversion from ppm to umoles/m3
                                             ! pres (bkoo, 06/09/00)
+
+      ! initialize WI and WT /JJ
+      WI=0.d0
+      WT=0.d0
+      !initialize other isorropia arrays
+      Gas=0.d0
+      Aerliq=0.d0
+      Aersld=0.d0
 
       WI(1) = 0.0D0
       WI(2) = Q(ng+ih2SO4) / PROD*1.0d-6
@@ -129,6 +141,7 @@ cdav------------------------------------------------------------------
       WI(4) = q(ng+ihNO3)  / PROD*1.0d-6
 c      WI(5) = q(ng+ihCL)   / PROD*1.0d-6
       WI(5) = 0.0D0                                                   ! cf
+      WI(9) = q(nq+idma) / PROD*1.0d-6  ! amines
       do k=1,nsecx2                         ! aerosols
          nn=(k-1)*nsp
 c         WI(1) = wi(1)+ q(nn+KNa) /emw(KNa) *1.D-6                   ! cf
@@ -136,18 +149,24 @@ c         WI(1) = wi(1)+ q(nn+KNa) /emw(KNa) *1.D-6                   ! cf
          WI(3) = wi(3)+ q(nn+KNH4)/emw(KNH4)*1.D-6
          WI(4) = wi(4)+ q(nn+KNO3)/emw(KNO3)*1.D-6
 c         WI(5) = wi(5)+ q(nn+KCL) /emw(KCL) *1.D-6                   ! cf
+         WI(9) = wi(9)+ q(nn+kpami)/emw(kpami)*1.D-6 ! amines
       enddo
       RHI=rh
       TEMPI=temp
-      IPROB = 0
+      CNTRL(1)=0.d0 !0=forward problem
+      CNTRL(2)=0.d0 !0=aerosol can have both liquid and solid phases
+c      IPROB = 0
 C
 C *** CALL ISORROPIA+ ***************************************************
 C
-      CALL ISRPIA ( WI, RHI, TEMPI, IPROB )
+c      CALL ISRPIA ( WI, RHI, TEMPI, IPROB )
+      CALL ISOROPIA( WI, RHI, TEMPI, CNTRL,
+     &     WT, GAS, AERLIQ, AERSLD, SCASI, OTHER)
 
 c     initialize DQ & ACCOM arrays - bkoo (05/24/01)
 cbk      do i=1,nsp
-      do i=1,nexti ! bkoo (03/09/03)
+c      do i=1,nexti ! bkoo (03/09/03)
+      do i=1,nsp ! JJ (08/15) 
          dq(i)    = 0.0d0
          accom(i) = 1.0d0
       enddo
@@ -157,10 +176,11 @@ C
 c      DQ(KH2O)=0.0D0                        ! WATER DONE LATER
 c      DQ(KNA) =0.0D0                        ! SODIUM IS IN AEROSOL PHASE ONLY
       DQ(KSO4)=Q(ng+ih2so4)/prod            ! all H2SO4 condenses
-      DQ(KNH4)=Q(NG+INH3)  /PROD - dmax1(GNH3 *1.0d6, 0.d0) ! bkoo (10/07/03)
-      DQ(KNO3)=Q(NG+IHNO3) /PROD - dmax1(GHNO3*1.0d6, 0.d0) ! bkoo (10/07/03)
+      DQ(KNH4)=Q(NG+INH3)  /PROD - dmax1(Gas(1)*1.0d6, 0.d0) ! bkoo (10/07/03)
+      DQ(KNO3)=Q(NG+IHNO3) /PROD - dmax1(Gas(2)*1.0d6, 0.d0) ! bkoo (10/07/03)
 c_cf      DQ(KCL) =Q(NG+IHCL)  /PROD - dmax1(GHCL *1.0d6, 0.d0) ! bkoo (10/07/03)     ! cf
       DQ(KCL) =0.0D0                                                              !   cf
+      DQ(kpami)=Q(ng+idma)/prod - max(Gas(4)*1.0d6, 0.d0)  ! JJ (08/15)
 C    DO ORGANICS  **ASSUME PS HAS NO SIZE OR COMPOSITION DEPENDANCE **
 cbk  removed - bkoo (03/09/03)
 cbk      DO IOG = 1,NORG-1
@@ -177,29 +197,33 @@ c
       DQ(KNH4)=DQ(KNH4)-DQ(KNO3)-DQ(KCL)
 c
 c     Save initial aerosol concentrations
+      qsav=q  ! qsav and q are now the same size /JJ (08/15) 
 cbk      do i=1,ntotalx2
 cbk        qsav(i)=q(i)
-      do i=1,nsecx2                          ! bkoo (03/09/03)
-       do ii=1,nexti                         ! bkoo (03/09/03)
-        qsav((i-1)*nexti+ii)=q((i-1)*nsp+ii) ! bkoo (03/09/03)
-       enddo                                 ! bkoo (03/09/03)
-      enddo
+cJJ      do i=1,nsecx2                          ! bkoo (03/09/03)
+cJJ       do ii=1,nexti                         ! bkoo (03/09/03)
+cJJ        qsav((i-1)*nexti+ii)=q((i-1)*nsp+ii) ! bkoo (03/09/03)
+cJJ       enddo                                 ! bkoo (03/09/03)
+cJJ      enddo
 c
 c     Its possible to not be able to reach equilibrium for NH4Cl and NH4NO3
 c     due to diferences between aerosol sectional vs. bulk composition 
-      do i=1,3
+      do i=1,4
         q0(i)=0.0d0
       enddo
       do isec=1,nsecx2
         q0(1)=q0(1)+q((isec-1)*nsp+kno3)    ! initial aerosol NO3
         q0(2)=q0(2)+q((isec-1)*nsp+knh4)    ! initial aerosol NH4
 c        q0(3)=q0(3)+q((isec-1)*nsp+kcl)     ! initial aerosol Cl     !  cf
+        q0(4)=q0(4)+q((isec-1)*nsp+kpami)   !initial aerosol dma
       enddo
 C
 c   STEP 3: DETERMINE THE RELATIVE RATES OF MASS TRANSFER FOR EACH SECTION
 c       if we assume composition changes between size sections are not 
 c       important, then the rate of transfer is proportional to the mass
 c       mass transfer rate dependance on particle size
+
+! We keep the dma accommodation coefficient on purpose as 1.0 /JJ
 
 cbk   removed - bkoo (03/09/03)
 cbk      accom(KH2O)=1.0
@@ -222,193 +246,194 @@ cbk      call wdiameter(q) ! tmg (01/25/02)
 c
 c calculate factors
 c
-cbk      do isp=1,nsp
-      do isp=1,nexti ! bkoo (03/09/03)
-       frqtot = 0.0
-       do isec = 1,nsecx2
-        frq(isec,isp) = qn(isec)*
-     &      dsec(isec)/(1.0+rlambda/(accom(isp)*dsec(isec)))
-        frqtot = frqtot + frq(isec,isp)
-       enddo
+      do isp=1,nsp   ! frq goes to nsp now /JJ
+cJJ      do isp=1,nexti ! bkoo (03/09/03)
+         frqtot = 0.0
+         do isec = 1,nsecx2
+            frq(isec,isp) = qn(isec)*
+     &           dsec(isec)/(1.0+rlambda/(accom(isp)*dsec(isec)))
+            frqtot = frqtot + frq(isec,isp)
+         enddo
 c
 c normalize
 c
-       do isec = 1,nsecx2
-        frq(isec,isp) = frq(isec,isp)/frqtot
-        frq0(isec,isp) = frq(isec,isp) ! save frq - bkoo (10/07/03)
-       enddo
+         do isec = 1,nsecx2
+            frq(isec,isp) = frq(isec,isp)/frqtot
+            frq0(isec,isp) = frq(isec,isp) ! save frq - bkoo (10/07/03)
+         enddo
       enddo
 
       iter=0 ! counter for escaping out of an infinity loop (bkoo: Apr, 2000)
  80   iter=iter+1 ! moved - bkoo (10/07/03)
 c     save dq's
-cbk      do i=1,nsp
-      do i=1,nexti ! bkoo (03/09/03)
-        dqsav(i)=dq(i)
+      do i=1,nsp
+cJJ      do i=1,nexti ! bkoo (03/09/03)
+         dqsav(i)=dq(i)
       enddo
 c
 c   FIRST condense all condensing species
 c
-cbk      do isp = 1,nsp
-      do isp = 1,nexti ! bkoo (03/09/03)
-       if(dq(isp).gt.0.0d0) then
-        do isec=1,nsecx2
-         INDX=(ISEC-1)*NSP
-         q(indx+isp)=q(indx+isp)+frq(isec,isp)*dq(isp)*emw(isp)
+      do isp = 1,nsp
+cJJ      do isp = 1,nexti ! bkoo (03/09/03)
+         if(dq(isp).gt.0.0d0) then
+            do isec=1,nsecx2
+               INDX=(ISEC-1)*NSP
+               q(indx+isp)=q(indx+isp)+frq(isec,isp)*dq(isp)*emw(isp)
 c     special cases for remaping of dq
-         if(isp.eq.kNO3.or.isp.eq.kCl) then
-          q(indx+kNH4)= q(indx+knh4)+frq(isec,isp)*dq(isp)*emw(knh4)
+               if(isp.eq.kNO3.or.isp.eq.kCl) then
+                  q(indx+kNH4)= q(indx+knh4)+frq(isec,isp)*dq(isp)*emw(knh4)
+               endif
+            enddo
+            dq(isp)=0.0d0
          endif
-        enddo
-        dq(isp)=0.0d0
-       endif
       enddo
 c
 c   SECOND evaporate all evaporating species
 c   only NH4NO3 and NH4Cl can evaporate
 c
 C     CHECK FOR COMPLETE EVAPORATION
- 100  frt=1.0d0
-      frtcl = 0.0 ! bkoo (10/07/03)
-      isp=kCl ! Cl first b/c NH4Cl forms before NH4NO3 when Na exists
-      do m=1,2
-       if(dq(isp).lt.0.0d0) then            ! evaporating
-        do isec=1,nsecx2
-         INDX=(ISEC-1)*NSP
-         dqfx=DQ(ISP)*FRQ(ISEC,isp)
-         IF(-dqfx.gt.tinys) then            ! evaporating significantly
-          if(Q(INDX+ISP).LT.-dqfx*emw(isp)) then ! not enough NO3 or Cl
-           frtq=-q(indx+isp)/dqfx/emw(isp)
-           if(frtq.lt.frt) then
-            frt=frtq
-            ispsav=isp 	                    ! species that evaporates first
-            isecsav=isec                    ! section that evaporates first
-            if(q(indx+isp).lt.tinys) goto 150
-           endif
-          endif
-          qq = q(indx+knh4) ! bkoo (10/07/03)
-          if(isp.eq.KNO3)   ! bkoo (10/07/03)
-     &              qq = qq + frtcl*frq(isec,KCL)*dq(KCL)*emw(knh4)
-cbk          if(q(indx+knh4).lt.-dqfx*emw(kNH4)) then ! not enough NH4+
-cbk           frtq=-q(indx+knh4)/dqfx/emw(kNH4)
-          if(qq.lt.-dqfx*emw(kNH4)) then    ! not enough NH4+
-           frtq=-qq/dqfx/emw(kNH4)
-           if(frtq.lt.frt) then
-            frt=frtq
-            ispsav=isp                      ! species that evaporates first
-            isecsav=isec                    ! section that evaporates first
-            if(q(indx+knh4).lt.tinys) goto 150
-           endif
-          endif
-         endif
-        enddo
-        if(isp.eq.KCL) frtcl = frt ! bkoo (10/07/03)
-       endif
-       isp=kNO3
-      enddo
-c partition species up to evaporation point
-      done=.true.
-      do m=1,2
-       do isec=1,nsecx2
-        INDX=(ISEC-1)*NSP
-        q(indx+isp)=q(indx+isp)+frt*frq(isec,isp)*dq(isp)*emw(isp)
-        q(indx+kNH4)=q(indx+knh4)+frt*frq(isec,isp)*dq(isp)*emw(knh4)
-       enddo
-       dq(isp)=(1-frt)*dq(isp)
-       if(abs(dq(isp)).gt.1e-5) done=.false. ! tolerance for solution
-       isp=kCl
-      enddo
-c check for complete solution
-      if(done) then
-       goto 200
-      endif
-c
-c adjust frq to account for the totally evaporated species
-c
- 150  frqtot=0.0 ! bkoo (10/07/03) ...
-      do isec=1,nsecx2
-        if(isec.eq.isecsav) frq(isec,ispsav)=0.0d0
-        frqtot = frqtot + frq(isec,ispsav)
-      enddo
-      if(frqtot.gt.tinys) then ! renormalize
-        do isec=1,nsecx2
-          frq(isec,ispsav)=frq(isec,ispsav)/frqtot
-        enddo
-      else
-        if(iter.gt.itmaxeq) then ! moved - bkoo (10/07/03)
-         if(min(dq(KNO3),dq(KCL)).lt.-0.3) then                               ! bkoo_dbg
-         call get_param(igrdchm,ichm,jchm,kchm,iout,idiag)                    ! bkoo_dbg
-         write(*,'(A8,2E15.5,4I4)')'EQUI-F: ',dq(KNO3),dq(KCL),ichm,jchm,kchm ! bkoo_dbg
-         endif                                                                ! bkoo_dbg
-         goto 200
-        endif
-        goto 180 ! can't evaporate given species from any section
-      endif
-
-      goto 100
-c
-c   step 4: when sectional compositions prevent achievement of equilibrium
-c           gas phase concentrations we need to adjust the non limiting
-c           species so that that species does achieve equilibrium.
-c           For example:  if NH4Cl cannot evaporate because a section 
-c           runs out of NH4 and this is the only particle with any Cl
-c           then KNH4Cl will not equal [NH3]final [HCL]final becuase 
-c           this equilibrium could not be achieved.  However the 
-c           equilibrium transfer flux of NH4NO3 was calculated assuming 
-c           that all of the NH4Cl would evaporate.  Since it didn't 
-c           KNH4NO3 will not equal [NH3]final [HNO3]final.  To correct
-c           in this case we will evaporate enough NH4NO3 to establish
-c           equilibrium. 
-c
-c           only evaporating species can encounter this problem
-c           only if NH4 becomes zero in a section can this problem occur
-c
- 180  if(ispsav.eq.kno3) then
-         isp2=kcl                     ! correcting species
-         g2=ghcl*1.0d6                ! original equilibrium for HCL (umol/m3)
-      else
-         isp2=kno3                    ! correcting species
-         g2=ghno3*1.0d6               ! original equilibrium for HNO3 (umol/m3)
-      endif
-      bb=gnh3*1.0d6+dq(ispsav)+g2
-      dq(isp2)=(-bb+sqrt(bb**2-4*dq(ispsav)*g2))/2.0d0
-
-      dq(isp2) = dmax1(dq(isp2), dq(knh4)+dqsav(ispsav)-dq(ispsav) ! bkoo (10/07/03)
-     &                          +dqsav(isp2)-q(ng+inh3)/prod)
-
-      if(iter.gt.itmaxeq+1) dq(isp2)=0.0d0 ! bkoo (11/14/01)
-c reset aerosol concentrations and dq's for NO3, NH4 and Cl
-      do isec=1,nsecx2
-         indx=(isec-1)*nsp
-cbk         q(indx+kno3)=qsav(indx+kno3) ! initial aerosol no3
-cbk         q(indx+knh4)=qsav(indx+knh4) ! initial aerosol nh4
-cbk         q(indx+kcl)=qsav(indx+kcl)   ! initial aerosol Cl
-         indx2=(isec-1)*nexti          ! bkoo (03/09/03)
-         q(indx+kno3)=qsav(indx2+kno3) ! bkoo (03/09/03)
-         q(indx+knh4)=qsav(indx2+knh4) ! bkoo (03/09/03)
-         q(indx+kcl)=qsav(indx2+kcl)   ! bkoo (03/09/03)
-      enddo
-c restore frq - bkoo (10/07/03)
-      do isp=1,nexti
-        do isec=1,nsecx2
-          frq(isec,isp) = frq0(isec,isp)
-        enddo
-      enddo
-c adjust DQ
-cbk      do i=1,nsp
-      do i=1,nexti ! bkoo (03/09/03)
-         if(i.eq.ispsav) then
-            dq(i)=dqsav(i)-dq(i)
-         elseif(i.eq.isp2) then
-            dq(i)=dqsav(i)-dq(i)
-         elseif(i.eq.knh4) then
-            dq(i)=dqsav(i)
-         else
-            dq(i)=0.0d0
-         endif
-      enddo
-      goto 80
-c      endif
+c$$$ 100  frt=1.0d0
+c$$$      frtcl = 0.0 ! bkoo (10/07/03)
+c$$$      isp=kCl ! Cl first b/c NH4Cl forms before NH4NO3 when Na exists
+c$$$      do m=1,2
+c$$$       if(dq(isp).lt.0.0d0) then            ! evaporating
+c$$$        do isec=1,nsecx2
+c$$$         INDX=(ISEC-1)*NSP
+c$$$         dqfx=DQ(ISP)*FRQ(ISEC,isp)
+c$$$         IF(-dqfx.gt.tinys) then            ! evaporating significantly
+c$$$          if(Q(INDX+ISP).LT.-dqfx*emw(isp)) then ! not enough NO3 or Cl
+c$$$           frtq=-q(indx+isp)/dqfx/emw(isp)
+c$$$           if(frtq.lt.frt) then
+c$$$            frt=frtq
+c$$$            ispsav=isp 	                    ! species that evaporates first
+c$$$            isecsav=isec                    ! section that evaporates first
+c$$$            if(q(indx+isp).lt.tinys) goto 150
+c$$$           endif
+c$$$          endif
+c$$$          qq = q(indx+knh4) ! bkoo (10/07/03)
+c$$$          if(isp.eq.KNO3)   ! bkoo (10/07/03)
+c$$$     &              qq = qq + frtcl*frq(isec,KCL)*dq(KCL)*emw(knh4)
+c$$$cbk          if(q(indx+knh4).lt.-dqfx*emw(kNH4)) then ! not enough NH4+
+c$$$cbk           frtq=-q(indx+knh4)/dqfx/emw(kNH4)
+c$$$          if(qq.lt.-dqfx*emw(kNH4)) then    ! not enough NH4+
+c$$$           frtq=-qq/dqfx/emw(kNH4)
+c$$$           if(frtq.lt.frt) then
+c$$$            frt=frtq
+c$$$            ispsav=isp                      ! species that evaporates first
+c$$$            isecsav=isec                    ! section that evaporates first
+c$$$            if(q(indx+knh4).lt.tinys) goto 150
+c$$$           endif
+c$$$          endif
+c$$$         endif
+c$$$        enddo
+c$$$        if(isp.eq.KCL) frtcl = frt ! bkoo (10/07/03)
+c$$$       endif
+c$$$       isp=kNO3
+c$$$      enddo
+c$$$c partition species up to evaporation point
+c$$$      done=.true.
+c$$$      do m=1,2
+c$$$       do isec=1,nsecx2
+c$$$        INDX=(ISEC-1)*NSP
+c$$$        q(indx+isp)=q(indx+isp)+frt*frq(isec,isp)*dq(isp)*emw(isp)
+c$$$        q(indx+kNH4)=q(indx+knh4)+frt*frq(isec,isp)*dq(isp)*emw(knh4)
+c$$$       enddo
+c$$$       dq(isp)=(1-frt)*dq(isp)
+c$$$       if(abs(dq(isp)).gt.1e-5) done=.false. ! tolerance for solution
+c$$$       isp=kCl
+c$$$      enddo
+c$$$c check for complete solution
+c$$$      if(done) then
+c$$$       goto 200
+c$$$      endif
+c$$$c
+c$$$c adjust frq to account for the totally evaporated species
+c$$$c
+c$$$ 150  frqtot=0.0 ! bkoo (10/07/03) ...
+c$$$      do isec=1,nsecx2
+c$$$        if(isec.eq.isecsav) frq(isec,ispsav)=0.0d0
+c$$$        frqtot = frqtot + frq(isec,ispsav)
+c$$$      enddo
+c$$$      if(frqtot.gt.tinys) then ! renormalize
+c$$$        do isec=1,nsecx2
+c$$$          frq(isec,ispsav)=frq(isec,ispsav)/frqtot
+c$$$        enddo
+c$$$      else
+c$$$        if(iter.gt.itmaxeq) then ! moved - bkoo (10/07/03)
+c$$$         if(min(dq(KNO3),dq(KCL)).lt.-0.3) then                               ! bkoo_dbg
+c$$$         call get_param(igrdchm,ichm,jchm,kchm,iout,idiag)                    ! bkoo_dbg
+c$$$         write(*,'(A8,2E15.5,4I4)')'EQUI-F: ',dq(KNO3),dq(KCL),ichm,jchm,kchm ! bkoo_dbg
+c$$$         endif                                                                ! bkoo_dbg
+c$$$         goto 200
+c$$$        endif
+c$$$        goto 180 ! can't evaporate given species from any section
+c$$$      endif
+c$$$
+c$$$      goto 100
+c$$$c
+c$$$c   step 4: when sectional compositions prevent achievement of equilibrium
+c$$$c           gas phase concentrations we need to adjust the non limiting
+c$$$c           species so that that species does achieve equilibrium.
+c$$$c           For example:  if NH4Cl cannot evaporate because a section 
+c$$$c           runs out of NH4 and this is the only particle with any Cl
+c$$$c           then KNH4Cl will not equal [NH3]final [HCL]final becuase 
+c$$$c           this equilibrium could not be achieved.  However the 
+c$$$c           equilibrium transfer flux of NH4NO3 was calculated assuming 
+c$$$c           that all of the NH4Cl would evaporate.  Since it didn't 
+c$$$c           KNH4NO3 will not equal [NH3]final [HNO3]final.  To correct
+c$$$c           in this case we will evaporate enough NH4NO3 to establish
+c$$$c           equilibrium. 
+c$$$c
+c$$$c           only evaporating species can encounter this problem
+c$$$c           only if NH4 becomes zero in a section can this problem occur
+c$$$c
+c$$$ 180  if(ispsav.eq.kno3) then
+c$$$         isp2=kcl                     ! correcting species
+c$$$         g2=ghcl*1.0d6                ! original equilibrium for HCL (umol/m3)
+c$$$      else
+c$$$         isp2=kno3                    ! correcting species
+c$$$         g2=ghno3*1.0d6               ! original equilibrium for HNO3 (umol/m3)
+c$$$      endif
+c$$$      bb=gnh3*1.0d6+dq(ispsav)+g2
+c$$$      dq(isp2)=(-bb+sqrt(bb**2-4*dq(ispsav)*g2))/2.0d0
+c$$$
+c$$$      dq(isp2) = dmax1(dq(isp2), dq(knh4)+dqsav(ispsav)-dq(ispsav) ! bkoo (10/07/03)
+c$$$     &                          +dqsav(isp2)-q(ng+inh3)/prod)
+c$$$
+c$$$      if(iter.gt.itmaxeq+1) dq(isp2)=0.0d0 ! bkoo (11/14/01)
+c$$$c reset aerosol concentrations and dq's for NO3, NH4 and Cl
+c$$$      do isec=1,nsecx2
+c$$$         indx=(isec-1)*nsp
+c$$$cbk         q(indx+kno3)=qsav(indx+kno3) ! initial aerosol no3
+c$$$cbk         q(indx+knh4)=qsav(indx+knh4) ! initial aerosol nh4
+c$$$cbk         q(indx+kcl)=qsav(indx+kcl)   ! initial aerosol Cl
+c$$$         indx2=(isec-1)*nsp          ! bkoo (03/09/03) /JJ (08/15)
+c$$$         q(indx+kno3)=qsav(indx2+kno3) ! bkoo (03/09/03)
+c$$$         q(indx+knh4)=qsav(indx2+knh4) ! bkoo (03/09/03)
+c$$$         q(indx+kcl)=qsav(indx2+kcl)   ! bkoo (03/09/03)
+c$$$      enddo
+c$$$c restore frq - bkoo (10/07/03)
+c$$$c      do isp=1,nexti
+c$$$      do isp=1,nsp
+c$$$         do isec=1,nsecx2
+c$$$            frq(isec,isp) = frq0(isec,isp)
+c$$$         enddo
+c$$$      enddo
+c$$$c adjust DQ
+c$$$      do i=1,nsp
+c$$$cJJ      do i=1,nexti ! bkoo (03/09/03)
+c$$$         if(i.eq.ispsav) then
+c$$$            dq(i)=dqsav(i)-dq(i)
+c$$$         elseif(i.eq.isp2) then
+c$$$            dq(i)=dqsav(i)-dq(i)
+c$$$         elseif(i.eq.knh4) then
+c$$$            dq(i)=dqsav(i)
+c$$$         else
+c$$$            dq(i)=0.0d0
+c$$$         endif
+c$$$      enddo
+c$$$      goto 80
+c$$$c      endif
 C      
 C   STEP 4: ASSIGN EQUILIBRIUM VALUES TO GASES
 c   Its possible to not be able to reach equilibrium for NH4Cl and NH4NO3
@@ -419,10 +444,12 @@ C
       Q(NG+IHNO3)= Q(NG+IHNO3)+q0(1)*PROD/GMW(IHNO3)
       Q(NG+INH3) = Q(NG+INH3) +q0(2)*PROD/GMW(INH3)
       Q(NG+IHCL) = Q(NG+IHCL) +q0(3)*PROD/GMW(IHCL)
+      Q(ng+idma) = q(ng+idma) +q0(4)*prod/gmw(idma) ! dma /JJ (08/15)
       do isec=1,nsecx2
        Q(NG+IHNO3)= Q(NG+IHNO3)-Q((ISEC-1)*NSP+KNO3)*PROD/GMW(IHNO3)
        Q(NG+INH3) = Q(NG+INH3) -Q((ISEC-1)*NSP+KNH4)*PROD/GMW(INH3)
        Q(NG+IHCL) = Q(NG+IHCL) -Q((ISEC-1)*NSP+KCL) *PROD/GMW(IHCL)
+       q(ng+idma) = q(ng+idma) -q((isec-1)*nsp+kpami)*prod/gmw(idma) ! dma /JJ (08/15)
       enddo
 c     correct negative NH3 - bkoo (10/07/03)
       dq(KNH4) = q(ng+inh3) / prod ! umol/m3

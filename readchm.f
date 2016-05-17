@@ -95,7 +95,8 @@ c
      &             'SOA3      ','SOA4      ','SOA5      ',   !EXLVOCS
      &             'SULF      ',
      &             'TERP      ','TOL       ','XN        ',
-     &             'XYL       ','SOA1_1    ','SOA1_2    ',
+     &             'XYL       ','AMINE     ',
+     &             'SOA1_1    ','SOA1_2    ',
      &             'SOA1_3    ','SOA1_4    ','SOA1_5    ',
      &             'SOA1_6    ','SOA1_7    ','SOA1_8    ',
      &             'SOA1_9    ','SOA1_10   ','SOA1_11   ',
@@ -305,6 +306,21 @@ c
      &             'PSO4_36   ','PSO4_37   ','PSO4_38   ',
      &             'PSO4_39   ','PSO4_40   ','PSO4_41   ',
      &             'PSO4_42   ','PSO4_43   ',
+     &             'PAMINE_1  ','PAMINE_2  ','PAMINE_3  ',
+     &             'PAMINE_4  ','PAMINE_5  ','PAMINE_6  ',
+     &             'PAMINE_7  ','PAMINE_8  ','PAMINE_9  ',
+     &             'PAMINE_10 ','PAMINE_11 ','PAMINE_12 ',
+     &             'PAMINE_13 ','PAMINE_14 ','PAMINE_15 ',
+     &             'PAMINE_16 ','PAMINE_17 ','PAMINE_18 ',
+     &             'PAMINE_19 ','PAMINE_20 ','PAMINE_21 ',
+     &             'PAMINE_22 ','PAMINE_23 ','PAMINE_24 ',
+     &             'PAMINE_25 ','PAMINE_26 ','PAMINE_27 ',
+     &             'PAMINE_28 ','PAMINE_29 ','PAMINE_30 ',
+     &             'PAMINE_31 ','PAMINE_32 ','PAMINE_33 ',
+     &             'PAMINE_34 ','PAMINE_35 ','PAMINE_36 ',
+     &             'PAMINE_37 ','PAMINE_38 ','PAMINE_39 ',
+     &             'PAMINE_40 ','PAMINE_41 ','PAMINE_42 ',
+     &             'PAMINE_43 ',
      &             'NUM_1     ','NUM_2     ','NUM_3     ',
      &             'NUM_4     ','NUM_5     ','NUM_6     ',
      &             'NUM_7     ','NUM_8     ','NUM_9     ',
@@ -351,12 +367,12 @@ c
      &             'CXO2      ','HCO3      ','TBUO      ',
      &             'BZO       ','BZNO      '/
 c
-      data mchgas   / 34, 24, 25, 34, 68, 34,  0, 0, 0, 0 /
-cjgj      data mchaero  /  0,  0,  0, 16,  0, 13,  0, 0, 0, 0 /
-      data mchaero  /  0,  0,  0, 16, 15, 14,  0, 0, 0, 0 /
+c     Chemical Mechanism Specs
+      data mchgas   / 34, 24, 25, 34, 69, 35,  0, 0, 0, 0 /
+      data mchaero  /  0,  0,  0, 16, 16, 15,  0, 0, 0, 0 /
       data mchrad   / 14, 12, 12, 12, 18, 12,  0, 0, 0, 0 /
       data mchiessr /  4,  2,  2,  2,  2,  2,  0, 0, 0, 0 /
-      data mchrxn   /110, 91, 96,100,216,100,  0, 0, 0, 0 /
+      data mchrxn   /110, 91, 96,100,217,101,  0, 0, 0, 0 /
       data mchphot  / 14, 11, 12, 12, 30, 12,  0, 0, 0, 0 /
       data mchfast  /  4,  4,  4,  4, 13,  4,  0, 0, 0, 0 /
       data mchidmin / 1 /
@@ -463,7 +479,7 @@ c
         endif
 c
         if (idmech.eq.2.or.idmech.eq.3.or.idmech.eq.4
-     &                 .or.idmech.eq.5.or.idmech.eq.6) then
+     &                 .or.idmech.eq.5 .or.idmech.eq.6) then
 
 cdavid          do i = 1,nrad
 cdavid            do j = 1,nradnm
@@ -592,7 +608,7 @@ c
           read(record(21:80),*) idphot2(n),idphot3(n),phtscl(n)
         enddo
         write(idiag,'(a)') 'The secondary photolysis reactions are' 
-        write(idiag,'(i6,a,i6,a,1pe10.3)')  
+        write(idiag,'(i6,a,i6,a,1pe12.3)')  
      &    (idphot2(n),' =',idphot3(n),' *',phtscl(n),n=1,nphot2)
       endif
       nphot = nphot1 + nphot2
@@ -719,7 +735,7 @@ c
 cdavid        if (idmech.EQ.6) then
         if (idmech.EQ.5) then
           do iaero = 1, naero
-            read(ichem,'(5x,a10,e10.2,f10.2)')
+            read(ichem,'(5x,a10,e12.1,f10.2)')
      &           tmpnam,bdnl_tmp,roprt_tmp
             nl=istrln(tmpnam)
             do isec = 1, nsec_c
@@ -735,13 +751,13 @@ cdavid        if (idmech.EQ.6) then
               roprt(l) = roprt_tmp * 1.e6
               dcut(l,1) = dsec_i(isec)
               dcut(l,2) = dsec_i(isec+1)
-              write(idiag,'(i3,2x,a10,e10.2,3f10.2)')
+              write(idiag,'(i3,2x,a10,e12.2,3f10.2)')
      &           l,spname(l),bdnl(l),roprt_tmp,(dcut(l,m),m=1,2)
             enddo
           enddo
         else
           do l = ngas+1,nspec
-            read(ichem,'(5x,a10,e10.2,f10.2)')
+            read(ichem,'(5x,a10,e12.1,f10.2)')
      &         spname(l),bdnl(l),roprt(l)
             dcut(l,1) = 0.04
             dcut(l,2) = 2.50
@@ -931,7 +947,12 @@ c
         call exptbl(rxntyp,rxnord,rxnpar)
 
 c
-c------  Read Ternary Nucleation Rate Lookup Table
+c-----Read Amine Nucleation Rate Lookup Table
+c
+        call read_amine_nuc_table
+
+c
+c-----Read Ternary Nucleation Rate Lookup Table
 c
          call read_tern_nuc_table
 

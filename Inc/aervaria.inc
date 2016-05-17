@@ -59,13 +59,15 @@ c
       integer mgso2 ! sulfur dioxide
       integer mgsvi ! sulfuric acid
       integer mgnh3 ! ammonia
+      integer mgdma ! dimethyl amine
       integer srtorg ! a species flag of organic matter in aerosol phase
       integer srtnh3 ! a species flag of ammonium in aerosol phase
 
-      parameter (ngas = 3)   
+      parameter (ngas = 4)   
       parameter (mgso2 = 1)  ! sulfur dioxide
       parameter (mgsvi = 2)  ! sulfuric acid
       parameter (mgnh3 = 3)  ! ammonia
+      parameter (mgdma = 4)  ! dimethyl amine
 
       parameter (srtnh3=8)
 c
