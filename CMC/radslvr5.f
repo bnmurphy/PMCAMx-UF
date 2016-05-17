@@ -288,6 +288,7 @@ c
      &                +( 1.000)*r(208)
      &                +( 1.000)*r(212)+( 1.000)*r(213)
      &                +( 1.000)*r(214)+( 1.000)*r(215)+( 1.000)*r(216)  ! EXLVOCS
+     &                +( 1.000)*r(217)
 
         Gain(kOH   )= +( 2.000)*r( 19)+( 1.000)*r( 22)+( 1.000)*r( 28)
      &                +( 1.000)*r( 31)+( 0.390)*r( 34)+( 1.000)*r( 36)
@@ -470,6 +471,7 @@ c
      &                      +( 1.000)*r(212)
      &                      +( 1.000)*r(213)+( 1.000)*r(214)
      &                      +( 1.000)*r(215)+( 1.000)*r(216)     ! EXLVOCS
+     &                      +( 1.000)*r(217)
 
           JAC(kOH  ,kOH  )=JAC(kOH  ,kOH  )
           JAC(kOH  ,kHO2 )= +(-1.000)*r( 31)+(-1.000)*r( 36)
@@ -969,7 +971,8 @@ c
       r(214) = rk(214)*cncrad(kOH)*conc(kcg3)
       r(215) = rk(215)*cncrad(kOH)*conc(kcg4)
       r(216) = rk(216)*cncrad(kOH)*conc(kcg5)   ! EXLVOCS
-
+      !DMA OH reaction
+      r(217) = rk(217)*conc(kAMINE)*cncrad(kOH)
                                                    
 c      if (errbig.gt.tol) goto 14
       if (errbig.gt.tol) then

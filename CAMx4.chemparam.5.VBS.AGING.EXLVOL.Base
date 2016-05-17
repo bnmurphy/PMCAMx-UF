@@ -101,7 +101,7 @@ Species Records
  66  CG3         1.00E-12  2.70e+03    -6492.      2.50       0.0        1.
  67  CG4         1.00E-12  2.70e+03    -6492.      2.50       0.0        1.
  68  CG5         1.00E-12  2.70e+03    -6492.      2.50       0.0        1.
- 69  AMINE	 1.00E-12  9.62e+00        0.	   2.50	      0.0	 1.
+ 69  AMINE       1.00E-12  9.62e+00	   0.      2.50       0.0        1.
      Aero Spec   lower bnd      Density
   1  SOA1        1.00E-09       1.0
   2  SOA2        1.00E-09       1.0
@@ -116,7 +116,7 @@ Species Records
  11  PNH4        1.00E-09       1.5
  12  PNO3        1.00E-09       1.5
  13  PSO4        1.00E-09       1.5
- 14  PAMINE	 1.00E-09       1.5
+ 14  PAMINE      1.00E-09       1.5
  15  PH2O        1.00E-09       1.0
  16  NUM         1.00E-09       1.8
 Reaction Records

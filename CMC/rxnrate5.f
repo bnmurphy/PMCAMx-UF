@@ -237,7 +237,9 @@ C     SOA Aging Reactions
       r(213) = rk(213)*cncrad(kOH)*conc(kCG2)
       r(214) = rk(214)*cncrad(kOH)*conc(kCG3)
       r(215) = rk(215)*cncrad(kOH)*conc(kCG4)
-      r(216) = rk(216)*cncrad(kOH)*conc(kCG5)  ! EXLVOCS 
+      r(216) = rk(216)*cncrad(kOH)*conc(kCG5)  ! EXLVOCS
+      !DMA+OH reaction
+      r(217) = rk(217)*conc(kAMINE)*cncrad(kOH)
 
       return
       end
