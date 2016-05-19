@@ -55,12 +55,15 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision massnuc2 ! variable to store mass from individual
                                 ! nucleation pathways [kg s-1 box-1]
       double precision pi
+      double precision N_Vehk   ! critical cluster from Vehkamäki parameterization
+      double precision amu      !atomic mass unit [kg]
 
 C-----EXTERNAL FUNCTIONS------------------------------------------------
 
 C-----ADJUSTABLE PARAMETERS---------------------------------------------
 
       parameter(pi=3.141592654)
+      parameter (amu=1.660539040d-27)
 
 C-----CODE--------------------------------------------------------------
 
@@ -81,10 +84,11 @@ C     and calculate nucleated mass
 C     Total mass is sum from all the nucleation pathways
       if ((amine_nuc.eq.1).and.h2so4.gt.minval(amine_nuc_tbl_H2SO4).and.
      &     dma_molec.gt.minval(amine_nuc_tbl_DMA)) then
-         call amine_nucl(temp,cs,h2so4,dma_molec,fn,rnuc) !amine nuc
+         call amine_nucl(temp,cs,h2so4,dma_molec,fn) !amine nuc
          nflg=.true.
-         massnuc2 = 4.d0/3.d0*pi*(rnuc*1.d-9)**3*1350.*fn*boxvol*
-     &        98.d0/96.d0
+         !ACDC formation rate (the 5Feb2014 lookup table) corresponds to 
+         !clusters with 4 acids+5 DMA
+         massnuc2 = 4.d0*gmw(srtso4)*amu*fn*boxvol
          massnuc = massnuc + massnuc2
       endif
 
@@ -92,21 +96,20 @@ C     Total mass is sum from all the nucleation pathways
      &     nh3_molec.gt.minval(tern_nuc_tbl_NH3).and.tern_nuc.eq.1) then
 c$$$         if ((nh3ppt.gt.0.1).and.(tern_nuc.eq.1).and.h2so4.gt.1.d4) then
 c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
-         call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc) !ternary nuc
+         call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn) !ternary nuc
          nflg=.true.
-         massnuc2 = 4.d0/3.d0*pi*(rnuc*1.d-9)**3*1350.*fn*boxvol*
-     &        98.d0/96.d0
+         !ACDC formation rate (the 2014-12-04 lookup table) corresponds to 
+         !clusters with 4 acids+3 NH3
+         massnuc2 = 4.d0*gmw(srtso4)*amu*fn*boxvol
          massnuc = massnuc + massnuc2
       endif
 
       if (h2so4.gt.1.d4.and.bin_nuc.eq.1) then
-         call vehk_nucl(temp,rh,h2so4,fn,rnuc) !binary nuc
-         if (fn.gt.1.0d-7)then  ! JJ changed this from 1d-6 to the actual lower limit
-                                    ! of the Vehkamäki param. This should actually be also
-                                    ! checked in the vehk_nucl routine?
+         call vehk_nucl(temp,rh,h2so4,fn,rnuc,N_Vehk) !binary nuc
+         if (fn.gt.0.d0 .and. N_Vehk.ge.4.d0) then                                     
             nflg=.true.
-            massnuc2 = 4.d0/3.d0*pi*(rnuc*1.d-9)**3*1350.*fn*boxvol*
-     &           98.d0/96.d0
+            !nuclei are assumed to be sulfuric acid as in nucleation.f
+            massnuc2 = N_Vehk*gmw(srtso4)*amu*fn*boxvol  
             massnuc = massnuc + massnuc2
          endif
       endif

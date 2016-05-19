@@ -13,7 +13,7 @@ C     M. Noppel, and A. Laaksonen. "An Improved Parameterization for Sulfuric
 C     Acid-Water Nucleation Rates for Tropospheric and Stratospheric Conditions." 
 C     Journal of Geophysical Research-Atmospheres 107, no. D22 (2002).
 
-      SUBROUTINE vehk_nucl(tempi,rhi,cnai,fn,rnuc)
+      SUBROUTINE vehk_nucl(tempi,rhi,cnai,fn,rnuc,ntot)
 
       IMPLICIT NONE
 

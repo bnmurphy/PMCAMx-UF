@@ -144,11 +144,11 @@ C-----Read and initialize
       !Convert pn to Nk
       Call initbounds()
 
-       Gc(srtsoa1)=boxmass*organic_ppt(1)*1.0d-12*200.0/28.9
-       Gc(srtsoa2)=boxmass*organic_ppt(2)*1.0d-12*200.0/28.9
-       Gc(srtsoa3)=boxmass*organic_ppt(3)*1.0d-12*200.0/28.9
-       Gc(srtsoa4)=boxmass*organic_ppt(4)*1.0d-12*200.0/28.9
-       Gc(srtsoa5)=boxmass*organic_ppt(5)*1.0d-12*200.0/28.9   !EXLVOCS
+      Gc(srtsoa1)=boxmass*organic_ppt(1)*1.0d-12*gmw(srtsoa1)/28.9
+      Gc(srtsoa2)=boxmass*organic_ppt(2)*1.0d-12*gmw(srtsoa2)/28.9
+      Gc(srtsoa3)=boxmass*organic_ppt(3)*1.0d-12*gmw(srtsoa3)/28.9
+      Gc(srtsoa4)=boxmass*organic_ppt(4)*1.0d-12*gmw(srtsoa4)/28.9
+      Gc(srtsoa5)=boxmass*organic_ppt(5)*1.0d-12*gmw(srtsoa5)/28.9 !EXLVOCS
 
 
 C
@@ -260,11 +260,11 @@ c--------------------------------------------------------
       if (icond_soa.eq.1) then
 
         !Converting gas unit from ppt to kg
-         Gc(srtsoa1)=boxmass*organic_ppt(1)*1.0d-12*200.0/28.9
-         Gc(srtsoa2)=boxmass*organic_ppt(2)*1.0d-12*200.0/28.9
-         Gc(srtsoa3)=boxmass*organic_ppt(3)*1.0d-12*200.0/28.9
-         Gc(srtsoa4)=boxmass*organic_ppt(4)*1.0d-12*200.0/28.9
-         Gc(srtsoa5)=boxmass*organic_ppt(5)*1.0d-12*200.0/28.9 !EXLVOCS
+         Gc(srtsoa1)=boxmass*organic_ppt(1)*1.0d-12*gmw(srtsoa1)/28.9
+         Gc(srtsoa2)=boxmass*organic_ppt(2)*1.0d-12*gmw(srtsoa2)/28.9
+         Gc(srtsoa3)=boxmass*organic_ppt(3)*1.0d-12*gmw(srtsoa3)/28.9
+         Gc(srtsoa4)=boxmass*organic_ppt(4)*1.0d-12*gmw(srtsoa4)/28.9
+         Gc(srtsoa5)=boxmass*organic_ppt(5)*1.0d-12*gmw(srtsoa5)/28.9 !EXLVOCS
 
          call org_cond(Nk,Mk,Gc,Nkout,Mkout,Gcout,dt,xkDMAN
      &     ,ichm,jchm,kchm)
@@ -282,11 +282,11 @@ c--------------------------------------------------------
          Gc(srtsoa4) = Gcout(srtsoa4)
          Gc(srtsoa5) = Gcout(srtsoa5) !EXLVOCS
 
-         organic_ppt(1)=Gc(srtsoa1)*1.0d+12/boxmass*28.9/200.0 !gmw(srtsoa1)
-         organic_ppt(2)=Gc(srtsoa2)*1.0d+12/boxmass*28.9/200.0 !gmw(srtsoa2)
-         organic_ppt(3)=Gc(srtsoa3)*1.0d+12/boxmass*28.9/200.0 !gmw(srtsoa3)
-         organic_ppt(4)=Gc(srtsoa4)*1.0d+12/boxmass*28.9/200.0 !gmw(srtsoa4)
-         organic_ppt(5)=Gc(srtsoa5)*1.0d+12/boxmass*28.9/200.0 !EXLVOCS
+         organic_ppt(1)=Gc(srtsoa1)*1.0d+12/boxmass*28.9/gmw(srtsoa1)
+         organic_ppt(2)=Gc(srtsoa2)*1.0d+12/boxmass*28.9/gmw(srtsoa2)
+         organic_ppt(3)=Gc(srtsoa3)*1.0d+12/boxmass*28.9/gmw(srtsoa3)
+         organic_ppt(4)=Gc(srtsoa4)*1.0d+12/boxmass*28.9/gmw(srtsoa4)
+         organic_ppt(5)=Gc(srtsoa5)*1.0d+12/boxmass*28.9/gmw(srtsoa5) !EXLVOCS
 
       end if
 
@@ -332,11 +332,11 @@ c--------------------------------------------------------
       dmappt = ygas(mgdma)
 
       
-      organic_ppt(1)=Gc(srtsoa1)*1.0d+12/boxmass*28.9/200.0 
-      organic_ppt(2)=Gc(srtsoa2)*1.0d+12/boxmass*28.9/200.0 
-      organic_ppt(3)=Gc(srtsoa3)*1.0d+12/boxmass*28.9/200.0 
-      organic_ppt(4)=Gc(srtsoa4)*1.0d+12/boxmass*28.9/200.0 
-      organic_ppt(5)=Gc(srtsoa5)*1.0d+12/boxmass*28.9/200.0 !EXLVOCS
+      organic_ppt(1)=Gc(srtsoa1)*1.0d+12/boxmass*28.9/gmw(srtsoa1) 
+      organic_ppt(2)=Gc(srtsoa2)*1.0d+12/boxmass*28.9/gmw(srtsoa2) 
+      organic_ppt(3)=Gc(srtsoa3)*1.0d+12/boxmass*28.9/gmw(srtsoa3) 
+      organic_ppt(4)=Gc(srtsoa4)*1.0d+12/boxmass*28.9/gmw(srtsoa4) 
+      organic_ppt(5)=Gc(srtsoa5)*1.0d+12/boxmass*28.9/gmw(srtsoa5) !EXLVOCS
 c==============================================================
 
       RETURN

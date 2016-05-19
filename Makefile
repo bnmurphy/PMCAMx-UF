@@ -59,7 +59,7 @@ ifeq ($(COMPILER),ifort)
 
   FC   := ifort
   FLGS := -I$(INC) -module mod/ -I$(NCDF_INC) 
-  FLGS := $(FLGS) -O0 -g
+  FLGS := $(FLGS) -O2
   FLGS := $(FLGS) -fpe3 -reentrancy threaded -traceback -align dcommons -extend_source -convert big_endian -mcmodel=large -shared-intel
 
 endif

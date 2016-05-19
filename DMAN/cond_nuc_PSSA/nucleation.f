@@ -69,6 +69,8 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision mfrac(icomp) ! fraction of the nucleated mass that will be assigned
                                     ! to each icomp species (passed to nucMassUpdate)
       double precision fn_all(nJnuc) !Magnitude of nucleation rates resolved by pathway
+      double precision N_Vehk   !  critical cluster from Vehkamäki parameterization
+      double precision amu      !atomic mass unit [kg]
 
 
 C-----EXTERNAL FUNCTIONS------------------------------------------------
@@ -80,6 +82,7 @@ C-----ADJUSTABLE PARAMETERS---------------------------------------------
 
       parameter (neps=1E8, meps=1E-8)
       parameter (pi=3.14159d0)
+      parameter (amu=1.660539040d-27)
 
 C-----CODE--------------------------------------------------------------
 
@@ -104,26 +107,24 @@ C     if requirements for nucleation are met, call nucleation subroutines
 C     and get the nucleation rate and critical cluster size
       if (amine_nuc.eq.1 .and.h2so4.gt.minval(amine_nuc_tbl_H2SO4).and.
      &     dma_molec.gt.minval(amine_nuc_tbl_DMA)) then
-         call amine_nucl(temp,cs,h2so4,dma_molec,fn,rnuc) !amine nuc
-
-c$$$            !Update DMA Concentration
-c$$$	    !The 0.31 factor should be the mass fraction of DMA in
-c$$$	    !the nucleated particles.
-c$$$            d_dma = 0.31d0 * (4.d0/3.d0*pi*(rnuc*1D-9)**3)*1350.d0*fn*1.d6*dt !kg m-3
-c$$$            dmappt = dmappt - d_dma/0.045d0 / (pres/(8.314d0*temp)) * 1.d12 !pptv
-c$$$
-c$$$            !nucleation could use all of the DMA so check that we do not get negative
-c$$$            if (dmappt.lt.0.d0) then
-c$$$               print*, 'Neg DMA in nucleation', dmappt
-c$$$               dmappt = 0.d0
-c$$$            end if
+         call amine_nucl(temp,cs,h2so4,dma_molec,fn) !amine nuc
 
          if (fn.gt.0.d0) then
+            !ACDC formation rate (the 5Feb2014 lookup table) corresponds to 
+            !clusters with 4 acids+5 DMA
+            mnuc=(4.d0*gmw(srtso4)+5.d0*gmw(srtdma))*amu !mass of 4A+5DMA particle
+            !Determine to which bin the mass is added
+            nuc_bin = 1
+            do while (mnuc .gt. xk(nuc_bin+1))
+               nuc_bin = nuc_bin + 1
+            enddo
+            
             !update mass and number
-            !nuclei consist of sulfate and amine compounds
-	    !assume 1-to-1 ratio of DMA and sulfuric acid
-            mfrac = (/0.69, 0.0, 0., 0., 0., 0., 0., 0.0, 0.31, 0.0/)
-            call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+            Mkf(nuc_bin,srtso4) = Mkf(nuc_bin,srtso4)+
+     &           +4.d0*gmw(srtso4)*amu*fn*boxvol*dt
+            Mkf(nuc_bin,srtdma) = Mkf(nuc_bin,srtdma)+
+     &           +5.d0*gmw(srtdma)*amu*fn*boxvol*dt
+            Nkf(nuc_bin) = Nkf(nuc_bin)+fn*boxvol*dt
                
             !Update DMA gas phase concentration
             Gcf(srtdma)=Gcf(srtdma)-Mkf(nuc_bin,srtdma) ! kg/grid cell
@@ -143,25 +144,45 @@ c$$$            end if
      &     nh3_molec.gt.minval(tern_nuc_tbl_NH3).and.tern_nuc.eq.1) then
 c$$$         if (nh3ppt.gt.0.1.and.tern_nuc.eq.1) then
 c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
-         call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc)
+         call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn)
 
          if (fn.gt.0.d0) then
+            !ACDC formation rate (the 2014-12-04 lookup table) corresponds to 
+            !clusters with 4 acids+3 NH3
+            mnuc=(4.d0*gmw(srtso4)+3.d0*gmw(srtnh4))*amu !mass of 4A+3NH3 particle
+            !Determine to which bin the mass is added
+            nuc_bin = 1
+            do while (mnuc .gt. xk(nuc_bin+1))
+               nuc_bin = nuc_bin + 1
+            enddo
+
             !update mass and number
-            !nuclei are assumed as ammonium bisulfte
-            mfrac = (/0.8144, 0.0, 0., 0., 0., 0., 0.,0.1856, 0.0, 0.0/)
-            call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+            Mkf(nuc_bin,srtso4) = Mkf(nuc_bin,srtso4)+
+     &           +4.d0*gmw(srtso4)*amu*fn*boxvol*dt
+            Mkf(nuc_bin,srtnh4) = Mkf(nuc_bin,srtnh4)+
+     &           +3.d0*gmw(srtnh4)*amu*fn*boxvol*dt
+            Nkf(nuc_bin) = Nkf(nuc_bin)+fn*boxvol*dt
+
             fn_all(1) = fn
          endif
       endif
 
       if (h2so4.gt.1.d4.and.bin_nuc.eq.1) then
-         call vehk_nucl(temp,rh,h2so4,fn,rnuc) !binary nuc
+         call vehk_nucl(temp,rh,h2so4,fn,rnuc,N_Vehk) !binary nuc
 
-         if (fn.gt.0.d0) then
+         if (fn.gt.0.d0 .and. N_Vehk.ge.4.d0) then !Vehkamäki param. only valid for N>4
             !update mass and number
             !nuclei are assumed to be sulfuric acid
-            mfrac = (/1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0/)
-            call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+            mnuc=N_Vehk*gmw(srtso4)*amu
+            !Determine to which bin the mass is added
+            nuc_bin = 1
+            do while (mnuc .gt. xk(nuc_bin+1))
+               nuc_bin = nuc_bin + 1
+            enddo
+
+            Mkf(nuc_bin,srtso4) = Mkf(nuc_bin,srtso4)+ mnuc*fn*boxvol*dt
+            Nkf(nuc_bin) = Nkf(nuc_bin)+fn*boxvol*dt
+
             fn_all(2) = fn
          endif
       endif

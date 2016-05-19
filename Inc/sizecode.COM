@@ -116,7 +116,7 @@ cjgj      data molwt/96.,58.45,18.,18./ ! The 2nd is NaCl
            ! alpha(NH3) is from E. Swartz et al., J. Phys. Chem. A, 103,
                                                         !8824-8833, 1999
       real Sv(icomp)         !parameter used for estimating diffusivity
-      data Sv /42.88,42.88,42.88,42.88,42.88,42.88,42.88,13.41,42.88,42.88/
+      data Sv /42.88,42.88,42.88,42.88,42.88,42.88,42.88,13.41,52.55,42.88/
 
 C Flag for which nucleation parameterizations to use
       integer bin_nuc, tern_nuc, amine_nuc   !flags for binary and ternary nuc
