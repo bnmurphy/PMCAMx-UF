@@ -71,6 +71,11 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision fn_all(nJnuc) !Magnitude of nucleation rates resolved by pathway
       double precision N_Vehk   !  critical cluster from Vehkamäki parameterization
       double precision amu      !atomic mass unit [kg]
+      double precision max_addedH2SO4 ! the largest amount of SA mass added in this call by a pathway, used for nuc_bin
+      double precision addedH2SO4 ! amount of SA added by a NPF pathway
+      integer bin_addmnuc  ! internal variable used to determine to which bin the mass is added
+                           ! for an individual pathway. The output variable nuc_bin will currently
+                           ! contain the bin corresponding to the pathway that adds most mass /JJ 23/05/2016
 
 
 C-----EXTERNAL FUNCTIONS------------------------------------------------
@@ -101,10 +106,12 @@ c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
       Nkf=Nki
       Gcf=Gci
 
-cdbg      print*,'h2so4',h2so4,'nh3ppt',nh3ppt
+      !nuc_bin tells cond_nuc which bin to remove sulfuric acid from if the mass to condense becomes negative
+      nuc_bin=1
+      max_addedH2SO4=0.d0 !keeping track which pathway resulted in most SA mass (for cond_nuc.f & nuc_bin) 
 
 C     if requirements for nucleation are met, call nucleation subroutines
-C     and get the nucleation rate and critical cluster size
+
       if (amine_nuc.eq.1 .and.h2so4.gt.minval(amine_nuc_tbl_H2SO4).and.
      &     dma_molec.gt.minval(amine_nuc_tbl_DMA)) then
          call amine_nucl(temp,cs,h2so4,dma_molec,fn) !amine nuc
@@ -114,23 +121,30 @@ C     and get the nucleation rate and critical cluster size
             !clusters with 4 acids+5 DMA
             mnuc=(4.d0*gmw(srtso4)+5.d0*gmw(srtdma))*amu !mass of 4A+5DMA particle
             !Determine to which bin the mass is added
-            nuc_bin = 1
-            do while (mnuc .gt. xk(nuc_bin+1))
-               nuc_bin = nuc_bin + 1
+            bin_addmnuc = 1
+            do while (mnuc .gt. xk(bin_addmnuc+1))
+               bin_addmnuc = bin_addmnuc + 1
             enddo
-            
+
             !update mass and number
-            Mkf(nuc_bin,srtso4) = Mkf(nuc_bin,srtso4)+
-     &           +4.d0*gmw(srtso4)*amu*fn*boxvol*dt
-            Mkf(nuc_bin,srtdma) = Mkf(nuc_bin,srtdma)+
+            addedH2SO4=4.d0*gmw(srtso4)*amu*fn*boxvol*dt
+            Mkf(bin_addmnuc,srtso4) = Mkf(bin_addmnuc,srtso4)+
+     &           +addedH2SO4
+            Mkf(bin_addmnuc,srtdma) = Mkf(bin_addmnuc,srtdma)+
      &           +5.d0*gmw(srtdma)*amu*fn*boxvol*dt
-            Nkf(nuc_bin) = Nkf(nuc_bin)+fn*boxvol*dt
-               
+            Nkf(bin_addmnuc) = Nkf(bin_addmnuc)+fn*boxvol*dt
+            
+            !checking if nuc_bin needs to be updated
+            if (addedH2SO4.gt.max_addedH2SO4) then
+               max_addedH2SO4=addedH2SO4
+               nuc_bin=bin_addmnuc
+            end if
+            
             !Update DMA gas phase concentration
-            Gcf(srtdma)=Gcf(srtdma)-Mkf(nuc_bin,srtdma) ! kg/grid cell
+            Gcf(srtdma)=Gcf(srtdma)-Mkf(bin_addmnuc,srtdma) ! kg/grid cell
             !nucleation could use all of the DMA so check that we do not get negative
             if (Gcf(srtdma).lt.0.d0) then
-               print*, 'Neg DMA in nucleation', Gcf(srtdma)
+c               print*, 'Neg DMA in nucleation', Gcf(srtdma)
                Gcf(srtdma) = 0.d0
             end if
 
@@ -151,17 +165,24 @@ c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
             !clusters with 4 acids+3 NH3
             mnuc=(4.d0*gmw(srtso4)+3.d0*gmw(srtnh4))*amu !mass of 4A+3NH3 particle
             !Determine to which bin the mass is added
-            nuc_bin = 1
-            do while (mnuc .gt. xk(nuc_bin+1))
-               nuc_bin = nuc_bin + 1
-            enddo
+            bin_addmnuc = 1
+            do while (mnuc .gt. xk(bin_addmnuc+1))
+               bin_addmnuc = bin_addmnuc + 1
+            enddo            
 
             !update mass and number
-            Mkf(nuc_bin,srtso4) = Mkf(nuc_bin,srtso4)+
-     &           +4.d0*gmw(srtso4)*amu*fn*boxvol*dt
-            Mkf(nuc_bin,srtnh4) = Mkf(nuc_bin,srtnh4)+
+            addedH2SO4=4.d0*gmw(srtso4)*amu*fn*boxvol*dt
+            Mkf(bin_addmnuc,srtso4) = Mkf(bin_addmnuc,srtso4)+
+     &           +addedH2SO4
+            Mkf(bin_addmnuc,srtnh4) = Mkf(bin_addmnuc,srtnh4)+
      &           +3.d0*gmw(srtnh4)*amu*fn*boxvol*dt
-            Nkf(nuc_bin) = Nkf(nuc_bin)+fn*boxvol*dt
+            Nkf(bin_addmnuc) = Nkf(bin_addmnuc)+fn*boxvol*dt
+
+            !checking if nuc_bin needs to be updated
+            if (addedH2SO4.gt.max_addedH2SO4) then
+               max_addedH2SO4=addedH2SO4
+               nuc_bin=bin_addmnuc
+            end if
 
             fn_all(1) = fn
          endif
@@ -175,13 +196,20 @@ c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
             !nuclei are assumed to be sulfuric acid
             mnuc=N_Vehk*gmw(srtso4)*amu
             !Determine to which bin the mass is added
-            nuc_bin = 1
-            do while (mnuc .gt. xk(nuc_bin+1))
-               nuc_bin = nuc_bin + 1
+            bin_addmnuc = 1
+            do while (mnuc .gt. xk(bin_addmnuc+1))
+               bin_addmnuc = bin_addmnuc + 1
             enddo
 
-            Mkf(nuc_bin,srtso4) = Mkf(nuc_bin,srtso4)+ mnuc*fn*boxvol*dt
-            Nkf(nuc_bin) = Nkf(nuc_bin)+fn*boxvol*dt
+            addedH2SO4=mnuc*fn*boxvol*dt
+            Mkf(bin_addmnuc,srtso4) = Mkf(bin_addmnuc,srtso4)+addedH2SO4
+            Nkf(bin_addmnuc) = Nkf(bin_addmnuc)+fn*boxvol*dt
+
+            !checking if nuc_bin needs to be updated
+            if (addedH2SO4.gt.max_addedH2SO4) then
+               max_addedH2SO4=addedH2SO4
+               nuc_bin=bin_addmnuc
+            end if
 
             fn_all(2) = fn
          endif

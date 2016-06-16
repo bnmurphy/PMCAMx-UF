@@ -601,11 +601,11 @@ c     end changed by LA
          cdt=cdt/tr
          !Iteration timestep
          itrts=itrts+1
-         if (itrts.gt.5000) then
-c         if (itrts.gt.10000) then
+c         if (itrts.gt.5000) then
+         if (itrts.gt.10000) then
             write(*,*) 'Coord.(i,j,k)=',ichm,jchm,kchm
-            write(*,*) 'Iterations of timestep in so4cond exceed 5000'
-c            write(*,*) 'Iterations of timestep in so4cond exceed 10000'
+c            write(*,*) 'Iterations of timestep in so4cond exceed 5000'
+            write(*,*) 'Iterations of timestep in so4cond exceed 10000'
             write(*,*) 'dt=',dt,'time=',time,'cdt=',cdt
             write(*,*) 'exponential decaying frac=',
      &               exp(-1.d0*sK(srtnh4)*cdt)
@@ -685,7 +685,7 @@ cJJ          call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm,7)
         if (Gcf(j) .lt. cthresh*boxmass) then
            if (Gcf(j) .gt. 0.0) then
               Gcflag(j)=1 !do not condense this species further
-           else if (abs(Gcf(srtso4)) .le. 1.d-5) then ! if more negative than this the program will stop shortly
+           else if (abs(Gcf(j)) .le. 1.d-5) then ! if more negative than this the program will stop shortly
               Gcf(j)=0.0
               Gcflag(j)=1
            end if
@@ -785,10 +785,10 @@ C Repeat process if necessary
       if (time .lt. dt) then
         !Iteration
         itr=itr+1
-        if (itr.gt.5000) then
+        if (itr.gt.10000) then
 c        if (itr.gt.500) then
            write(*,*) 'Coord.(i,j,k)=',ichm,jchm,kchm
-           write(*,*) 'An iteration in so4cond exceeds 5000'
+           write(*,*) 'An iteration in so4cond exceeds 10000'
            write(*,*) 'dt=',dt,'time=',time,'cdt=',cdt
            write(*,*) 'exponential decaying frac=',
      &               exp(-1.d0*sK(srtnh4)*cdt)

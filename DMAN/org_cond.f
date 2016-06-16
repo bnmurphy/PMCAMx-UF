@@ -131,15 +131,15 @@ cd      double precision x_mol(ibins,13)
       double precision Ntotf, Ntoto, dNerr  !used to track number cons.
 
       double precision Mknh3max !Maximum allowable NH3
-      double precision taumax   !Maxmum tau for ammonia condensation
+      double precision taumax   !Maxmum tau for condensation
       double precision moxd(ibins) !moxid/Nact
       double precision Mktot(icomp) ! Total mass of each species
       double precision Mktot1(icomp) ! Total mass of each species
       double precision Mktot2(icomp) ! Total mass of each species
       double precision Mtot ! Total mass of each section
-      double precision Gcknh3(ibins) ! Fractional ammonia gas to be condensed
-                                     ! when ammonia is limited.
-      double precision sumataunh3    ! sum of atuc(ibins,srtnh3)
+      double precision Gcksoa(ibins,icomp) ! Fractional soa gas to be condensed
+                                     
+      double precision sumatau(icomp)    ! sum of atau
       double precision diameter_atau(41)
       double precision tau_max_evap
       double precision atau_fac(ibins,icomp) !pre-factor for atau
@@ -419,6 +419,46 @@ c     &              *(-0.01d0*Mkf(k,dii))/sK(dii)
                end do 
             enddo
         
+            !checks that we do not attempt to condense more than available gas phase soa
+            Mktot=0.d0
+            do j=srtsoa1,srtsoa5
+               do k=1,ibins
+                  Mktot(j)=Mktot(j)+Mkf(k,j)
+               end do
+            end do
+            
+            sumatau=0.d0
+            do j=srtsoa1,srtsoa5
+               do k=1,ibins
+                  if (atau(k,j).gt.0.d0) then !only count condensing bins
+                     sumatau(j)=sumatau(j)+atau(k,j)
+                  end if
+               end do
+            end do
+
+            Gcksoa=0.d0
+            do j=srtsoa1,srtsoa5
+               do k=1,ibins
+                  if (atau(k,j).lt.0.d0) cycle !if evaporation, skip this calculation
+                  if (sumatau(j).gt.0.d0) then
+                     Gcksoa(k,j)=Gcf(j)*atau(k,j)/sumatau(j)
+                  end if
+                  if (Nkf(k).gt.Neps) then
+                     taumax=1.5d0*((Mkf(k,j)+Gcksoa(k,j))**tdt-
+     &                    Mkf(k,j)**tdt)/Nkf(k)**tdt
+                  else
+                     taumax=0.d0
+                  end if
+                  if (atau(k,j).gt.taumax) then
+                     if (taumax.ge.0.d0) then
+                        atau(k,j)=taumax
+                     else
+                        atau(k,j)=0.d0
+                     end if
+                  end if
+               end do
+            end do
+
 C-----Adjust a time step 
 
             tr=1.0 !The following sections limit the condensation time step
@@ -540,7 +580,7 @@ cJJ            call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm,6)
                write(*,*)'ERROR in so4cond: Number not conserved'
                write(*,*)'Ntoto, Ntotf, dNerr/Ntoto'
      &              ,Ntoto, Ntotf, dNerr/Ntoto
-               if (abs(dNerr/Ntoto) .gt. 1d-2) then
+               if (abs(dNerr/Ntoto) .gt. 1.d-2) then
                   write(*,*)'Serious Error in so4cond: Number not conserved 
      &       less than 1 %'
                   STOP
@@ -561,7 +601,7 @@ cJJ            call mnfix_PSSA(Nkf,Mkf,ichm,jchm,kchm,6)
             if (Gcf(j) .lt. cthresh*boxmass) then
                if (Gcf(j) .gt. 0.0) then
                   Gcflag(j)=1   !do not condense this species further
-               else if (abs(Gcf(srtso4)) .le. 1.d-5) then ! if more negative than this the program will stop shortly
+               else if (abs(Gcf(j)) .le. 1.d-5) then ! if more negative than this the program will stop shortly
                   Gcf(j)=0.d0
                   Gcflag(j)=1
                end if
@@ -602,7 +642,7 @@ c=======================================================================
      &                    exp(-1.d0*sK(fff)*cdt)
                      Mktot(fff)=0.0d0
                      do kk=1,ibins
-                        Mktot(fff)=Mktot(fff)+Mk(kk,fff)
+                        Mktot(fff)=Mktot(fff)+Mkf(kk,fff)
                      enddo
                      write(*,*)'Max. Possible Total Mkorgan =',
      &                    Mktot(fff)
