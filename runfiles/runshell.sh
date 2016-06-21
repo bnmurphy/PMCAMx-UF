@@ -1,9 +1,9 @@
 #!/bin/bash
 #
 #SBATCH -J PMCAMxUF
-#SBATCH -t 5-00:00:00
+#SBATCH -t 2-00:00:00
 #SBATCH --mem=4000
-#SBATCH -N 1
+#SBATCH -n 1
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=jan.julin@aces.su.se
 #SBATCH --constraint=vtune

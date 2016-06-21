@@ -34,9 +34,26 @@ c
       character*4 ptspec(10)
       real flowrat(MXPTSRC)
 c
+      !indexes for bin 18 of various aerosol species
+      integer kptno3_18
+      integer kptpoc_18
+      integer kptpec_18
+      integer kptcrst_18
+      integer kptso4_18
+      integer lpt
+c
       data pi /3.1415927/
 c
 c-----Entry point
+c
+      !set aero species pointers
+      do lpt=1,nptspc
+         if (spname(lptmap(lpt)).eq.'PNO3_18   ') kptno3_18=lpt
+         if (spname(lptmap(lpt)).eq.'POC_18    ') kptpoc_18=lpt
+         if (spname(lptmap(lpt)).eq.'PEC_18    ') kptpec_18=lpt
+         if (spname(lptmap(lpt)).eq.'CRST_18   ') kptcrst_18=lpt
+         if (spname(lptmap(lpt)).eq.'PSO4_18   ') kptso4_18=lpt
+      end do
 c
       kount = 1
  100  continue
@@ -73,7 +90,63 @@ c
         read(iptem) idum,(ptspec(i),i=1,10),(ptemis(n,ll),n=1,npts) 
       enddo
       write(iout,'(a40,2(f7.0,i8.5))')
-     &       'Read point source file at ',tim1,idat1,tim2,idat2 
+     &       'Read point source file at ',tim1,idat1,tim2,idat2
+c
+      !scaling emissions
+      !aerosol species
+      do n=1,npts
+         if (ptemis(n,kptno3_18).gt.0.) cycle !fire source
+         do lpt=kptpec_18,kptpec_18+17 !bins 18-35
+            ptemis(n,lpt)=pm25_scale(isrc(n,1),jsrc(n,1))*ptemis(n,lpt)
+         end do
+         do lpt=kptpoc_18,kptpoc_18+17 !bins 18-35
+            ptemis(n,lpt)=pm25_scale(isrc(n,1),jsrc(n,1))*ptemis(n,lpt)
+         end do
+         do lpt=kptcrst_18,kptcrst_18+13 !bins 18-31 (highest anthro crustal matter bin)
+            ptemis(n,lpt)=pm25_scale(isrc(n,1),jsrc(n,1))*ptemis(n,lpt)
+         end do
+         do lpt=kptso4_18,kptso4_18+17 !bins 18-35
+            ptemis(n,lpt)=pm25_scale(isrc(n,1),jsrc(n,1))*ptemis(n,lpt)
+         end do
+         do lpt=kptpec_18+18,kptpec_18+23 !bins 36-41
+            ptemis(n,lpt)=pm10_scale(isrc(n,1),jsrc(n,1))*ptemis(n,lpt)
+         end do
+         do lpt=kptpoc_18+18,kptpoc_18+23 !bins 36-41
+            ptemis(n,lpt)=pm10_scale(isrc(n,1),jsrc(n,1))*ptemis(n,lpt)
+         end do
+      end do
+      !gas species
+      do lpt=1,nptspc
+         do n=1,npts
+            if (ptemis(n,kptno3_18).gt.0.) cycle !fire source
+            if (spname(lptmap(lpt)).eq.'NH3       ') then
+               ptemis(n,lpt)=nh3_scale(isrc(n,1),jsrc(n,1))*ptemis(n,lpt)
+            else if (spname(lptmap(lpt)).eq.'SO2       ') then
+               ptemis(n,lpt)=so2_scale(isrc(n,1),jsrc(n,1))*ptemis(n,lpt)
+            else if (spname(lptmap(lpt)).eq.'NO        ') then
+               ptemis(n,lpt)=nox_scale(isrc(n,1),jsrc(n,1))*ptemis(n,lpt)
+            else if (spname(lptmap(lpt)).eq.'NO2       ') then
+               ptemis(n,lpt)=nox_scale(isrc(n,1),jsrc(n,1))*ptemis(n,lpt)
+            else if (spname(lptmap(lpt)).eq.'ALK1      '.or.
+     &              spname(lptmap(lpt)).eq.'ALK2      '.or.
+     &              spname(lptmap(lpt)).eq.'ALK3      '.or.
+     &              spname(lptmap(lpt)).eq.'ALK4      '.or.
+     &              spname(lptmap(lpt)).eq.'ALK5      '.or.
+     &              spname(lptmap(lpt)).eq.'OLE1      '.or.
+     &              spname(lptmap(lpt)).eq.'OLE2      '.or.
+     &              spname(lptmap(lpt)).eq.'ARO1      '.or.
+     &              spname(lptmap(lpt)).eq.'ARO2      '.or.
+     &              spname(lptmap(lpt)).eq.'ETHE      '.or.
+     &              spname(lptmap(lpt)).eq.'MEK       '.or.
+     &              spname(lptmap(lpt)).eq.'HCHO      '.or.
+     &              spname(lptmap(lpt)).eq.'CCHO      '.or.
+     &              spname(lptmap(lpt)).eq.'RCHO      '.or.
+     &              spname(lptmap(lpt)).eq.'MEOH      '.or.
+     &              spname(lptmap(lpt)).eq.'PROD      ') then
+               ptemis(n,lpt)=voc_scale(isrc(n,1),jsrc(n,1))*ptemis(n,lpt)
+            end if
+         end do
+      end do
 c
 c-----Check times only if LE1DAY = T, otherwise check both time and date
 c

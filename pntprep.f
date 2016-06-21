@@ -40,6 +40,8 @@ c
       integer begdate,enddate
 c
       dimension xloc(MXPTSRC),yloc(MXPTSRC),indxpt(MXPTSRC)
+
+      character*230 fname_fac !file name(s) for the emission scaling factors
 c
 c-----Entry point
 c
@@ -134,6 +136,50 @@ c       write(idiag,'(4i5)') (n,idsrc(n,igrd),isrc(n,igrd),jsrc(n,igrd),
 c    &                          n=1,nosrc(igrd))
       enddo
       write(idiag,*)
+c
+      !read in the anthropogenic point emission scaling factors
+      !nh3
+      fname_fac='/home/x_janju/emission_analysis/nh3_clegrid.dat'
+      open(84,file=fname_fac)
+      do ii=1,150
+         read(84,*) (nh3_scale(ii,jj),jj=1,162)
+      end do
+      close(84)
+      !so2
+      fname_fac='/home/x_janju/emission_analysis/so2_clegrid.dat'
+      open(84,file=fname_fac)
+      do ii=1,150
+         read(84,*) (so2_scale(ii,jj),jj=1,162)
+      end do
+      close(84)
+      !nox
+      fname_fac='/home/x_janju/emission_analysis/nox_clegrid.dat'
+      open(84,file=fname_fac)
+      do ii=1,150
+         read(84,*) (nox_scale(ii,jj),jj=1,162)
+      end do
+      close(84)
+      !voc
+      fname_fac='/home/x_janju/emission_analysis/voc_clegrid.dat'
+      open(84,file=fname_fac)
+      do ii=1,150
+         read(84,*) (voc_scale(ii,jj),jj=1,162)
+      end do
+      close(84)
+      !PM 2.5
+      fname_fac='/home/x_janju/emission_analysis/pm25_clegrid.dat'
+      open(84,file=fname_fac)
+      do ii=1,150
+         read(84,*) (pm25_scale(ii,jj),jj=1,162)
+      end do
+      close(84)
+      !PM between 2.5 and 10 um
+      fname_fac='/home/x_janju/emission_analysis/pm10_clegrid.dat'
+      open(84,file=fname_fac)
+      do ii=1,150
+         read(84,*) (pm10_scale(ii,jj),jj=1,162)
+      end do
+      close(84)
 c
       return
       end

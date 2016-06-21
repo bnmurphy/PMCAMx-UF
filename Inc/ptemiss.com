@@ -49,3 +49,21 @@ c
       common /ptemiss/ nptsrc, xstk, ystk, lpiglet, hstk,
      &                 dstk, tstk, vstk, effph, ptemis, ididstk, idtstk,
      &                 idvstk, locpnt
+
+c     for scaling the point emissions
+c     nh3_scale  -- scaling factors for NH3
+c     so2_scale  -- scaling factors for SO2
+c     nox_scale  -- scaling factors for NOx
+c     voc_scale  -- scaling factors for VOCs
+c     pm25_scale -- scaling factors for PM 2.5
+c     pm10_scale -- scaling factors for PM between 2.5 and 10 um
+
+      real nh3_scale(150,162)
+      real so2_scale(150,162)
+      real nox_scale(150,162)
+      real voc_scale(150,162)
+      real pm25_scale(150,162)
+      real pm10_scale(150,162)
+
+      common /emission_scale/ nh3_scale,so2_scale,nox_scale,voc_scale,
+     &                        pm25_scale,pm10_scale

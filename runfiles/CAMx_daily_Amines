@@ -12,7 +12,7 @@ set DATE2   = $2
 @ DATE3   = $DATE2 + 121
 @ DATE4   = $DATE2 + 120
 #
-set RUN     = "PMCAMxUF_DMAOrg_baseline"
+set RUN     = "PMCAMxUF_DMAOrg_CLE"
 set OUTPUT  = $PMCAMxUF_USER_OUTPUT/$RUN
 #
 if ($DATE == "01") then
@@ -172,7 +172,7 @@ Staggered winds    |false
 Treat area emiss   |true
 Treat point emiss  |true
 1-day emiss inputs |true
-3-D average file   |true
+3-D average file   |false
 Source Apportion   |false
 Chemparam          |CAMx4.chemparam.5.VBS.AGING.EXLVOL.Base
 Photolysis rates   |$INPUT/photolysis_rates/tuv_euro_ps2str_S99.0805$DATE.txt
@@ -188,7 +188,7 @@ Boundary conditions|$INPUT/IC_BC_TCs/BCs43_Eucaari_2_edges.bin
 Top concentration  |$INPUT/IC_BC_TCs/TCs43_Eucaari_2.txt
 Albedo/haze/ozone  |$INPUT/ahomap/ahomap.monthEU.0805$DATE
 Point emiss        |$INPUT2/May2008_point/pointem.0805$DATE.bin
-Area emiss         |$INPUT2/UF_May_2008_Area_TXTs/emnum.0805$DATE.bin
+Area emiss         |$INPUT2/cle_area/emnum.0805$DATE.bin
 Restart file name  |$RSTF
 ieof
 #
