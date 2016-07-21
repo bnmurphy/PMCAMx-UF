@@ -89,7 +89,7 @@ C-----CODE--------------------------------------------------------------
       enddo
 
       call mnfix_PSSA(Nk1,Mk1,ichm,jchm,kchm)
-
+      
       ! get the sink fractions
       call getCondSink(Nk1,Mk1,spec,CS,sinkfrac)
 

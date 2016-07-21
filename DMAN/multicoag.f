@@ -338,7 +338,9 @@ cdbg               write(*,*) Nkf(k),dNdt(k)
                enddo
                !only use this criteria if this species is significant
                if ((Mkf(k,j)/mtotal) .gt. 1.d-5) then
-                  dts=Mkf(k,j)*tlimit/abs(dMdt(k,j))
+                  if (dts.gt.Mkf(k,j)*tlimit/abs(dMdt(k,j))) then
+                     dts=Mkf(k,j)*tlimit/abs(dMdt(k,j))
+                  end if
                else
                   if (dMdt(k,j) .lt. 0.0) then
                      !set dmdt to 0 to avoid very small mk going negative
@@ -369,6 +371,17 @@ cdbg                  write(*,*) Mkf(k,j), dMdt(k,j)
          endif
       enddo
 
+      !check that number and mass won't go negative
+      do k=1,ibins
+         if (dNdt(k).lt.0.0 .and. Nkf(k).lt.abs(dNdt(k)*dts)) then
+            dNdt(k)=-Nkf(k)/dts
+         end if
+         do j=1,icomp-1
+            if (dMdt(k,j).lt.0..and.Mkf(k,j).lt.abs(dMdt(k,j)*dts)) then
+               dMdt(k,j)=-Mkf(k,j)/dts
+            end if
+         end do
+      end do
       !Change Nkf and Mkf
 cdbg      write(*,*) 't=',tsum+dts,' ',limit
       do k=1,ibins
@@ -377,6 +390,18 @@ cdbg      write(*,*) 't=',tsum+dts,' ',limit
             Mkf(k,j)=Mkf(k,j)+dMdt(k,j)*dts
          enddo
       enddo
+
+      !if number or mass slightly negative due to precision issues, set them to zero
+      do k=1,ibins
+         if (Nkf(k).lt.0.d0 .and. abs(Nkf(k)).lt.Neps) then
+            Nkf(k)=0.d0
+         end if
+         do j=1,icomp-1
+            if (Mkf(k,j).lt.0.d0 .and. abs(Mkf(k,j)).lt.1.0d-10) then
+               Mkf(k,j)=0.d0
+            end if
+         end do
+      end do
 
       !Update time and repeat process if necessary
       tsum=tsum+dts
