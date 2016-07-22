@@ -60,8 +60,8 @@ c
       real*4 gas(ngas_aq), aerosol(nsect,naers)   
       real*4 arsl(nsect,naers)   
       real*8 t0,t1
-      real*8 q(ntotal)
-      real*8 qins(ntotal)                                         !     cf
+      double precision q(ntotal)
+      double precision qins(ntotal)                                         !     cf
       real dsulfdt ! sulfuric acid production rate
       real*4 moxid0(nsect,naers) !mass produced by aqueous chemistry [=] ug/m3
       logical prevsp
@@ -363,9 +363,9 @@ ckf
 	 nitbef = nitbef+aerosol(i,nan)*14./62.
 	 enddo
 	 nitbef = nitbef+(14*prs/(8.314e-5*tempk))*(gas(ngn)+gas(nghno2)
-     & +gas(ngno3)+gas(ngno)+gas(ngno2)+gas(ngpan))    
+     &        +gas(ngno3)+gas(ngno)+gas(ngno2)+gas(ngpan))    
 	 nitbef = nitbef+(2*(cncrad(3)*prs*101325*108.011/8.314/tempk)
-     & *14./108.01) 
+     &        *14./108.01) 
 c
 
         do knsec=1,nsect
@@ -420,8 +420,7 @@ c
          call aqchem(gas,aerosol,rhumid,prs,tempk,lwc_c,t0_min,t1_min,
      &            dt_min,ierr,kchm,height,chtype)
 CKF     &            dt_min,ierr,kchm,height)
-ckf     &   
-ckf
+
          nitaf = 0.0
 	 do i =1, nsect
 	 nitaf = nitaf+aerosol(i,nan)*14./62.
@@ -430,15 +429,6 @@ ckf
      & +gas(ngno3)+gas(ngno)+gas(ngno2)+gas(ngpan))    
 	 nitbal = nitaf/nitbef
 	 
-c	 write(*,*) nitbal
-	 
-ctmg	 if (nitbal.lt.0.99 .or. nitbal.gt.1.01) then
-ctmg         write(iout,*) 'ERROR IN NITROGEN BALANCE'
-ctmg	 write(6,*) 'ERROR IN NITROGEN BALANCE'
-ctmg         write(iout,*) nitbal, nitbef, nitaf
-ctmg	 write(6,*) n2o5nit, nitbal, nitbef, nitaf
-ctmg	 endif
-ckf
 c
 c     CAMx doesn't carry HMSA or HSO5 so we put their mass into sulfate (NA4)
 c
@@ -462,34 +452,17 @@ c
         con(kno2_c)    = gas(ngno2) 
         con(kpan_c)    = gas(ngpan) 
 c
-cdbg        if ((ich.eq.51).and.(jch.eq.19).and.(kch.eq.1)) then
-cdbg           write(*,*)'In fullaero, before calling CAMx2dman'            
-cdbg           write(*,*)'Coord.=',ich,jch,kch
-cdbg           write(*,*)'aerosol='
-cdbg           do knsec=1,nsect
-cdbg              write(*,*)aerosol(knsec,na4)
-cdbg           enddo
-cdbg        endif
 
         do knsec=1,nsect
-cjgj          con(kph2o_c+(knsec-1)) = aerosol(knsec,naw)
-cjgj          con(kpnh4_c+(knsec-1)) = aerosol(knsec,naa)
-cjgj          con(kpso4_c+(knsec-1)) = aerosol(knsec,na4)
-cjgj          con(kpno3_c+(knsec-1)) = aerosol(knsec,nan)
-cjgj          con(kna_c+(knsec-1))   = aerosol(knsec,nas)
-cjgj          con(kpcl_c+(knsec-1))  = aerosol(knsec,nac)
-cjgj          con(kpoc_c+(knsec-1))  = aerosol(knsec,nao)
-cjgj          con(kpec_c+(knsec-1))  = aerosol(knsec,nae)
-cjgj          con(kcrst_c+(knsec-1)) = aerosol(knsec,nar)
-          moxid0(knsec,kph2o_c) = aerosol(knsec,naw) - arsl(knsec,naw)
-          moxid0(knsec,kpnh4_c) = aerosol(knsec,naa) - arsl(knsec,naa)
-          moxid0(knsec,kpso4_c) = aerosol(knsec,na4) - arsl(knsec,na4)
-          moxid0(knsec,kpno3_c) = aerosol(knsec,nan) - arsl(knsec,nan)
-          moxid0(knsec,kna_c) = aerosol(knsec,nas) - arsl(knsec,nas)
-          moxid0(knsec,kpcl_c) = aerosol(knsec,nac) - arsl(knsec,nac)
-          moxid0(knsec,kpoc_c) = aerosol(knsec,nao) - arsl(knsec,nao)
-          moxid0(knsec,kpec_c) = aerosol(knsec,nae) - arsl(knsec,nae)
-          moxid0(knsec,kcrst_c) = aerosol(knsec,nar) - arsl(knsec,nar)
+          moxid0(knsec,naw) = aerosol(knsec,naw) - arsl(knsec,naw)
+          moxid0(knsec,naa) = aerosol(knsec,naa) - arsl(knsec,naa)
+          moxid0(knsec,na4) = aerosol(knsec,na4) - arsl(knsec,na4)
+          moxid0(knsec,nan) = aerosol(knsec,nan) - arsl(knsec,nan)
+          moxid0(knsec,nas) = aerosol(knsec,nas) - arsl(knsec,nas)
+          moxid0(knsec,nac) = aerosol(knsec,nac) - arsl(knsec,nac)
+          moxid0(knsec,nao) = aerosol(knsec,nao) - arsl(knsec,nao)
+          moxid0(knsec,nae) = aerosol(knsec,nae) - arsl(knsec,nae)
+          moxid0(knsec,nar) = aerosol(knsec,nar) - arsl(knsec,nar)
         enddo
        iaqflag = 1
        endif
@@ -498,6 +471,9 @@ cjgj          con(kcrst_c+(knsec-1)) = aerosol(knsec,nar)
 c     RADM or VSRM -> call AER even if the aqueous module is called
 c     OVSR         -> call SOAP alone if the aqueous module is called
 c
+      !modeaero = 0: If not inside a cloud
+      !modeaero = 1: If inside a cloud
+
       if (laero) then
         if ( chaq.eq.'OVSR' .and. modeaero.eq.1 ) then
           modeaero = 1
@@ -505,6 +481,11 @@ c
           modeaero = 2
         endif
       endif
+
+      !modeaero = 0: If no aerosols and not inside cloud
+      !modeaero = 1: If aerosol and inside a cloud
+      !modeaero = 2: If aerosol and outside cloud
+
 c
 c     if neither aqchem nor aerchem is called we don't call soap
 c     - should we??? 
@@ -539,16 +520,14 @@ c
           q((knsec-1)*nsp+knum)=con(knum_c+(knsec-1))
                      ! Number concentration jgj 2/28/06
         enddo
+
+        !If aqueous chemistry was called, then condense components
+	!with respect to those driving forces, which are stored in 
+	!moxid0.
         if (iaqflag.eq.1) then
           call CAMx2so4cond(q,t0,t1,tempk,pressure,moxid0,ich,jch,kch)
         endif
-cbk   SOAP has been merged with inorganic aerosol module - bkoo (03/09/03)
-cbk        if (lsoap) then
-cbk   	  q(naer+icg1)    =0.d0
-cbk   	  q(naer+icg2)    =0.d0
-cbk   	  q(naer+icg3)    =0.d0
-cbk   	  q(naer+icg4)    =0.d0
-cbk        else
+
 c     use MW instead of 100 and actual pressure and temperature for
 c     conversion to ppm for organic gases (tmg, 04/15/02)
 c     now organic gases are given in ppm - bkoo (08/25/03)
@@ -564,31 +543,10 @@ c
         q(naer+ihcl)   = con(khcl_c)
 c
         if (modeaero.eq.1) then     ! call SOAP only
-cjgj
 c     Currently, soap is turned off.
-c
-c          do i=1,nsec
-c            qt(i)=0.d0
-c            do ki=2,nsp ! use dry basis
-c              qt(i)=qt(i)+q((i-1)*nsp+ki) ! total mass per section(ug/m3)
-c            enddo  
-c            qn(i)=qt(i)/dsec(i)**3 ! calculate 0th moment(number of particles)
-c          enddo ! if density = 1g/cm3 units are particles/cm3
-c          call wdiameter(q) ! wet diameter
-c          ntotalx  = 0 ! not used
-c          nsecx    = 0 ! not used
-c          ntotalx2 = ntotal
-c          nsecx2   = nsec
-c          call eqparto(t1,q) ! equilibrium organic aerosol partitioning
-c          call ddiameter(q) ! dry diameter
-c          call newdist(t1,q) ! size distribution mapping
-c          call step(nsec,q) ! calculate water in each section
-cjgj
         else                        ! call SOAP + AER
-cjgj          call aerchem(chaero,q,t0,t1,lfrst,ierr)
           pressure=pres
 c
-cjgj
           call CAMx2dman(q,t0,t1,tempk,pressure,dsulfdt,ich,jch,kch,fndt) 
         endif
 c
@@ -612,35 +570,11 @@ c
                      ! Number concentration jgj 2/28/06
         enddo
 c
-cdbg      if ((t0.gt.4500).and.(t0.lt.6300))then !between 1:15 and 1:45
-cdbg      if ((t0.gt.0.0).and.(t0.lt.30.))then !between 0:00 and 0:30
-cdbg        if ((ich.eq.36).and.(jch.eq.29).and.(kch.eq.1))then
-cdbg          write(*,*)'Coord=',ich,jch,kch
-cdbg          knsec = 4
-cdbg          write(*,*)'con(knum_c)=',con(knum_c+(knsec-1))
-cdbg          write(*,*)'con(ksoa1_c)=',con(ksoa1_c+(knsec-1)) !1
-cdbg          write(*,*)'con(ksoa2_c)=',con(ksoa2_c+(knsec-1)) !2
-cdbg          write(*,*)'con(ksoa3_c)=',con(ksoa3_c+(knsec-1)) !3
-cdbg          write(*,*)'con(ksoa4_c)=',con(ksoa4_c+(knsec-1)) !4
-cdbg          write(*,*)'con(kpso4_c)=',con(kpso4_c+(knsec-1)) !5
-cdbg          write(*,*)'con(kpcl_c)=',con(kpcl_c+(knsec-1))   !6
-cdbg          write(*,*)'con(kpno3_c)=',con(kpno3_c+(knsec-1)) !7
-cdbg          write(*,*)'con(kna_c)=',con(kna_c+(knsec-1))     !8
-cdbg          write(*,*)'con(kpnh4_c)=',con(kpnh4_c+(knsec-1)) !9
-cdbg          write(*,*)'con(kph2o_c)=',con(kph2o_c+(knsec-1)) !10
-cdbg          write(*,*)'con(kcrst_c)=',con(kcrst_c+(knsec-1)) !11
-cdbg          write(*,*)'con(kpec_c)=',con(kpec_c+(knsec-1))   !12
-cdbg          write(*,*)'con(kpoc_c)=',con(kpoc_c+(knsec-1))   !13
-cdbg        endif
-cdbg      endif
-c
-cbk   SOAP has been merged with inorganic aerosol module - bkoo (03/09/03)
-cbk      if (.not.lsoap) then
         con(kcg1_c) = q(naer+icg1)
         con(kcg2_c) = q(naer+icg2)
         con(kcg3_c) = q(naer+icg3)
         con(kcg4_c) = q(naer+icg4)
-cbk      endif
+c
         con(kh2so4_c)=q(naer+ih2so4)
         con(knh3_c)  =q(naer+inh3)
         con(khno3_c) =q(naer+ihno3)
@@ -648,10 +582,7 @@ cbk      endif
 c
       endif
 c
-c      if ( .not. lsoap .or. .not.lcond ) then
-cbk   SOAP has been merged with inorganic aerosol module - bkoo (03/09/03)
-cbk      if ( .not. lsoap ) then
       lfrst = .false.
       return
-cbk      endif
+
       end

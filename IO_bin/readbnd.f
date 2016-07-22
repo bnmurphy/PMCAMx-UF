@@ -89,8 +89,10 @@ c
                 convfac = 1.
               endif
               conc(n4d) = convfac*bdnl(l)
-              if (lbc.gt.0 .and. bctmp(j,k,1,lbc).gt.bdnl(l)) 
-     &          conc(n4d) = convfac*bctmp(j,k,1,lbc)
+              if (lbc.gt.0) then 
+                 if (bctmp(j,k,1,lbc).gt.bdnl(l)) 
+     &                conc(n4d) = convfac*bctmp(j,k,1,lbc)
+              end if
 c
               i = iend(j) + 1
               n3d = i + ncol(1)*(j - 1) + ncol(1)*nrow(1)*(k - 1)
@@ -101,8 +103,10 @@ c
                 convfac = 1.
               endif
               conc(n4d) = convfac*bdnl(l)
-              if (lbc.gt.0 .and. bctmp(j,k,2,lbc).gt.bdnl(l)) 
-     &          conc(n4d) = convfac*bctmp(j,k,2,lbc)
+              if (lbc.gt.0) then
+                 if (bctmp(j,k,2,lbc).gt.bdnl(l)) 
+     &                conc(n4d) = convfac*bctmp(j,k,2,lbc)
+              endif
 c-----Set POC and PEC BC-------------------------------------------
 cjgj              if (l.ge.75.and.l.le.80) then
 cjgj                conc(n4d)=1.8d-1
@@ -123,8 +127,10 @@ c
                 convfac = 1.
               endif
               conc(n4d) = convfac*bdnl(l)
-              if (lbc.gt.0 .and. bctmp(i,k,3,lbc).gt.bdnl(l))
-     &          conc(n4d) = convfac*bctmp(i,k,3,lbc)
+              if (lbc.gt.0) then
+                 if (bctmp(i,k,3,lbc).gt.bdnl(l))
+     &                conc(n4d) = convfac*bctmp(i,k,3,lbc)
+              endif
 c
               j = jend(i) + 1 
               n3d = i + ncol(1)*(j - 1) + ncol(1)*nrow(1)*(k - 1) 
@@ -135,8 +141,10 @@ c
                 convfac = 1.
               endif
               conc(n4d) = convfac*bdnl(l)
-              if (lbc.gt.0 .and. bctmp(i,k,4,lbc).gt.bdnl(l))
-     &            conc(n4d) = convfac*bctmp(i,k,4,lbc) 
+              if (lbc.gt.0) then
+                 if (bctmp(i,k,4,lbc).gt.bdnl(l))
+     &                conc(n4d) = convfac*bctmp(i,k,4,lbc)
+              endif
 c-----Set POC and PEC BC-------------------------------------------
 cjgj                if (l.ge.75.and.l.le.80) then
 cjgj                  conc(n4d)=1.8d-1

@@ -44,7 +44,9 @@ c
       real tempK      ! temperature [=] K
       real pressure   ! atm
 cdbg      real dsulfdt    !sulfuric acid production rate
-      real*4 moxid0(ibins+naqbin,naers)    
+      real*4 moxid0(ibins+naqbin,naers)
+                       !Inert species from the aqueous chemistry routine
+		       !(BNM)
                       !sulfate produced by aqueous chemistry [=]ug/m3
       integer ich, jch, kch ! coordiate, x, y, z
 c
@@ -127,79 +129,41 @@ c
       pres = pressure * 1.01325d5 ! Pa
       relh = rh ! Change a relative humidity variable for DMAN
 c
-cnogas      if (q(naer+ih2so4).ge.0.0) then 
-cnogas        h2so4 = q(naer+ih2so4) * 1.0d6   ! h2so4 [=] ppt, q [=] ppm 
-cnogas      else
-cnogas        if (q(naer+ih2so4).gt.(-eps*1.0d-6)) then
-cnogas          h2so4 = eps
-cnogas          q(naer+ih2so4) = eps * 1.0d-6
-cnogas        else
-cnogas          write(*,*)'H2SO4 is less than zero'
-cnogas          write(*,*)'q(naer+ih2so4) [ppm]',q(naer+ih2so4)
-cnogas          write(*,*)'Coordinate =', ich, jch, kch
-cnogas          write(*,*)'dsulfdt=',dsulfdt
-cnogas          STOP
-cnogas        endif
-cnogas      endif
-
-cnogas      if (q(naer+inh3).ge.0.d0) then
-cnogas        nh3ppt = q(naer+inh3) * 1.0d6 
-cnogas      else
-cnogas        if (q(naer+inh3).gt.(-eps*1.0d-6)) then
-cnogas          nh3ppt = eps
-cnogas          q(naer+inh3) = eps * 1.0d-6
-cnogas        else
-cnogas          write(*,*)'NH3 is less than zero'
-cnogas          write(*,*)'q(naer+inh3) [ppm]=',q(naer+inh3)
-cnogas          write(*,*)'Coordinate =', ich, jch, kch
-cnogas          write(*,*)'dsulfdt=',dsulfdt
-cnogas          STOP
-cnogas        endif
-cnogas      endif
-
-
+      moxid=0.0
+      Mk=0.d0
+c
       do i=1, ibins !Transfer moxid0
       ! Check negative moxid0
-      if (moxid0(i,kpnh4_c).lt.0.0) moxid0(i,kpnh4_c)=0.0            !jjung
-      if (moxid0(i,kpso4_c).lt.0.0) moxid0(i,kpso4_c)=0.0
-      if (moxid0(i,kpno3_c).lt.0.0) moxid0(i,kpno3_c)=0.0            !jjung
-      if (moxid0(i,kna_c).lt.0.0) moxid0(i,kna_c)=0.0
-      if (moxid0(i,kpoc_c).lt.0.0) moxid0(i,kpoc_c)=0.0
-      if (moxid0(i,kpec_c).lt.0.0) moxid0(i,kpec_c)=0.0
-      if (moxid0(i,kcrst_c).lt.0.0) moxid0(i,kcrst_c)=0.0
-      if (moxid0(i,kpcl_c).lt.0.0) moxid0(i,kpcl_c)=0.0
+      if (moxid0(i,naa).lt.0.0) moxid0(i,naa)=0.0            
+      if (moxid0(i,na4).lt.0.0) moxid0(i,na4)=0.0
+      if (moxid0(i,nan).lt.0.0) moxid0(i,nan)=0.0
+      if (moxid0(i,nas).lt.0.0) moxid0(i,nas)=0.0
+      if (moxid0(i,nao).lt.0.0) moxid0(i,nao)=0.0
+      if (moxid0(i,nae).lt.0.0) moxid0(i,nae)=0.0
+      if (moxid0(i,nar).lt.0.0) moxid0(i,nar)=0.0
+      if (moxid0(i,nac).lt.0.0) moxid0(i,nac)=0.0
 c
-         moxid(i,srtnh3)=moxid0(i,kpnh4_c)*cvt*boxvol
-         moxid(i,srtso4)=moxid0(i,kpso4_c)*cvt*boxvol
-         add_tot_inert(i) = moxid0(i,kpno3_c)+moxid0(i,kna_c)+         ! cf
+         moxid(i,srtnh3)=moxid0(i,naa)*cvt*boxvol
+         moxid(i,srtso4)=moxid0(i,na4)*cvt*boxvol
+         add_tot_inert(i) = moxid0(i,nan)+moxid0(i,nas)+         ! cf
 c                            ! Nitrate                 Na              !
 c         add_tot_inert(i) = moxid0(i,kna_c)+                          ! cf
                      !        Na
-     &                moxid0(i,kpcl_c)+moxid0(i,kpoc_c)+
+     &                moxid0(i,nac)+moxid0(i,nao)+
                      ! Cl                OC
-     &                moxid0(i,kpec_c)+moxid0(i,kcrst_c)+
+     &                moxid0(i,nae)+moxid0(i,nar)+
                      ! EC                Crust
      &                eps
                      ! for safety
          ! Capture ratios added before calling dman 
-         add_rt_no3(i) = moxid0(i,kpno3_c) * (1.0/add_tot_inert(i))   ! cf
-         add_rt_na(i) = moxid0(i,kna_c) * (1.0/add_tot_inert(i))
-         add_rt_cl(i) = moxid0(i,kpcl_c) * (1.0/add_tot_inert(i))
-         add_rt_pom(i) = moxid0(i,kpoc_c) * (1.0/add_tot_inert(i))
-         add_rt_ec(i) = moxid0(i,kpec_c) * (1.0/add_tot_inert(i))
-         add_rt_crst(i) = moxid0(i,kcrst_c) * (1.0/add_tot_inert(i))
+         add_rt_no3(i)   = moxid0(i,nan) * (1.0/add_tot_inert(i))   ! cf
+         add_rt_na(i)    = moxid0(i,nas) * (1.0/add_tot_inert(i))
+         add_rt_cl(i)    = moxid0(i,nac) * (1.0/add_tot_inert(i))
+         add_rt_pom(i)   = moxid0(i,nao) * (1.0/add_tot_inert(i))
+         add_rt_ec(i)    = moxid0(i,nae) * (1.0/add_tot_inert(i))
+         add_rt_crst(i)  = moxid0(i,nar) * (1.0/add_tot_inert(i))
          moxid(i,srtorg) = add_tot_inert(i)*cvt*boxvol
-cdbg         if (moxid(i).ge.0.0) then
-cdbg            moxid(i)=moxid0(i)*cvt*boxvol
-cdbg         else
-cdbg            write(*,*)'Coordinate =', ich, jch, kch
-cdbg            write(*,*)'Negative moxid0 in DMAN before dman'
-cdbg            write(*,*)'sizesection=', i
-cdbg            write(*,*)'moxid0='
-cdbg            do ii=1,ibins
-cdbg               write(*,*)moxid0(ii)
-cdbg            enddo
-cdbg         endif
+
       enddo
      
       do i=1, ibins
@@ -320,12 +284,6 @@ c
         enddo
         Nk(i)=Nkout(i)
       enddo
-cnogas      if (icond_test .ne. 1) then !Notice that not equal, "ne"
-cnogas        Gc(srtso4)=Gcout(srtso4)
-cnogas        Gc(srtnh3)=Gcout(srtnh3)
-cnogas        h2so4=Gc(srtso4)*1.0d+12/boxmass*28.9/gmw(srtso4)
-cnogas        nh3ppt=Gc(srtnh3)*1.0d+12/boxmass*28.9/gmw(srtnh3)
-cnogas      endif
 c
 c-----Return DMAN values to the PMCAMx variable, check I can call initbounds
 c
@@ -400,8 +358,10 @@ c     Only POA has the sum of POA, EC, CRST, Cl, and Na. The rest of
 c     species are set to zero.
 c
         tot_inert2(i) = Mk(i,srtorg) * cvt2 * (1.0/boxvol)
-        if (tot_inert(i).le.tot_inert2(i)) then
-           dtot_inert(i)=tot_inert2(i)-tot_inert(i) !Increased mass
+        if (tot_inert(i).le.tot_inert2(i)) then  !Increased mass
+           !Add mass in proportion to the composition of species
+	   !added by the aqueous phase chemistry module
+           dtot_inert(i)=tot_inert2(i)-tot_inert(i)
            q((i-1)*nsp+kpom) = q((i-1)*nsp+kpom) 
      &                        + dtot_inert(i)* add_rt_pom(i)
            q((i-1)*nsp+kec) = q((i-1)*nsp+kec)
@@ -415,7 +375,8 @@ c
            ! SOA is not added by aqueous chemistry
            q((i-1)*nsp+kno3) = q((i-1)*nsp+kno3)                      ! cf
      &                        + dtot_inert(i) * add_rt_no3(i)         ! cf
-         else !redistribute as the portion of before aqueous chemistry
+        else !Decreased Mass
+           !redistribute as the portion of before aqueous chemistry
            q((i-1)*nsp+kpom) = tot_inert2(i) * rt_pom(i)
            q((i-1)*nsp+kec) = tot_inert2(i) * rt_ec(i)
            q((i-1)*nsp+kcrus) = tot_inert2(i) * rt_crst(i)
