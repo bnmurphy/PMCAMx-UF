@@ -63,9 +63,15 @@ C-----VARIABLE DECLARATIONS---------------------------------------------
       double precision mnuc     !mass of nucleation
       double precision cs       ! condensation sink [s-1]
       
-      double precision mfrac(icomp) ! fraction of the nucleated mass that will be assigned
-      double precision fn_all(2) !Magnitude of nucleation rates resolved by pathway
-                                    ! to each icomp species (passed to nucMassUpdate)
+      double precision mfrac(icomp) ! fraction of the nucleated mass (not used anymore)
+      double precision fn_all(nJnuc) !Magnitude of nucleation rates resolved by pathway
+      double precision N_Vehk   !  critical cluster from Vehkamäki parameterization
+      double precision amu      !atomic mass unit [kg]
+      double precision max_addedH2SO4 ! the largest amount of SA mass added in this call by a pathway, used for nuc_bin
+      double precision addedH2SO4 ! amount of SA added by a NPF pathway
+      integer bin_addmnuc  ! internal variable used to determine to which bin the mass is added
+                           ! for an individual pathway. The output variable nuc_bin will currently
+                           ! contain the bin corresponding to the pathway that adds most mass /JJ 23/05/2016                              
 
 C-----EXTERNAL FUNCTIONS------------------------------------------------
 
@@ -76,6 +82,7 @@ C-----ADJUSTABLE PARAMETERS---------------------------------------------
 
       parameter (neps=1E8, meps=1E-8)
       parameter (pi=3.14159)
+      parameter (amu=1.660539040d-27)
 
 C-----CODE--------------------------------------------------------------
 
@@ -86,7 +93,6 @@ c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
 
       fn = 0.d0
       rnuc = 0.d0
-      gtime = 0.d0
       fn_all = 0.
 
       ! if no nucleation occurs the final arrays will be same as the initial arrays
@@ -94,108 +100,73 @@ c      nh3ppt= (1.0e+21*8.314)*Gci(srtnh4)*temp/(pres*boxvol*gmw(srtnh4))
       Nkf=Nki
       Gcf=Gci
 
-cdbg      print*,'h2so4',h2so4,'nh3ppt',nh3ppt
+      !nuc_bin tells cond_nuc which bin to remove sulfuric acid from if the mass to condense becomes negative
+      nuc_bin=1
+      max_addedH2SO4=0.d0 !keeping track which pathway resulted in most SA mass (for cond_nuc.f & nuc_bin)
 
-C     if requirements for nucleation are met, call nucleation subroutines
-C     and get the nucleation rate and critical cluster size        
+C     if requirements for nucleation are met, call nucleation subroutines  
 
       if (h2so4.gt.minval(tern_nuc_tbl_H2SO4).and.
      &     nh3_molec.gt.minval(tern_nuc_tbl_NH3).and.tern_nuc.eq.1) then
 c$$$         if (h2so4.gt.1.d4.and.nh3ppt.gt.0.1.and.tern_nuc.eq.1) then
 c$$$            call napa_nucl(temp,rh,h2so4,nh3ppt,fn,rnuc) !ternary nuc
-         call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn,rnuc)
+         call tern_nucl_acdc(temp,rh,cs,h2so4,nh3_molec,fn)
 
          if (fn.gt.0.d0) then
-              !update mass and number
-              !nuclei are assumed as ammonium bisulfate
-            mfrac = (/0.8144, 0.0, 0.1856, 0.0/)
-            call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+            !ACDC formation rate (the 2014-12-04 lookup table) corresponds to 
+            !clusters with 4 acids+3 NH3
+            mnuc=(4.d0*gmw(srtso4)+3.d0*gmw(srtnh4))*amu !mass of 4A+3NH3 particle
+            !Determine to which bin the mass is added
+            bin_addmnuc = 1
+            do while (mnuc .gt. xk(bin_addmnuc+1))
+               bin_addmnuc = bin_addmnuc + 1
+            enddo
+            
+            !update mass and number
+            addedH2SO4=4.d0*gmw(srtso4)*amu*fn*boxvol*dt
+            Mkf(bin_addmnuc,srtso4) = Mkf(bin_addmnuc,srtso4)+
+     &           +addedH2SO4
+            Mkf(bin_addmnuc,srtnh4) = Mkf(bin_addmnuc,srtnh4)+
+     &           +3.d0*gmw(srtnh4)*amu*fn*boxvol*dt
+            Nkf(bin_addmnuc) = Nkf(bin_addmnuc)+fn*boxvol*dt
+
+            !checking if nuc_bin needs to be updated
+            if (addedH2SO4.gt.max_addedH2SO4) then
+               max_addedH2SO4=addedH2SO4
+               nuc_bin=bin_addmnuc
+            end if
+
             fn_all(1) = fn
          endif
       endif
 
       if (h2so4.gt.1.d4.and.bin_nuc.eq.1) then
-         call vehk_nucl(temp,rh,h2so4,fn,rnuc) !binary nuc
+         call vehk_nucl(temp,rh,h2so4,fn,rnuc,N_Vehk) !binary nuc
 
-         if (fn.gt.0.d0) then
-              !update mass and number
-              !nuclei are assumed to be sulfuric acid
-            mfrac = (/1.0, 0.0, 0.0, 0.0/)
-            call nuc_massupd(Nkf,Mkf,Gcf,nuc_bin,dt,fn,rnuc,mfrac)
+         if (fn.gt.0.d0 .and. N_Vehk.ge.4.d0) then !Vehkamäki param. only valid for N>4
+            !update mass and number
+            !nuclei are assumed to be sulfuric acid
+            mnuc=N_Vehk*gmw(srtso4)*amu
+            !Determine to which bin the mass is added
+            bin_addmnuc = 1
+            do while (mnuc .gt. xk(bin_addmnuc+1))
+               bin_addmnuc = bin_addmnuc + 1
+            enddo
+
+            addedH2SO4=mnuc*fn*boxvol*dt
+            Mkf(bin_addmnuc,srtso4) = Mkf(bin_addmnuc,srtso4)+addedH2SO4
+            Nkf(bin_addmnuc) = Nkf(bin_addmnuc)+fn*boxvol*dt
+
+            !checking if nuc_bin needs to be updated
+            if (addedH2SO4.gt.max_addedH2SO4) then
+               max_addedH2SO4=addedH2SO4
+               nuc_bin=bin_addmnuc
+            end if
+
             fn_all(2) = fn
          endif
       endif    
 
-C     if nucleation occured, see how many particles grow to join the first size
-C     section
-c$$$      if (fn.gt.0.d0) then
-cdbg         print*, 'entered fn'
-cdbg         print*, 'fn', fn, 'rnuc',rnuc
-         ! get the time it takes to grow to first size bin
-Cjrp         d1 = rnuc*2.d0*1E-9
-Cjrp         d2 = (6.d0*sqrt(xk(1)*xk(2))/1800.d0/pi)**(1.d0/3.d0)
-Cjrp         print*, 'd1', d1, 'd2', d2
-Cjrp         call getGrowthTime(d1,d2,Gc(srtso4),temp,
-Cjrp     &        boxvol,gtime)
-Cjrp         print*, 'gtime', gtime
-Cjrp         ! get the first order loss rate of these particles due to coagulation
-Cjrp         ! get loss rate for cluster size
-Cjrp         d1 = rnuc*2.d0*1E-9
-Cjrp         call getCoagLoss(d1,ltc1)
-Cjrp         print*, 'd1', d1, 'ltc1', ltc1
-Cjrp         ! we want the loss rate for particles at the size where they are added
-Cjrp         ! to bin 1
-Cjrp         Mktot = 0.d0
-Cjrp         do j=1,icomp
-Cjrp            Mktot=Mktot+Mk(1,j)
-Cjrp         enddo
-Cjrp         Mktot=Mktot+2.d0*Mk(1,srtso4)/96.d0-Mk(1,srtnh4)/18.d0 ! account for h+
-Cjrp
-Cjrp         if (Mktot.gt.meps)then
-Cjrp            density=aerodens_PSSA(Mk(1,srtso4),0.d0,Mk(1,srtnh4),
-Cjrp     &           0.d0,Mk(1,srth2o)) !assume bisulfate
-Cjrp         else
-Cjrp            density = 1400.
-Cjrp         endif
-Cjrp
-Cjrp         if(Nk(1).gt.neps .and. Mktot.gt.meps)then
-Cjrp            mp=Mktot/Nk(1)
-Cjrp         else
-Cjrp            mp=sqrt(xk(1)*xk(2))
-Cjrp         endif
-Cjrp         
-Cjrp         d1 = (6.d0*mp/density/pi)**(1.d0/3.d0)
-Cjrp         call getCoagLoss(d1,ltc2)
-Cjrp         print*, 'd1', d1, 'ltc2', ltc2 
-Cjrp
-Cjrp         ! take average of loss rate constants
-Cjrp         ltc = (ltc1 + ltc2)/2.d0
-Cjrp         print*, 'ltc', ltc
-Cjrp
-Cjrp	 if (gtime.lt.0.d0)then
-Cjrp	    gtime=0.d0
-Cjrp         endif
-Cjrp
-Cjrp         frac = exp(-ltc*gtime)
-Cjrp         print*,'frac', frac
-Cjrpc         frac = 1.d0
-
-cdbg         print*,'Nk_NUC',Nki(nuc_bin),Nkf(nuc_bin)
-c$$$         Gcf(srtso4) = Gci(srtso4)! - (Mkf(nuc_bin,srtso4)-mold)
-c$$$                                  !PSSA decide Gc as a diagnostic way
-
-
-C there is a chance that Gcf will go less than zero because we are artificially growing
-C particles into the first size bin.  don''t let it go less than zero.
-c         if (Gcf(srtso4).lt.0.d0)then
-c            Mkf(nuc_bin,srtso4) = Mki(nuc_bin,srtso4) + 
-c     &           Gci(srtso4)*96./98.
-c            Nkf(nuc_bin) = Nki(1) + Gci(srtso4)*96./98./mnuc
-c            Gcf(srtso4) = 0.d0
-c            print*,'used up h2so4 in nuc subroutine'
-c         endif
-
-c$$$      endif
 
       RETURN
       END

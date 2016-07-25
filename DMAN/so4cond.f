@@ -143,10 +143,6 @@ C-----ADJUSTABLE PARAMETERS---------------------------------------------
 
 C-----CODE--------------------------------------------------------------
 
-cdbg      write(*,*)'xk(j)',(xk(j),j=1,ibins)
-cdbg      print*,'boxmass=',boxmass
-cdbg      pause
-cdbg      write(*,*) '\n Coord.(i,j,k)=',ichm,jchm,kchm
 
       !Initialization
       k=0
@@ -176,16 +172,6 @@ cdbg      limit='null'
 cdbg      do k=1,ibins+1
 cdbg        xk(k)=xkDMAN(k)
 cdbg      enddo
-
-      !Converting gas unit from ppt to kg
-cdbg      if (icond_test .eq. 1) then
-cdbg        ygas(mgsvi)=1.0E+3 ! [=] ppt
-cdbg        gmw(srtso4)=100. ! [=]g mol-1
-cdbg        Gc(srtso4)=boxmass*ygas(mgsvi)*1.0e-12*gmw(srtso4)/28.9
-cdbg      else
-cdbg        Gc(srtso4)=boxmass*ygas(mgsvi)*1.0e-12*gmw(srtso4)/28.9
-cdbg        Gc(srtnh3)=boxmass*ygas(mgnh3)*1.0e-12*gmw(srtnh3)/28.9
-cdbg      endif
 
       !Skip negative gas concentration if command
       if (Gci(srtso4) .lt. cthresh*boxmass) Gcflag(srtso4)=1 ! =1, Skip 
@@ -246,7 +232,6 @@ C Calculate tj and tk factors needed to calculate tau values
       do k=1,ibins
         if (Nkf(k) .gt. Neps) then
           if (icond_test .eq. 1) then
-cdbg            density=1.0e+3 ! cond_test 6/24/04 jgj
             density=1400.0 ! Mk's are calculated based on this density
                            ! in initbounds. Dpk can be derived from this
                            ! density.
@@ -264,7 +249,6 @@ c          mp=(Mkf(k,srtso4)+Mkf(k,srtnh3))/Nkf(k)
         else
           !nothing in this bin - set to "typical value"
           if (icond_test .eq. 1) then !cond test 6/24/04 jgj
-cdbg            density = 1000.
             density=1400.0 ! Mk's are calculated based on this density
                            ! in initbounds. Dpk can be derived from this
                            ! density.
@@ -416,9 +400,7 @@ C-----Adjust a time step
               !species has significant mass in particle - limit change
               if (abs(atau(k,j))/(mc**tdt) .gt. 0.1) then
                 ttr=abs(atau(k,j))/(mc**tdt)/0.05
-                if (ttr. gt. tr) then 
-cdbg                  limit='amass'
-cdbg                  write(limit(7:11),'(I2,X,I2)') k,j
+                if (ttr .gt. tr) then 
                   tr=ttr
                 endif
               endif
@@ -426,8 +408,6 @@ cdbg                  write(limit(7:11),'(I2,X,I2)') k,j
               !species is new to particle - set max time step
               if ((cdt/tr .gt. 0.1) .and. (atau(k,j).gt. 0.0)) then 
                 tr=cdt/0.1
-cdbg                  limit='nspec'
-cdbg                  write(limit(7:11),'(I2,X,I2)') k,j
               endif
             endif
           endif
@@ -461,8 +441,6 @@ cdbg            ttr=-2.d0*cdt*sK(j)/log(0.25)
           ttr=-2.d0*cdt*sK(j)/log(gasfrac)
           if (ttr .gt. tr) then 
             tr=ttr
-cdbg              limit='gphas'
-cdbg              write(limit(7:8),'(I2)') j
           endif
         endif
 cdbg        endif
@@ -521,25 +499,7 @@ C Call condensation subroutine to do mass transfer
         do k=1, ibins
           moxd(k)=0.0 !oxidated mass
         enddo
-cdbg        print*,'j=',j
-cdbg        print*,'tau=',tau
-cdbg        print*,'Gc=',Gcf
-cdbg        print*,'tk=',tk
-cdbg        print*,'tj=',tj
-cdbg        print*,'sK=',sK
-cdbg        print*,'temp=',temp
-cdbg        print*,'boxvol=',boxvol
-cdbg        print*,'cdt=',cdt
-cdbg        print*,'xk=',xk
-cdbg        print*,'Nk='
-cdbg        do k=1, ibins
-cdbg          print*,Nkf(k)
-cdbg        enddo
-cdbg        print*,'Mk='
-cdbg        do k=1, ibins
-cdbg          print*,Mkf(k,srtso4)
-cdbg        enddo
-cdbg        pause
+
         call tmcond(tau,xk,Mkf,Nkf,Mko,Nko,j,moxd)
 
         !Check for number conservation
@@ -547,10 +507,7 @@ cdbg        pause
         do k=1,ibins
           Ntoto=Ntoto+Nko(k)
         enddo
-cdbg         write(*,*) 'Time=', time
-cdbg         write(*,*) 'Ntoto=', Ntoto
-cdbg         write(*,*) 'Ntotf=', Ntotf
-cdbg         dNerr=dNerr+Ntotf-Ntoto
+
         dNerr=Ntotf-Ntoto
         if (abs(dNerr/Ntoto) .gt. 1.d-4) then
           write(*,*)'ERROR in so4cond: Number not conserved'
@@ -574,6 +531,16 @@ cdbg         dNerr=dNerr+Ntotf-Ntoto
         enddo
         Gcf(j)=Gcf(j)+(mi(j)-mf(j))*gmw(j)/molwt(j)
 
+        !check if gas concentration has become practically zero
+        if (Gcf(j) .lt. cthresh*boxmass) then
+           if (Gcf(j) .gt. 0.0) then
+              Gcflag(j)=1 !do not condense this species further
+           else if (abs(Gcf(j)) .le. 1.d-5) then ! if more negative than this the program will stop shortly
+              Gcf(j)=0.0
+              Gcflag(j)=1
+           end if
+        end if
+
         !Swap into Nk, Mk
         do k=1,ibins
           Nkf(k)=Nko(k)
@@ -589,8 +556,6 @@ c        call ezwatereqm(Mkf)
 
 C Update time
       time=time+cdt
-cdbg      write(*,*) 'so4cond - time = ', time, ' ',limit
-cdbg      write(*,*) 'H2SO4(g)= ', Gcf(srtso4)
  
       !Check sulfuric acid
       if (Gcflag(srtso4) .eq. 0) then
@@ -667,14 +632,6 @@ cdbg      write(*,*) 'Number cons. error was ', dNerr
 
  100  continue   !skip to here if there is no gas phase to condense
 c
-cdbg      if (icond_test .eq. 1) then
-cdbg          ygas(mgsvi)=Gcf(srtso4)*1.0e+12/boxmass*28.9/100.
-                 !const H2SO4 in case of condensation tests
-cdbg      else
-cdbg          ygas(mgsvi)=Gcf(srtso4)*1.0e+12/boxmass*28.9/gmw(srtso4)
-cdbg          ygas(mgnh3)=Gcf(srtnh3)*1.0e+12/boxmass*28.9/gmw(srtnh3) 
-                                   !eznh3eqm in PSSA could substitue
-cdbg      endif
 
 
       RETURN
